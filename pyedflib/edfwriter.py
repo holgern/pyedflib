@@ -26,8 +26,7 @@ class EdfWriter(object):
         these values:
 
             'label' : channel label (string, <= 16 characters, must be unique)
-            'dimension' : physical dimension (e.g., mV) 
-                                  (string, <= 8 characters)
+            'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
             'sample_rate' : sample frequency in hertz (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -81,8 +80,10 @@ class EdfWriter(object):
         hdl = self.handle
         def call_per_channel(fn, name, optional=False):
             for i,c in enumerate(channels):
-                if optional and not name in c: continue
+                if optional and  not (name in c):
+                    continue
                 fn(hdl, i, c.pop(name))
+
         call_per_channel(set_samplefrequency, 'sample_rate')
         call_per_channel(set_physical_maximum, 'physical_max')
         call_per_channel(set_digital_maximum, 'digital_max')
@@ -98,4 +99,3 @@ class EdfWriter(object):
             buf = np.array(self.sample_buffer[c], dtype='int16')
             write_digital_samples(self.handle, buf)
             self.sample_buffer[c] = []
-

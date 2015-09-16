@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.pyplot import *
 from matplotlib.collections import LineCollection
 
+
 def stackplot(marray, seconds=None, start_time=None, ylabels=None):
     """
     will plot a stack of traces one above the other assuming
@@ -15,7 +16,6 @@ def stackplot(marray, seconds=None, start_time=None, ylabels=None):
     stackplot_t(tarray, seconds=seconds, start_time=start_time, ylabels=ylabels)
 
 
-
 def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
     """
     will plot a stack of traces one above the other assuming
@@ -23,12 +23,12 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
     """
     data = tarray
     numSamples, numRows = tarray.shape
-    # data = np.random.randn(numSamples,numRows) # test data
-    # data.shape = numSamples, numRows
+# data = np.random.randn(numSamples,numRows) # test data
+# data.shape = numSamples, numRows
     if seconds:
         t = seconds * np.arange(numSamples, dtype=float)/numSamples
-        #import pdb
-        #pdb.set_trace()
+#import pdb
+#pdb.set_trace()
         if start_time:
             t = t+start_time
             xlm = (start_time, start_time+seconds)
@@ -45,7 +45,7 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
     # xticks(np.linspace(xlm, 10))
     dmin = data.min()
     dmax = data.max()
-    dr = (dmax - dmin)*0.7 # Crowd them a bit.
+    dr = (dmax - dmin)*0.7  # Crowd them a bit.
     y0 = dmin
     y1 = (numRows-1) * dr + dmax
     ylim(y0, y1)
@@ -72,10 +72,9 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
         ylabels = ["%d" % ii for ii in range(numRows)]
     ax.set_yticklabels(ylabels)
 
-
     xlabel('time (s)')
 
 def test_stacklineplot():
     numSamples, numRows = 800, 5
-    data = np.random.randn(numRows, numSamples) # test data
+    data = np.random.randn(numRows, numSamples)  # test data
     stackplot(data, 10.0)
