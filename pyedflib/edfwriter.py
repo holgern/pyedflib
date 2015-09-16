@@ -8,7 +8,8 @@ __all__ = ['EdfWriter']
 
 import numpy as np
 
-from ._edflib import * 
+from ._edflib import *
+
 
 class EdfWriter(object):
     def __init__(self, file_name, channel_info, file_type=FILETYPE_EDFPLUS, **kwargs):
@@ -22,7 +23,7 @@ class EdfWriter(object):
         @channel_info should be a 
         list of dicts, one for each channel in the data. Each dict needs 
         these values:
-            
+
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
             'sample_rate' : sample frequency in hertz (int)
@@ -91,7 +92,7 @@ class EdfWriter(object):
         call_per_channel(set_prefilter, 'prefilter', optional=True)
 
     def _flush_samples(self):
-        for c in self.channels: 
+        for c in self.channels:
             buf = np.array(self.sample_buffer[c], dtype='int16')
             write_digital_samples(self.handle, buf)
             self.sample_buffer[c] = []

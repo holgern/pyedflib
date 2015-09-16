@@ -96,7 +96,7 @@ cdef class CyEdfReader:
         return dbuffer
     
     def open(self, file_name, mode='r', annotations_mode='all'):
-        result = edfopen_file_readonly(file_name, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
+        result = edfopen_file_readonly(file_name.encode(), &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
         self.file_name = file_name
         return self.check_open_ok(result)
 
