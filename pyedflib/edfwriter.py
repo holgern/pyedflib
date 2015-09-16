@@ -8,10 +8,10 @@ __all__ = ['EdfWriter']
 
 import numpy as np
 
-from ._edflib import _edflib 
+from ._edflib import * 
 
 class EdfWriter(object):
-    def __init__(self, file_name, channel_info, file_type=_edflib.FILETYPE_EDFPLUS, **kwargs):
+    def __init__(self, file_name, channel_info, file_type=FILETYPE_EDFPLUS, **kwargs):
         '''Initialises an EDF file at @file_name. 
         @file_type is one of 
             edflib.FILETYPE_EDF
@@ -40,7 +40,7 @@ class EdfWriter(object):
                 raise ChannelLabelExists(c['label'])
             self.channels[c['label']] = c
         self.sample_buffer = dict([(c['label'],[]) for c in channel_info])
-        self.handle = _edflib.open_file_writeonly(file_name, file_type, self.n_channels)
+        self.handle = open_file_writeonly(file_name, file_type, self.n_channels)
         self._init_constants(**kwargs)
         self._init_channels(channel_info)
 
@@ -54,23 +54,23 @@ class EdfWriter(object):
             self._flush_samples()
 
     def close(self):
-        _edflib.close_file(self.handle)
+        close_file(self.handle)
 
     def _init_constants(self, **kwargs):
         def call_if_set(fn, kw_name):
             item = kwargs.pop(kw_name, None)
             if item is not None:
                 fn(self.handle, item)
-        call_if_set(_edflib.set_technician, 'technician')
-        call_if_set(_edflib.set_recording_additional, 'recording_additional')
-        call_if_set(_edflib.set_patientname, 'patient_name')
-        call_if_set(_edflib.set_patient_additional, 'patient_additional')
-        call_if_set(_edflib.set_equipment, 'equipment')
-        call_if_set(_edflib.set_admincode, 'admincode')
-        call_if_set(_edflib.set_gender, 'gender')
-        call_if_set(_edflib.set_datarecord_duration, 'duration')
-        call_if_set((lambda hdl, dt: _edflib.set_startdatetime(hdl, dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)), 'recording_start_time')
-        call_if_set((lambda hdl, dt: _edflib.set_birthdate(hdl, dt.year, dt.month, dt.day)), 'patient_birthdate')
+        call_if_set(set_technician, 'technician')
+        call_if_set(set_recording_additional, 'recording_additional')
+        call_if_set(set_patientname, 'patient_name')
+        call_if_set(set_patient_additional, 'patient_additional')
+        call_if_set(set_equipment, 'equipment')
+        call_if_set(set_admincode, 'admincode')
+        call_if_set(set_gender, 'gender')
+        call_if_set(set_datarecord_duration, 'duration')
+        call_if_set((lambda hdl, dt: set_startdatetime(hdl, dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)), 'recording_start_time')
+        call_if_set((lambda hdl, dt: set_birthdate(hdl, dt.year, dt.month, dt.day)), 'patient_birthdate')
         if len(kwargs) > 0:
             raise Exception('Unhandled argument(s) given: %r' % kwargs.keys())
 
@@ -80,19 +80,19 @@ class EdfWriter(object):
             for i,c in enumerate(channels):
                 if optional and not name in c: continue
                 fn(hdl, i, c.pop(name))
-        call_per_channel(_edflib.set_samplefrequency, 'sample_rate')
-        call_per_channel(_edflib.set_physical_maximum, 'physical_max')
-        call_per_channel(_edflib.set_digital_maximum, 'digital_max')
-        call_per_channel(_edflib.set_digital_minimum, 'digital_min')
-        call_per_channel(_edflib.set_physical_minimum, 'physical_min')
-        call_per_channel(_edflib.set_label, 'label')
-        call_per_channel(_edflib.set_physical_dimension, 'dimension')
-        call_per_channel(_edflib.set_transducer, 'transducer', optional=True)
-        call_per_channel(_edflib.set_prefilter, 'prefilter', optional=True)
+        call_per_channel(set_samplefrequency, 'sample_rate')
+        call_per_channel(set_physical_maximum, 'physical_max')
+        call_per_channel(set_digital_maximum, 'digital_max')
+        call_per_channel(set_digital_minimum, 'digital_min')
+        call_per_channel(set_physical_minimum, 'physical_min')
+        call_per_channel(set_label, 'label')
+        call_per_channel(set_physical_dimension, 'dimension')
+        call_per_channel(set_transducer, 'transducer', optional=True)
+        call_per_channel(set_prefilter, 'prefilter', optional=True)
 
     def _flush_samples(self):
         for c in self.channels: 
             buf = np.array(self.sample_buffer[c], dtype='int16')
-            _edflib.write_digital_samples(self.handle, buf)
+            write_digital_samples(self.handle, buf)
             self.sample_buffer[c] = []
 
