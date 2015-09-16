@@ -27,8 +27,8 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
 # data.shape = numSamples, numRows
     if seconds:
         t = seconds * np.arange(numSamples, dtype=float)/numSamples
-#import pdb
-#pdb.set_trace()
+# import pdb
+# pdb.set_trace()
         if start_time:
             t = t+start_time
             xlm = (start_time, start_time+seconds)
@@ -67,12 +67,13 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
 
     # set the yticks to use axes coords on the y axis
     ax.set_yticks(ticklocs)
-    #ax.set_yticklabels(['PG3', 'PG5', 'PG7', 'PG9'])
+    # ax.set_yticklabels(['PG3', 'PG5', 'PG7', 'PG9'])
     if not ylabels:
         ylabels = ["%d" % ii for ii in range(numRows)]
     ax.set_yticklabels(ylabels)
 
     xlabel('time (s)')
+
 
 def test_stacklineplot():
     numSamples, numRows = 800, 5

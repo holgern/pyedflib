@@ -78,9 +78,10 @@ class EdfWriter(object):
 
     def _init_channels(self, channels):
         hdl = self.handle
+
         def call_per_channel(fn, name, optional=False):
             for i,c in enumerate(channels):
-                if optional and  not (name in c):
+                if optional and not (name in c):
                     continue
                 fn(hdl, i, c.pop(name))
 
