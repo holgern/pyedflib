@@ -57,3 +57,5 @@ before_install:
 
 script:
   - python -u $OPTIMIZE runtests.py -g -m full --coverage
+after_success:
+  - coveralls

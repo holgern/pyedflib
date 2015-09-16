@@ -1,3 +1,10 @@
 [run]
-branch = True
-include = */pyedflib/*
+omit = 
+    __init__.py
+    */pyedflib/*
+    */pyedflib/tests/*
+[report]
+omit = 
+    __init__.py 
+    */pyedflib/* 
+    */pyedflib/tests/*
