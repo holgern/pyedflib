@@ -20,7 +20,7 @@ Examples::
 #
 
 PROJECT_MODULE = "pyedflib"
-PROJECT_ROOT_FILES = ['pyedflib', 'COPYING.txt', 'setup.py']
+PROJECT_ROOT_FILES = ['pyedflib', 'README-edflib.txt', 'setup.py']
 SAMPLE_TEST = "pyedflib/tests/test_modes.py:test_default_mode"
 SAMPLE_SUBMODULE = "_tools"
 

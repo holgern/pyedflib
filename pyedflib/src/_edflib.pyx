@@ -3,7 +3,7 @@
 # Copyright (c) 2015 Holger Nahrstaedt
 
 __doc__ = """Pyrex wrapper for low-level C edflib implementation."""
-__all__ = ['check_open_ok', 'lib_version', 'CyEdfReader', 'set_patientcode', 
+__all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 
            'write_annotation_latin1', 'set_technician', 'EdfAnnotation',
            'get_annotation', 'read_int_samples', 'blockwrite_digital_samples', 'blockwrite_physical_samples',
            'set_recording_additional', 'write_physical_samples' ,'set_patientname', 'set_physical_minimum', 
@@ -38,12 +38,7 @@ FILETYPE_EDFPLUS = EDFLIB_FILETYPE_EDFPLUS
 FILETYPE_BDF = EDFLIB_FILETYPE_BDF
 FILETYPE_BDFPLUS = EDFLIB_FILETYPE_BDFPLUS
                                                 
-def check_open_ok(result):
-    if result == 0:
-        return True
-    else:
-        raise IOError, open_errors[result]
-        return False
+
 
 
 def lib_version():
@@ -76,7 +71,14 @@ cdef class CyEdfReader:
     def __dealloc__(self):
         if self.hdr.handle:
             edfclose_file(self.hdr.handle)
-
+            
+    def check_open_ok(self,result):
+        if result == 0:
+            return True
+        else:
+            raise IOError, open_errors[result]
+            return False
+            
     def make_buffer(self):
         """
         utilty function to make a buffer that can hold a single datarecord. This will
@@ -95,7 +97,8 @@ cdef class CyEdfReader:
     
     def open(self, file_name, mode='r', annotations_mode='all'):
         result = edfopen_file_readonly(file_name, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
-        return check_open_ok(result)
+        self.file_name = file_name
+        return self.check_open_ok(result)
 
     def read_annotation(self):
         cdef edf_annotation_struct annot
@@ -119,6 +122,8 @@ cdef class CyEdfReader:
         "number of data records"
         def __get__(self):
             return self.hdr.datarecords_in_file
+            
+
 
     property signals_in_file:
         def __get__(self):
@@ -445,52 +450,3 @@ def set_datarecord_duration(handle, duration):
     """int edf_set_datarecord_duration(int handle, int duration)"""
     return edf_set_datarecord_duration(handle, duration)
 
-## old test function ###
-
-
-def test1_edfopen():
-    print "hi"
-    # based upon main.c
-    cdef:
-        int i, hdl, channel, n
-        double *buf
-        edf_hdr_struct hdr
-        np.ndarray[np.float64_t, ndim=1] carr 
-        
-    result = edfopen_file_readonly("test_generator.edf", &hdr, EDFLIB_READ_ALL_ANNOTATIONS)
-    print "result:", result
-    check_open_ok(result)
-    hdl = hdr.handle
-    print "hdr.edfsignals", hdr.edfsignals
-
-    print "edflib_version:", edflib_version()
-    print "hdr.filetype", hdr.filetype
-    print "hdr.file_duration / EDFLIB_TIME_DIMENSION", hdr.file_duration / EDFLIB_TIME_DIMENSION
-    print hdr.startdate_day, hdr.startdate_month, hdr.startdate_year
-    print hdr.recording
-    print "hdr.datarecords_in_file", hdr.datarecords_in_file
-    print "hdr.annotations_in_file", hdr.annotations_in_file
-
-    array_list = []
-    N = 200
-    for channel in range(hdr.edfsignals):
-        print channel
-        print "hdr.signalparam[channel].label",hdr.signalparam[channel].label
-        print "hdr.signalparam[channel].smp_in_file", hdr.signalparam[channel].smp_in_file
-        print "hdr.signalparam[channel].smp_in_datarecord / <double>hdr.datarecord_duration) * EDFLIB_TIME_DIMENSION", (hdr.signalparam[channel].smp_in_datarecord / <double>hdr.datarecord_duration) * EDFLIB_TIME_DIMENSION
-
-        #print "annot.onset / EDFLIB_TIME_DIMENSION",annot.onset / EDFLIB_TIME_DIMENSION,
-        # print "annot.duration", annot.duration,
-
-        x = 10 # start reading x seconds from start
-        edfseek(hdl, channel, <long long>(((<double>x) / (<double>hdr.file_duration / <double>EDFLIB_TIME_DIMENSION)) * (<double>hdr.signalparam[channel].smp_in_file)), EDFSEEK_SET)
-
-        n = N
-        print "data[%d]:" % N
-        arr = np.zeros(N, dtype='float64')
-        carr = arr
-        n = edfread_physical_samples(hdl, channel, n, <double*>carr.data);
-        #arr = carr.copy() # hmm
-        array_list.append(arr)
-        print carr
-    return array_list

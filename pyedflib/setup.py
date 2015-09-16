@@ -13,7 +13,6 @@ def configuration(parent_package='', top_path=None):
     sources = ["_edflib", "edflib"]
     headers = ["edflib"]
 
-
     # add main PyEDFlib module
     config.add_extension(
         '_edflib',
@@ -26,7 +25,6 @@ def configuration(parent_package='', top_path=None):
 
     config.make_config_py()
     return config
-
 
 if __name__ == '__main__':
     from numpy.distutils.core import setup
