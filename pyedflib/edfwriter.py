@@ -12,16 +12,17 @@ from ._edflib import *
 
 
 class EdfWriter(object):
-    def __init__(self, file_name, channel_info, file_type=FILETYPE_EDFPLUS, **kwargs):
-        '''Initialises an EDF file at @file_name. 
-        @file_type is one of 
+    def __init__(self, file_name, channel_info,
+                 file_type=FILETYPE_EDFPLUS, **kwargs):
+        '''Initialises an EDF file at @file_name.
+        @file_type is one of
             edflib.FILETYPE_EDF
             edflib.FILETYPE_EDFPLUS
             edflib.FILETYPE_BDF
             edflib.FILETYPE_BDFPLUS
 
-        @channel_info should be a 
-        list of dicts, one for each channel in the data. Each dict needs 
+        @channel_info should be a
+        list of dicts, one for each channel in the data. Each dict needs
         these values:
 
             'label' : channel label (string, <= 16 characters, must be unique)
