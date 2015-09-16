@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     sigbufs = np.zeros((n, f.getNSamples()[0]))
     for i in np.arange(n):
-        sigbufs[i, :]=f.readSignal(i)
+        sigbufs[i, :] = f.readSignal(i)
 
     f._close()
     del f
