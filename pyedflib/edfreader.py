@@ -19,7 +19,7 @@ class EdfReader(CyEdfReader):
 
     def getNSamples(self):
         return np.array([self.samples_in_file(chn)
-                         for chn in np.range(self.signals_in_file)])
+                         for chn in np.arange(self.signals_in_file)])
 
     def readAnnotations(self):
         annot = self.read_annotation()
@@ -33,11 +33,11 @@ class EdfReader(CyEdfReader):
 
     def getSignalFreqs(self):
         return np.array([self.samplefrequency(chn)
-                         for chn in np.range(self.signals_in_file)])
+                         for chn in np.arange(self.signals_in_file)])
 
     def getSignalTextLabels(self):
-        return  [self.signal_label(chn).strip()
-                 for chn in np.range(self.signals_in_file)]
+        return [self.signal_label(chn).strip()
+                 for chn in np.arange(self.signals_in_file)]
 
     def readSignal(self, chn):
 
@@ -57,7 +57,7 @@ class EdfReader(CyEdfReader):
 
     def file_info_long(self):
         self.file_info()
-        for ii in np.range(self.signals_in_file):
+        for ii in np.arange(self.signals_in_file):
             print("label:", self.getSignalTextLabels()[ii], "fs:",
                   self.getSignalFreqs()[ii], "nsamples",
                   self.getNSamples()[ii])

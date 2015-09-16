@@ -26,7 +26,8 @@ class EdfWriter(object):
         these values:
 
             'label' : channel label (string, <= 16 characters, must be unique)
-            'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
+            'dimension' : physical dimension (e.g., mV) 
+                                  (string, <= 8 characters)
             'sample_rate' : sample frequency in hertz (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -41,13 +42,13 @@ class EdfWriter(object):
             if c['label'] in self.channels:
                 raise ChannelLabelExists(c['label'])
             self.channels[c['label']] = c
-        self.sample_buffer = dict([(c['label'],[]) for c in channel_info])
+        self.sample_buffer = dict([(c['label'], []) for c in channel_info])
         self.handle = open_file_writeonly(file_name, file_type, self.n_channels)
         self._init_constants(**kwargs)
         self._init_channels(channel_info)
 
     def write_sample(self, channel_label, sample):
-        '''Queues a digital sample for @channel_label for recording; the data won't 
+        '''Queues a digital sample for @channel_label for recording; the data won't
         actually be written until one second's worth of data has been queued.'''
         if channel_label not in self.channels:
             raise ChannelDoesNotExist(channel_label)
