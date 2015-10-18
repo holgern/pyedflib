@@ -65,7 +65,7 @@ class EdfReader(CyEdfReader):
             return self.signal_label(chn).rstrip()
         else:
             return b''
-        
+
     def getPrefilter(self,chn):
         """
         Returns the prefilter of signal chn ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
