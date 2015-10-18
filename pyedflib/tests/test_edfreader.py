@@ -11,13 +11,13 @@ import unittest
 import pyedflib
 
 
-class PLATest(unittest.TestCase):
+class EdfReaderTest(unittest.TestCase):
     def setUp(self):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
 
     def test_EdfReader(self):
-        f = pyedflib.edfreader.EdfReader(self.edf_data_file)
+        f = pyedflib.EdfReader(self.edf_data_file)
         ann_index, ann_duration, ann_text = f.readAnnotations()
         self.assertAlmostEqual(ann_index[0], 0)
         self.assertAlmostEqual(ann_index[1], 600)
@@ -33,7 +33,7 @@ class PLATest(unittest.TestCase):
         del f
 
     def test_EdfReader_headerInfos(self):
-        f = pyedflib.edfreader.EdfReader(self.edf_data_file)
+        f = pyedflib.EdfReader(self.edf_data_file)
         self.assertEqual(f.startdate_day, 4)
         self.assertEqual(f.startdate_month, 4)
         self.assertEqual(f.startdate_year, 2011)
@@ -52,7 +52,7 @@ class PLATest(unittest.TestCase):
         del f
 
     def test_EdfReader_signalInfos(self):
-        f = pyedflib.edfreader.EdfReader(self.edf_data_file)
+        f = pyedflib.EdfReader(self.edf_data_file)
         self.assertEqual(f.getSignalLabels()[0], b'squarewave')
         self.assertEqual(f.getLabel(0), b'squarewave')
         self.assertEqual(f.getPhysicalDimension(0), b'uV')
