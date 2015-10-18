@@ -37,7 +37,7 @@ class EdfReader(CyEdfReader):
     def getSignalFrequencies(self):
         """
         Returns  samplefrequencies of all signals.
-        """        
+        """
         return np.array([round(self.samplefrequency(chn))
                          for chn in np.arange(self.signals_in_file)])
 
@@ -65,6 +65,7 @@ class EdfReader(CyEdfReader):
             return self.signal_label(chn).rstrip()
         else:
             return b''
+        
     def getPrefilter(self,chn):
         """
         Returns the prefilter of signal chn ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
@@ -90,7 +91,7 @@ class EdfReader(CyEdfReader):
         if (chn >= 0 and chn < self.signals_in_file):
             return self.physical_dimension(chn).rstrip()
         else:
-            return b''    
+            return b''
 
     def readSignal(self, chn):
 
