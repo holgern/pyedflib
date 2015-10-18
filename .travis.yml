@@ -12,7 +12,6 @@ matrix:
       before_install:
         - pip install pep8==1.5.1
         - pip install pyflakes
-        - pip install coverage
       script:
         - PYFLAKES_NODOCTEST=1 pyflakes pyedflib demo | grep -E -v 'unable to detect undefined names|assigned to but never used|imported but unused|redefinition of unused' > test.out; cat test.out; test \! -s test.out
         - pep8 pyedflib demo
@@ -53,6 +52,7 @@ before_install:
   - travis_retry pip install $NUMPYSPEC
   - travis_retry pip install nose
   - pip install coverage
+  - pip install coveralls
   - python -V
   - set -o pipefail
 
