@@ -22,6 +22,9 @@ class EdfReader(CyEdfReader):
                          for chn in np.arange(self.signals_in_file)])
 
     def readAnnotations(self):
+        """
+        Annotations from a edf-file
+        """
         annot = self.read_annotation()
         annot = np.array(annot)
         ann_time = annot[:, 0]
@@ -31,14 +34,63 @@ class EdfReader(CyEdfReader):
         ann_duration = ann_duration.astype(np.float)
         return ann_time, ann_duration, ann_text
 
-    def getSignalFreqs(self):
-        return np.array([self.samplefrequency(chn)
+    def getSignalFrequencies(self):
+        """
+        Returns  samplefrequencies of all signals.
+        """        
+        return np.array([round(self.samplefrequency(chn))
                          for chn in np.arange(self.signals_in_file)])
-
-    def getSignalTextLabels(self):
+    def getSampleFrequency(self,chn):
+        """
+        Returns the samplefrequency of signal edfsignal.
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return round(self.samplefrequency(chn))
+        else:
+            return 0
+        
+    def getSignalLabels(self):
+        """
+        Returns all labels (name) ("FP1", "SaO2", etc.).
+        """
         return [self.signal_label(chn).strip()
                  for chn in np.arange(self.signals_in_file)]
-
+    
+    def getLabel(self,chn):
+        """
+        Returns the label (name) of signal chn ("FP1", "SaO2", etc.).
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.signal_label(chn).rstrip()
+        else:
+            return b''
+    def getPrefilter(self,chn):
+        """
+        Returns the prefilter of signal chn ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.prefilter(chn).rstrip()
+        else:
+            return b''
+        
+    def getTransducer(self,chn):
+        """
+        Returns the transducer of signal chn ("AgAgCl cup electrodes", etc.).
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.transducer(chn).rstrip()
+        else:
+            return b''
+        
+    def getPhysicalDimension(self,chn):
+        """
+        Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.physical_dimension(chn).rstrip()
+        else:
+            return b''    
+        
     def readSignal(self, chn):
 
         nsamples = self.getNSamples()
