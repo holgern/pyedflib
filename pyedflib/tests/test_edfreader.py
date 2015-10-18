@@ -9,19 +9,18 @@ import numpy as np
 import sys
 import unittest
 import pyedflib
-		
+
 class PLATest(unittest.TestCase):
     def setUp(self):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
-        
 
     def test_EdfReader(self):
         f = pyedflib.edfreader.EdfReader(self.edf_data_file)
         ann_index, ann_duration, ann_text = f.readAnnotations()
         self.assertAlmostEqual(ann_index[0], 0)
         self.assertAlmostEqual(ann_index[1], 600)
-    
+
         self.assertEqual(f.signals_in_file, 11)
         self.assertEqual(f.datarecords_in_file, 600)
 
@@ -31,6 +30,7 @@ class PLATest(unittest.TestCase):
 
         f._close()
         del f
+
     def test_EdfReader_headerInfos(self):
         f = pyedflib.edfreader.EdfReader(self.edf_data_file)
         self.assertEqual(f.startdate_day,4)
@@ -49,6 +49,7 @@ class PLATest(unittest.TestCase):
         self.assertEqual(f.recording_additional.rstrip(),b'unit test file')
         f._close()
         del f        
+
     def test_EdfReader_signalInfos(self):
         f = pyedflib.edfreader.EdfReader(self.edf_data_file)
         self.assertEqual(f.getSignalLabels()[0], b'squarewave')
@@ -58,14 +59,15 @@ class PLATest(unittest.TestCase):
         self.assertEqual(f.getTransducer(0),b'trans1')
         self.assertEqual(f.getSampleFrequency(0),200)
         self.assertEqual(f.getSignalFrequencies()[0],200)
-        
+
         self.assertEqual(f.getSignalLabels()[1], b'ramp')
         self.assertEqual(f.getSignalLabels()[2], b'pulse')
         self.assertEqual(f.getSignalLabels()[3], b'noise')
         self.assertEqual(f.getSignalLabels()[4], b'sine 1 Hz')
         self.assertEqual(f.getSignalLabels()[5], b'sine 8 Hz')        
         f._close()
-        del f        
+        del f     
+
 if __name__ == '__main__':
-    #run_module_suite(argv=sys.argv)
+    # run_module_suite(argv=sys.argv)
     unittest.main()

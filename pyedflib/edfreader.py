@@ -40,6 +40,7 @@ class EdfReader(CyEdfReader):
         """        
         return np.array([round(self.samplefrequency(chn))
                          for chn in np.arange(self.signals_in_file)])
+
     def getSampleFrequency(self,chn):
         """
         Returns the samplefrequency of signal edfsignal.
@@ -48,14 +49,14 @@ class EdfReader(CyEdfReader):
             return round(self.samplefrequency(chn))
         else:
             return 0
-        
+
     def getSignalLabels(self):
         """
         Returns all labels (name) ("FP1", "SaO2", etc.).
         """
         return [self.signal_label(chn).strip()
-                 for chn in np.arange(self.signals_in_file)]
-    
+                for chn in np.arange(self.signals_in_file)]
+
     def getLabel(self,chn):
         """
         Returns the label (name) of signal chn ("FP1", "SaO2", etc.).
@@ -72,7 +73,7 @@ class EdfReader(CyEdfReader):
             return self.prefilter(chn).rstrip()
         else:
             return b''
-        
+
     def getTransducer(self,chn):
         """
         Returns the transducer of signal chn ("AgAgCl cup electrodes", etc.).
@@ -81,7 +82,7 @@ class EdfReader(CyEdfReader):
             return self.transducer(chn).rstrip()
         else:
             return b''
-        
+
     def getPhysicalDimension(self,chn):
         """
         Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
@@ -90,7 +91,7 @@ class EdfReader(CyEdfReader):
             return self.physical_dimension(chn).rstrip()
         else:
             return b''    
-        
+
     def readSignal(self, chn):
 
         nsamples = self.getNSamples()
