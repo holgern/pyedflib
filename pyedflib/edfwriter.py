@@ -113,7 +113,7 @@ class EdfWriter(object):
             'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
         """
         if (edfsignal < 0 or edfsignal > self.n_channels):
-            raise ChannelDoesNotExist(edfsignal)        
+            raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal] = channel_info
         self.update_header()
 
