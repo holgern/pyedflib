@@ -38,7 +38,7 @@ class EdfWriterTest(unittest.TestCase):
         np.testing.assert_equal(f.getPhysicalDimension(0), b'mV')
         np.testing.assert_equal(f.getPrefilter(0), b'pre1')
         np.testing.assert_equal(f.getTransducer(0), b'trans1')
-        np.testing.assert_equal(f.getSampleFrequency(0), 100) 
+        np.testing.assert_equal(f.getSampleFrequency(0), 100)
         f._close()
         del f
 
