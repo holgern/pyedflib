@@ -19,6 +19,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
 cimport cpython
 import numpy as np
 cimport numpy as np
+from datetime import datetime, date
 
 include "edf.pxi"
 
@@ -77,7 +78,7 @@ cdef class CyEdfReader:
             return True
         else:
             raise IOError, open_errors[result]
-            return False
+            # return False
             
     def make_buffer(self):
         """
@@ -375,7 +376,6 @@ def set_patient_additional(handle, patient_additional):
 def set_digital_maximum(handle, edfsignal, dig_max):
     "int edf_set_digital_maximum(int handle, int edfsignal, int dig_max)"
     return edf_set_digital_maximum(handle, edfsignal, dig_max)
-
         
 # see CyEdfreader() class
 # int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations)
@@ -439,7 +439,7 @@ def seek(handle, edfsignal, offset, whence):
     return edfseek(handle, edfsignal, offset, whence)
 
 def set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
-                          starttime_hour, starttime_minute, starttime_second):
+                                 starttime_hour, starttime_minute, starttime_second):
     """int edf_set_startdatetime(int handle, int startdate_year, int startdate_month, int startdate_day,
                                       int starttime_hour, int starttime_minute, int starttime_second)"""
     return edf_set_startdatetime(handle, startdate_year, startdate_month, startdate_day,

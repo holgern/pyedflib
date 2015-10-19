@@ -11,9 +11,9 @@ from stacklineplot import stackplot
 
 
 if __name__ == '__main__':
-    f = pyedflib.edfreader.EdfReader("data/test_generator.edf")
+    f = pyedflib.EdfReader("data/test_generator.edf")
     n = f.signals_in_file
-    signal_labels = f.getSignalTextLabels()
+    signal_labels = f.getSignalLabels()
 
     sigbufs = np.zeros((n, f.getNSamples()[0]))
     for i in np.arange(n):
