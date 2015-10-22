@@ -23,4 +23,4 @@ if __name__ == '__main__':
     del f
     # stackplot(sigbufs,seconds=10.0, start_time=0.0, ylabels=signal_labels)
 
-    stackplot(sigbufs[:, :2000],  ylabels = signal_labels)
+    stackplot(sigbufs[:, :2000], ylabels=signal_labels)

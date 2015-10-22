@@ -4,12 +4,11 @@
 
 from __future__ import division, print_function, absolute_import
 
-__all__ = ['EdfWriter']
-
 import numpy as np
 from datetime import datetime, date
-
 from ._edflib import *
+
+__all__ = ['EdfWriter']
 
 
 class EdfWriter(object):
@@ -77,6 +76,7 @@ class EdfWriter(object):
         set_technician(self.handle, self.technician)
         set_recording_additional(self.handle, self.recording_additional)
         set_patientname(self.handle, self.patient_name)
+        set_patientcode(self.handle, self.patient_code)
         set_patient_additional(self.handle, self.patient_additional)
         set_equipment(self.handle, self.equipment)
         set_admincode(self.handle, self.admincode)
@@ -142,6 +142,15 @@ class EdfWriter(object):
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.patient_name = patient_name
+        self.update_header()
+
+    def setPatientCode(self,patient_code):
+        """
+        Sets the patientcode.
+
+        This function is optional and can be called only after opening a file in writemode and before the first sample write action.
+        """
+        self.patient_code = patient_code
         self.update_header()
 
     def setPatientAdditional(self,patient_additional):

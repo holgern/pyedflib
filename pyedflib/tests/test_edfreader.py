@@ -4,6 +4,7 @@ from __future__ import division, print_function, absolute_import
 
 import os
 import numpy as np
+from datetime import datetime, date
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import sys
@@ -11,7 +12,7 @@ import unittest
 import pyedflib
 
 
-class EdfReaderTest(unittest.TestCase):
+class TestEdfReader(unittest.TestCase):
     def setUp(self):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
@@ -34,20 +35,20 @@ class EdfReaderTest(unittest.TestCase):
 
     def test_EdfReader_headerInfos(self):
         f = pyedflib.EdfReader(self.edf_data_file)
-        np.testing.assert_equal(f.startdate_day, 4)
-        np.testing.assert_equal(f.startdate_month, 4)
-        np.testing.assert_equal(f.startdate_year, 2011)
-        np.testing.assert_equal(f.starttime_hour, 12)
-        np.testing.assert_equal(f.starttime_minute, 57)
-        np.testing.assert_equal(f.starttime_second, 2)
-        np.testing.assert_equal(f.patientcode.rstrip(), b'abcxyz99')
-        np.testing.assert_equal(f.patientname.rstrip(), b'Hans Muller')
-        np.testing.assert_equal(f.gender, b'Male')
-        np.testing.assert_equal(f.birthdate, b'30 jun 1969')
-        np.testing.assert_equal(f.patient_additional.rstrip(), b'patient')
-        np.testing.assert_equal(f.admincode.rstrip(), b'Dr. X')
-        np.testing.assert_equal(f.technician.rstrip(), b'Mr. Spotty')
-        np.testing.assert_equal(f.recording_additional.rstrip(), b'unit test file')
+
+        datetimeSoll = datetime(2011,4,4,12,57,2)
+        np.testing.assert_equal(f.getStartdatetime(),datetimeSoll)
+        np.testing.assert_equal(f.getPatientCode(), b'abcxyz99')
+        np.testing.assert_equal(f.getPatientName(), b'Hans Muller')
+        np.testing.assert_equal(f.getGender(), b'Male')
+        np.testing.assert_equal(f.getBirthdate(), b'30 jun 1969')
+        np.testing.assert_equal(f.getPatientAdditional(), b'patient')
+        np.testing.assert_equal(f.getAdmincode(), b'Dr. X')
+        np.testing.assert_equal(f.getTechnician(), b'Mr. Spotty')
+        np.testing.assert_equal(f.getRecordingAdditional(), b'unit test file')
+        np.testing.assert_equal(f.getFileDuration(), 600)
+        fileHeader = f.getHeader()
+        np.testing.assert_equal(fileHeader["patientname"], b'Hans Muller')
         f._close()
         del f
 

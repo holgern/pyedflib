@@ -11,7 +11,7 @@ import unittest
 import pyedflib
 
 
-class EdfWriterTest(unittest.TestCase):
+class TestEdfWriter(unittest.TestCase):
     def setUp(self):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')

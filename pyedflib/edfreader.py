@@ -3,11 +3,11 @@
 # Copyright (c) 2015 Chris Lee-Messer <https://bitbucket.org/cleemesser/>
 # Copyright (c) 2015 Holger Nahrstaedt
 from __future__ import division, print_function, absolute_import
+from ._edflib import *
+from datetime import datetime, date
+import numpy as np
 
 __all__ = ['EdfReader']
-
-from ._edflib import *
-import numpy as np
 
 
 class EdfReader(CyEdfReader):
@@ -33,6 +33,100 @@ class EdfReader(CyEdfReader):
         ann_time = ann_time.astype(np.float)
         ann_duration = ann_duration.astype(np.float)
         return ann_time, ann_duration, ann_text
+
+    def getHeader(self):
+        """
+        Returns the file header as dict
+        """
+        return {"technician": self.getTechnician(), "recording_additional": self.getRecordingAdditional(),
+                "patientname": self.getPatientName(), "patient_additional": self.getPatientAdditional(),
+                "patientcode": self.getPatientCode(), "equipment": self.getEquipment(),
+                "admincode": self.getAdmincode(), "gender": self.getGender(), "startdate": self.getStartdatetime(),
+                "birthdate": self.getBirthdate()}
+
+    def getSignalHeaders(self):
+        """
+        Returns the file header as dict
+        """
+        signalHeader = []
+        for chn in np.arange(self.n_channels):
+            signalHeader.append({'label': self.getLabel(chn),
+                                 'dimension': self.getPhysicalDimension(chn),
+                                 'sample_rate': self.getSampleFrequency(chn),
+                                 'physical_max':self.getPhysicialMaximum(chn),
+                                 'physical_min': self.getPhysicialMinimum(chn),
+                                 'digital_max': self.getDigitalMaximum(chn),
+                                 'digital_min': self.getDigitalMinimum(chn),
+                                 'prefilter':self.getPrefilter(chn),
+                                 'transducer': self.getTransducer(chn)})
+        return signalHeader
+
+    def getTechnician(self):
+        """
+        Returns the technicians name
+        """
+        return self.technician.rstrip()
+
+    def getRecordingAdditional(self):
+        """
+        Returns the additional recordinginfo
+        """
+        return self.recording_additional.rstrip()
+
+    def getPatientName(self):
+        """
+        Returns the patientname
+        """
+        return self.patientname.rstrip()
+
+    def getPatientCode(self):
+        """
+        Returns the patientcode
+        """
+        return self.patientcode.rstrip()
+
+    def getPatientAdditional(self):
+        """
+        Returns the additional patientinfo.
+        """
+        return self.patient_additional.rstrip()
+
+    def getEquipment(self):
+        """
+        Returns the used Equipment.
+        """
+        return self.equipment.rstrip()
+
+    def getAdmincode(self):
+        """
+        Returns the Admincode.
+        """
+        return self.admincode.rstrip()
+
+    def getGender(self):
+        """
+        Returns the Gender of the patient.
+        """
+        return self.gender.rstrip()
+
+    def getFileDuration(self):
+        """
+        Returns the duration of the file in seconds.
+        """
+        return self.file_duration
+
+    def getStartdatetime(self):
+        """
+        Returns the date and starttime as datetime object
+        """
+        return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
+                                 self.starttime_hour, self.starttime_minute, self.starttime_second)
+
+    def getBirthdate(self):
+        """
+        Returns the birthdate as string object
+        """
+        return self.birthdate.rstrip()
 
     def getSignalFrequencies(self):
         """
@@ -74,6 +168,42 @@ class EdfReader(CyEdfReader):
             return self.prefilter(chn).rstrip()
         else:
             return b''
+
+    def getPhysicialMaximum(self,chn):
+        """
+        Returns the maximum physical value of signal edfsignal.
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.physical_max(chn)
+        else:
+            return 0
+
+    def getPhysicialMinimum(self,chn):
+        """
+        Returns the minimum physical value of signal edfsignal.
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.physical_min(chn)
+        else:
+            return 0
+
+    def getDigitalMaximum(self,chn):
+        """
+        Returns the maximum digital value of signal edfsignal.
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.digital_max(chn)
+        else:
+            return 0
+
+    def getDigitalMinimum(self,chn):
+        """
+        Returns the minimum digital value of signal edfsignal.
+        """
+        if (chn >= 0 and chn < self.signals_in_file):
+            return self.digital_min(chn)
+        else:
+            return 0
 
     def getTransducer(self,chn):
         """

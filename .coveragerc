@@ -1,5 +1,4 @@
 [run]
-plugins = Cython.Coverage
 include = 
     */pyedflib/*
 omit = 
