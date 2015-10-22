@@ -17,8 +17,7 @@ def configuration(parent_package='', top_path=None):
     config.add_extension(
         '_edflib',
         sources=["src/{0}.c".format(s) for s in sources],
-        depends=(["src/{0}.h".format(s) for s in headers]
-                 + ["src/{0}.h".format(s) for s in sources]),
+        depends=(["src/{0}.h".format(s) for s in headers] + ["src/{0}.h".format(s) for s in sources]),
         include_dirs=["src", np.get_include()],
         define_macros=[("PY_EXTENSION", None)],
     )
