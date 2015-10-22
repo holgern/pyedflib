@@ -58,7 +58,7 @@ before_install:
 
 script:
   # - python -u $OPTIMIZE runtests.py -g -m full --coverage
-  - python -u $OPTIMIZE runtests.py -g -v --build-only
+  - python setup.py build_ext --inplace
   - nosetests -v --with-coverage
 after_success:
   - coveralls
