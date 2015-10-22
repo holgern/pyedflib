@@ -3,6 +3,9 @@ include =
     */pyedflib/*
 omit = 
     */version.py
+    */setup.py
+    */__init__.py
+    */util/*
 
 [report]
 exclude_lines =
