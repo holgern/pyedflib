@@ -20,7 +20,7 @@ cimport cpython
 import numpy as np
 cimport numpy as np
 from datetime import datetime, date
-
+from cpython.version cimport PY_MAJOR_VERSION
 include "edf.pxi"
 
 open_errors = {
@@ -295,6 +295,32 @@ cdef class CyEdfReader:
 ###############################    
 # low level functions
 
+
+
+cdef unicode _ustring(s):
+    if type(s) is unicode:
+        # fast path for most common case(s)
+        return <unicode>s
+    elif PY_MAJOR_VERSION < 3 and isinstance(s, bytes):
+        # only accept byte strings in Python 2.x, not in Py3
+        return (<bytes>s).decode('ascii')
+    elif isinstance(s, unicode):
+        # an evil cast to <unicode> might work here in some(!) cases,
+        # depending on what the further processing does.  to be safe,
+        # we can always create a copy instead
+        return unicode(s)
+    else:
+        raise TypeError(...)
+        
+# define a global name for whatever char type is used in the module
+ctypedef unsigned char char_type
+
+cdef char_type[:] _chars(s):
+    if isinstance(s, unicode):
+        # encode to the specific encoding used inside of the module
+        s = (<unicode>s).encode('utf8')
+    return s
+
 def set_patientcode(int handle, char *patientcode):
     # check if rw?
     return edf_set_patientcode(handle, patientcode)
@@ -367,7 +393,7 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
-    return edfopen_file_writeonly(path, filetype, number_of_signals)
+    return edfopen_file_writeonly(path.encode('UTF-8'), filetype, number_of_signals)
     
 def set_patient_additional(handle, patient_additional):
     """int edf_set_patient_additional(int handle, const char *patient_additional)"""

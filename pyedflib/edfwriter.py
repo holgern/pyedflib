@@ -55,7 +55,7 @@ class EdfWriter(object):
         self.channels = []
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
-            if (file_type == FILETYPE_EDFPLUS or file_type == FILETYPE_BDFPLUS):
+            if (self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_BDFPLUS):
                 self.channels.append({'label':'test_label', 'dimension':'mV', 'sample_rate':100,
                              'physical_max':1.0,'physical_min':-1.0,
                              'digital_max':8388607,'digital_min':-8388608,
@@ -67,7 +67,7 @@ class EdfWriter(object):
                              'prefilter':'pre1','transducer':'trans1'})
 
                 self.sample_buffer.append([])
-        self.handle = open_file_writeonly(file_name, file_type, self.n_channels)
+        self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
 
     def update_header(self):
         """
