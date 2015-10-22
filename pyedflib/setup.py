@@ -10,14 +10,14 @@ def configuration(parent_package='', top_path=None):
 
     config.add_data_dir('tests')
 
-    sources = ["_edflib", "edflib"]
+    sources = ["_pyedflib", "edflib"]
     headers = ["edflib"]
 
     # add main PyEDFlib module
     config.add_extension(
-        '_edflib',
+        '_pyedflib',
         sources=["src/{0}.c".format(s) for s in sources],
-        depends=(["src/{0}.h".format(s) for s in headers] + ["src/{0}.h".format(s) for s in sources]),
+        depends=["src/{0}.h".format(s) for s in headers],
         include_dirs=["src", np.get_include()],
         define_macros=[("PY_EXTENSION", None)],
     )

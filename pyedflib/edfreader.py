@@ -3,10 +3,9 @@
 # Copyright (c) 2015 Chris Lee-Messer <https://bitbucket.org/cleemesser/>
 # Copyright (c) 2015 Holger Nahrstaedt
 from __future__ import division, print_function, absolute_import
-from ._edflib import *
 from datetime import datetime, date
 import numpy as np
-
+from ._pyedflib import CyEdfReader
 __all__ = ['EdfReader']
 
 

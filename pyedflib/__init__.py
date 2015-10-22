@@ -1,8 +1,8 @@
 from __future__ import division, print_function, absolute_import
 
+from ._pyedflib import *
 from .edfwriter import *
 from .edfreader import *
-from ._edflib import *
 
 from pyedflib.version import version as __version__
 

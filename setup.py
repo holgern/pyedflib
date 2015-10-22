@@ -100,16 +100,6 @@ if sys.platform == "darwin":
 setup_args = {}
 
 
-def expand_src_templates():
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    print("Expanding templates")
-    p = subprocess.call([sys.executable,
-                          os.path.join(cwd, 'util', 'templating_src.py'),
-                          'pywt'],
-                         cwd=cwd)
-    if p != 0:
-        raise RuntimeError("Expanding templates failed!")
-
 
 def generate_cython():
     cwd = os.path.abspath(os.path.dirname(__file__))

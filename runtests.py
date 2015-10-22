@@ -21,7 +21,7 @@ Examples::
 
 PROJECT_MODULE = "pyedflib"
 PROJECT_ROOT_FILES = ['pyedflib', 'README-edflib.txt', 'setup.py']
-SAMPLE_TEST = "pyedflib/tests/test_modes.py:test_default_mode"
+SAMPLE_TEST = "pyedflib/tests/test_edfreader.py:test_default_mode"
 SAMPLE_SUBMODULE = "_tools"
 
 EXTRA_PATH = ['/usr/lib/ccache', '/usr/lib/f90cache',

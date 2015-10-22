@@ -55,7 +55,7 @@ def process_pyx(fromfile, tofile):
         from Cython.Compiler.Version import version as cython_version
         from distutils.version import LooseVersion
         if LooseVersion(cython_version) < LooseVersion('0.17'):
-            raise Exception('Building PyWavelets requires Cython >= 0.17')
+            raise Exception('Building PyEDFlib requires Cython >= 0.17')
 
     except ImportError:
         pass

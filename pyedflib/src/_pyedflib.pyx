@@ -15,7 +15,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
            'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS']
 
 
-
+from c_edf cimport *
 cimport cpython
 import numpy as np
 cimport numpy as np
