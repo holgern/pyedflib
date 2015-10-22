@@ -73,13 +73,13 @@ class EdfWriter(object):
         """
         Updates header to edffile struct
         """
-        set_technician(self.handle, self.technician)
-        set_recording_additional(self.handle, self.recording_additional)
-        set_patientname(self.handle, self.patient_name)
-        set_patientcode(self.handle, self.patient_code)
-        set_patient_additional(self.handle, self.patient_additional)
-        set_equipment(self.handle, self.equipment)
-        set_admincode(self.handle, self.admincode)
+        set_technician(self.handle, self.technician.encode('UTF-8'))
+        set_recording_additional(self.handle, self.recording_additional.encode('UTF-8'))
+        set_patientname(self.handle, self.patient_name.encode('UTF-8'))
+        set_patientcode(self.handle, self.patient_code.encode('UTF-8'))
+        set_patient_additional(self.handle, self.patient_additional.encode('UTF-8'))
+        set_equipment(self.handle, self.equipment.encode('UTF-8'))
+        set_admincode(self.handle, self.admincode.encode('UTF-8'))
         set_gender(self.handle, self.gender)
         set_datarecord_duration(self.handle, self.duration)
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
@@ -92,10 +92,10 @@ class EdfWriter(object):
             set_physical_minimum(self.handle,i,self.channels[i]['physical_min'])
             set_digital_maximum(self.handle,i,self.channels[i]['digital_max'])
             set_digital_minimum(self.handle,i,self.channels[i]['digital_min'])
-            set_label(self.handle,i,self.channels[i]['label'])
-            set_physical_dimension(self.handle,i,self.channels[i]['dimension'])
-            set_transducer(self.handle,i,self.channels[i]['transducer'])
-            set_prefilter(self.handle,i,self.channels[i]['prefilter'])
+            set_label(self.handle,i,self.channels[i]['label'].encode('UTF-8'))
+            set_physical_dimension(self.handle,i,self.channels[i]['dimension'].encode('UTF-8'))
+            set_transducer(self.handle,i,self.channels[i]['transducer'].encode('UTF-8'))
+            set_prefilter(self.handle,i,self.channels[i]['prefilter'].encode('UTF-8'))
 
     def setChannelInfo(self,edfsignal,channel_info):
         """
