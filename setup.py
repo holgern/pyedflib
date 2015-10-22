@@ -162,7 +162,6 @@ def setup_package():
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
-        test_suite='nose.collector',
         cmdclass={},
         **setup_args
     )

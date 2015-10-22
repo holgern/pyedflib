@@ -7,8 +7,3 @@ omit =
 [report]
 exclude_lines =
     pragma: no cover
-omit = 
-    */version.py
-    */site-packages/nose/*
-    */python?.?/*
-    *__init__*
