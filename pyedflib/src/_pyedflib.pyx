@@ -4,7 +4,7 @@
 
 __doc__ = """Pyrex wrapper for low-level C edflib implementation."""
 __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 
-           'write_annotation_latin1', 'set_technician', 'EdfAnnotation',
+           'write_annotation_latin1', 'write_annotation_utf8', 'set_technician', 'EdfAnnotation',
            'get_annotation', 'read_int_samples', 'blockwrite_digital_samples', 'blockwrite_physical_samples',
            'set_recording_additional', 'write_physical_samples' ,'set_patientname', 'set_physical_minimum', 
            'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly', 
@@ -38,8 +38,6 @@ FILETYPE_EDF = EDFLIB_FILETYPE_EDF
 FILETYPE_EDFPLUS = EDFLIB_FILETYPE_EDFPLUS
 FILETYPE_BDF = EDFLIB_FILETYPE_BDF
 FILETYPE_BDFPLUS = EDFLIB_FILETYPE_BDFPLUS
-                                                
-
 
 
 def lib_version():
@@ -103,11 +101,11 @@ cdef class CyEdfReader:
 
     def read_annotation(self):
         cdef edf_annotation_struct annot
-        annotlist = [[0,'',''] for x in range(self.annotations_in_file)]
+        annotlist = [['','',''] for x in range(self.annotations_in_file)]
         for ii in range(self.annotations_in_file):
             edf_get_annotation(self.hdr.handle, ii, &(annot))
             #get_annotation(self.hdr.handle, ii, &annotation)
-            annotlist[ii][0] = annot.onset*0.0000001
+            annotlist[ii][0] = annot.onset
             annotlist[ii][1] = annot.duration
             annotlist[ii][2] = annot.annotation
         return annotlist
@@ -330,6 +328,8 @@ def set_patientcode(int handle, char *patientcode):
 cpdef int write_annotation_latin1(int handle, long long onset, long long duration, char *description):
         return edfwrite_annotation_latin1(handle, onset, duration, description)
 
+cpdef int write_annotation_utf8(int handle, long long onset, long long duration, char *description):
+        return edfwrite_annotation_utf8(handle, onset, duration, description)
 
 cpdef int set_technician(int handle, char *technician):
     return edf_set_technician(handle, technician)
@@ -372,7 +372,6 @@ cpdef int set_recording_additional(int handle, char *recording_additional):
 cpdef int write_physical_samples(int handle, np.ndarray[np.float64_t] buf):
     return edfwrite_physical_samples(handle, <double *>buf.data)
 
-    # int edfwrite_annotation_utf8(int, long long int, long long int, char *)
 
 cpdef int set_patientname(int handle, char *name):
     return edf_set_patientname(handle, name)

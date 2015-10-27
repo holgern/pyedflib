@@ -5,7 +5,7 @@
 from __future__ import division, print_function, absolute_import
 from datetime import datetime, date
 import numpy as np
-from ._pyedflib import CyEdfReader
+from ._pyedflib import *
 __all__ = ['EdfReader']
 
 
@@ -27,11 +27,13 @@ class EdfReader(CyEdfReader):
         annot = self.read_annotation()
         annot = np.array(annot)
         ann_time = annot[:, 0]
-        ann_duration = annot[:, 0]
         ann_text = annot[:, 2]
-        ann_time = ann_time.astype(np.float)
-        ann_duration = ann_duration.astype(np.float)
-        return ann_time, ann_duration, ann_text
+        ann_time = ann_time.astype(float)
+        for i in np.arange(len(annot[:, 1])):
+            if (annot[i, 1]==''):
+                annot[i, 1] = '-1'
+        ann_duration = annot[:, 1].astype(np.float)
+        return ann_time/10000000, ann_duration, ann_text
 
     def getHeader(self):
         """

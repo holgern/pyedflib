@@ -69,12 +69,13 @@ class TestEdfWriter(unittest.TestCase):
         f = pyedflib.EdfReader(self.bdf_data_file)
         data1_read = f.readSignal(0)
         data2_read = f.readSignal(1)
+        f._close()
+        del f        
         np.testing.assert_equal(len(data1), len(data1_read))
         np.testing.assert_equal(len(data2), len(data2_read))
         np.testing.assert_almost_equal(data1, data1_read)
         np.testing.assert_almost_equal(data2, data2_read)
-        f._close()
-        del f
+
 
     def test_AnnotationWriting(self):
         channel_info = {'label':'test_label', 'dimension':'mV', 'sample_rate':100,
@@ -86,25 +87,29 @@ class TestEdfWriter(unittest.TestCase):
         f.setSignalHeader(0,channel_info)
         data = np.ones(100) * 0.1
         f.writePhyisicalSamples(data)
+        f.writePhyisicalSamples(data)
+        f.writePhyisicalSamples(data)
+        f.writePhyisicalSamples(data)
         f.writeAnnotation(1.23,0.2,"annotation1")
-        f.writeAnnotation(0.25,0.1,"annotation2")
-        f.writeAnnotation(1.25,0,"äübßer")
+        f.writeAnnotation(0.25,-1,"annotation2")
+        f.writeAnnotation(1.25,0,"annotation3")
         f.close()
         del f
 
         f = pyedflib.EdfReader(self.bdf_data_file)
         ann_time, ann_duration, ann_text = f.readAnnotations()
+        f._close()
+        del f        
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
         np.testing.assert_equal(ann_text[0], b"annotation1")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
-        np.testing.assert_almost_equal(ann_duration[1], 0.1)
+        np.testing.assert_almost_equal(ann_duration[1], -1)
         np.testing.assert_equal(ann_text[1], b"annotation2")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"äübßer")
-        f._close()
-        del f
+        np.testing.assert_equal(ann_text[2], b"annotation3")
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
