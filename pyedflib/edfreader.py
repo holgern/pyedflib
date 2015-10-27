@@ -63,7 +63,7 @@ class EdfReader(CyEdfReader):
         """
         signalHeader = []
         for chn in np.arange(self.n_channels):
-            signalHeader.append(getSignalHeader(chn))
+            signalHeader.append(self.getSignalHeader(chn))
         return signalHeader
 
     def getTechnician(self):
