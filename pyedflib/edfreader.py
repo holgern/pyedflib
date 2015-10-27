@@ -30,7 +30,7 @@ class EdfReader(CyEdfReader):
         ann_text = annot[:, 2]
         ann_time = ann_time.astype(float)
         for i in np.arange(len(annot[:, 1])):
-            if (annot[i, 1]==''):
+            if (annot[i, 1] == ''):
                 annot[i, 1] = '-1'
         ann_duration = annot[:, 1].astype(np.float)
         return ann_time/10000000, ann_duration, ann_text
