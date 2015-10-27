@@ -80,12 +80,21 @@ class EdfWriter(object):
         set_patient_additional(self.handle, self.patient_additional.encode('UTF-8'))
         set_equipment(self.handle, self.equipment.encode('UTF-8'))
         set_admincode(self.handle, self.admincode.encode('UTF-8'))
-        set_gender(self.handle, self.gender)
+        if (isinstance(self.gender,int)):
+            set_gender(self.handle, self.gender)
+        elif(self.gender == "Male"):
+            set_gender(self.handle,0)
+        elif(self.gender == "Female"):
+            set_gender(self.handle,1)
+
         set_datarecord_duration(self.handle, self.duration)
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
-        set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
+        if (isinstance(self.birthdate, (str, unicode))):
+            set_birthdate(self.handle, 1,1,1900)
+        else:
+            set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
             set_samplefrequency(self.handle,i,self.channels[i]['sample_rate'])
             set_physical_maximum(self.handle,i,self.channels[i]['physical_max'])
@@ -97,7 +106,23 @@ class EdfWriter(object):
             set_transducer(self.handle,i,self.channels[i]['transducer'].encode('UTF-8'))
             set_prefilter(self.handle,i,self.channels[i]['prefilter'].encode('UTF-8'))
 
-    def setChannelInfo(self,edfsignal,channel_info):
+    def setHeader(self,fileHeader):
+        """
+        Sets the file header
+        """
+        self.technician = fileHeader["technician"]
+        self.recording_additional = fileHeader["recording_additional"]
+        self.patient_name = fileHeader["patientname"]
+        self.patient_additional = fileHeader["patient_additional"]
+        self.patient_code = fileHeader["patientcode"]
+        self.equipment = fileHeader["equipment"]
+        self.admincode = fileHeader["admincode"]
+        self.gender = fileHeader["gender"]
+        self.recording_start_time = fileHeader["startdate"]
+        self.birthdate = fileHeader["birthdate"]
+        self.update_header()
+
+    def setSignalHeader(self,edfsignal,channel_info):
         """
         Sets the parameter for signal edfsignal.
 
@@ -115,6 +140,25 @@ class EdfWriter(object):
         if (edfsignal < 0 or edfsignal > self.n_channels):
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal] = channel_info
+        self.update_header()
+
+    def setSignalHeaders(self,signalHeaders):
+        """
+        Sets the parameter for all signals
+
+        @signalHeaders should be a array of dicts with
+        these values:
+
+            'label' : channel label (string, <= 16 characters, must be unique)
+            'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
+            'sample_rate' : sample frequency in hertz (int)
+            'physical_max' : maximum physical value (float)
+            'physical_min' : minimum physical value (float)
+            'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
+            'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
+        """
+        for edfsignal in np.arange(self.n_channels):
+            self.channels[edfsignal] = signalHeaders[edfsignal]
         self.update_header()
 
     def setTechnician(self,technician):
@@ -342,6 +386,41 @@ class EdfWriter(object):
         All parameters must be already written into the bdf/edf-file.
         """
         write_physical_samples(self.handle, data)
+
+    def writeSamples(self,data_list):
+        """
+        Writes physical samples (uV, mA, Ohm) from data belonging to all signals
+        The physical samples will be converted to digital samples using the values
+        of physical maximum, physical minimum, digital maximum and digital minimum.
+        if the samplefrequency of all signals are equal, then the data could be
+        saved into a matrix with the size (N,signals) If the samplefrequency
+        is different, then sample_freq is a vector containing all the different
+        samplefrequencys. The data is saved as list. Each list entry contains
+        a vector with the data of one signal.
+
+        All parameters must be already written into the bdf/edf-file.
+        """
+
+        if (len(data_list) != len(self.channels)):
+            raise WrongInputSize(len(data_list))
+        ind = []
+        for i in np.arange(len(data_list)):
+            ind.append(0)
+        notAtEnd = True
+        while notAtEnd:
+            for i in np.arange(len(data_list)):
+                self.writePhyisicalSamples(data_list[i].flatten()[ind[i]:ind[i]+self.channels[i]['sample_rate']])
+                ind[i] += self.channels[i]['sample_rate']
+
+            for i in np.arange(len(data_list)):
+                if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+                    notAtEnd = False
+
+    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description):
+        """
+        Writes an annotation/event to the file
+        """
+        return write_annotation_latin1(self.handle, onset_in_seconds/0.0000001, duration_in_seconds/0.0000001, description.encode('UTF-8'))
 
     def close(self):
         """

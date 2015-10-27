@@ -27,7 +27,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.datarecords_in_file, 600)
 
         for i in np.arange(11):
-            np.testing.assert_almost_equal(f.getSignalFrequencies()[i], 200)
+            np.testing.assert_almost_equal(f.getSampleFrequencies()[i], 200)
             np.testing.assert_equal(f.getNSamples()[i], 120000)
 
         f._close()
@@ -60,7 +60,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getPrefilter(0), b'pre1')
         np.testing.assert_equal(f.getTransducer(0), b'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 200)
-        np.testing.assert_equal(f.getSignalFrequencies()[0], 200)
+        np.testing.assert_equal(f.getSampleFrequencies()[0], 200)
 
         np.testing.assert_equal(f.getSignalLabels()[1], b'ramp')
         np.testing.assert_equal(f.getSignalLabels()[2], b'pulse')

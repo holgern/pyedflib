@@ -43,13 +43,11 @@ class EdfReader(CyEdfReader):
                 "admincode": self.getAdmincode(), "gender": self.getGender(), "startdate": self.getStartdatetime(),
                 "birthdate": self.getBirthdate()}
 
-    def getSignalHeaders(self):
+    def getSignalHeader(self,chn):
         """
-        Returns the file header as dict
+        Returns the  header of one signal as  dicts
         """
-        signalHeader = []
-        for chn in np.arange(self.n_channels):
-            signalHeader.append({'label': self.getLabel(chn),
+        return {'label': self.getLabel(chn),
                                  'dimension': self.getPhysicalDimension(chn),
                                  'sample_rate': self.getSampleFrequency(chn),
                                  'physical_max':self.getPhysicialMaximum(chn),
@@ -57,7 +55,15 @@ class EdfReader(CyEdfReader):
                                  'digital_max': self.getDigitalMaximum(chn),
                                  'digital_min': self.getDigitalMinimum(chn),
                                  'prefilter':self.getPrefilter(chn),
-                                 'transducer': self.getTransducer(chn)})
+                                 'transducer': self.getTransducer(chn)}
+
+    def getSignalHeaders(self):
+        """
+        Returns the  header of all signals as array of dicts
+        """
+        signalHeader = []
+        for chn in np.arange(self.n_channels):
+            signalHeader.append(getSignalHeader(chn))
         return signalHeader
 
     def getTechnician(self):
@@ -127,7 +133,7 @@ class EdfReader(CyEdfReader):
         """
         return self.birthdate.rstrip()
 
-    def getSignalFrequencies(self):
+    def getSampleFrequencies(self):
         """
         Returns  samplefrequencies of all signals.
         """
