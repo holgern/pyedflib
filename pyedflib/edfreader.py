@@ -38,7 +38,10 @@ class EdfReader(CyEdfReader):
         result = np.zeros(np.size(v))
         for i in np.arange(np.size(v)):
             try:
-                result[i] = int(v[i])
+                if (not v[i]):
+                    rsult[i] = 0
+                else:
+                    result[i] = int(v[i])
             except ValueError:
                 result[i] = float(v[i])
         return result
