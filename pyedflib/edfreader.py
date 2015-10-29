@@ -40,7 +40,7 @@ class EdfReader(CyEdfReader):
             try:
                 result[i] = int(v[i])
             except ValueError:
-                result[i] = float(v[i])            
+                result[i] = float(v[i])
         return result
 
     def getHeader(self):
