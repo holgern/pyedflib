@@ -26,14 +26,19 @@ class EdfReader(CyEdfReader):
         """
         annot = self.read_annotation()
         annot = np.array(annot)
-        ann_time = annot[:, 0]
+        ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
-        ann_time = ann_time.astype(float)
         for i in np.arange(len(annot[:, 1])):
             if (annot[i, 1] == ''):
                 annot[i, 1] = '-1'
-        ann_duration = annot[:, 1].astype(np.float)
+        ann_duration = self._get_float(annot[:, 1])
         return ann_time/10000000, ann_duration, ann_text
+
+    def _get_float(self,v):
+        result = np.zeros(np.size(v))
+        for i in np.arange(np.size(v)):
+            result[i] = float(v[i])
+        return result
 
     def getHeader(self):
         """

@@ -57,8 +57,8 @@ before_install:
   - set -o pipefail
 
 script:
-  # - python -u $OPTIMIZE runtests.py -g -m full --coverage
-  - python setup.py build_ext --inplace
-  - nosetests -v --with-coverage
+  - python -u $OPTIMIZE runtests.py -g -m full --coverage
+  # - python setup.py build_ext --inplace
+  # - nosetests -v --with-coverage
 after_success:
   - coveralls
