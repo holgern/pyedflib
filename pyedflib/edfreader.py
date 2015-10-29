@@ -39,7 +39,7 @@ class EdfReader(CyEdfReader):
         for i in np.arange(np.size(v)):
             try:
                 if (not v[i]):
-                    rsult[i] = 0
+                    result[i] = 0
                 else:
                     result[i] = int(v[i])
             except ValueError:

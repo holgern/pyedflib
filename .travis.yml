@@ -27,7 +27,7 @@ matrix:
         - OPTIMIZE=-OO NUMPYSPEC="numpy==1.7.2"
     - python: 2.7
       env:
-        - NUMPYSPEC="--upgrade git+git://github.com/numpy/numpy.git@v1.9.2"
+        - NUMPYSPEC=numpy
 
 cache:
   directories:
