@@ -6,6 +6,7 @@ from __future__ import division, print_function, absolute_import
 
 import numpy as np
 from datetime import datetime, date
+import types
 from ._pyedflib import *
 
 __all__ = ['EdfWriter']
@@ -91,7 +92,7 @@ class EdfWriter(object):
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
-        if (isinstance(self.birthdate, basestring)):
+        if (isinstance(self.birthdate, str)):
             set_birthdate(self.handle, 1,1,1900)
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)

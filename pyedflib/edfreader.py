@@ -5,6 +5,7 @@
 from __future__ import division, print_function, absolute_import
 from datetime import datetime, date
 import numpy as np
+import ast
 from ._pyedflib import *
 __all__ = ['EdfReader']
 
@@ -37,7 +38,7 @@ class EdfReader(CyEdfReader):
     def _get_float(self,v):
         result = np.zeros(np.size(v))
         for i in np.arange(np.size(v)):
-            result[i] = float(v[i])
+            result[i] = ast.literal_eval(v[i])
         return result
 
     def getHeader(self):
