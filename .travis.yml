@@ -5,9 +5,7 @@ matrix:
   include:
     - python: 2.7
       env:
-        - PYFLAKES=1
-        - PEP8=1
-        - NUMPYSPEC=numpy
+        - PYFLAKES=1 PEP8=1 NUMPYSPEC=numpy
       before_install:
         - pip install pep8==1.6.2
         - pip install pyflakes
@@ -26,16 +24,11 @@ matrix:
         - NUMPYSPEC=numpy
     - python: 2.6
       env:
-        - OPTIMIZE=-OO
-        - NUMPYSPEC="numpy==1.7.2"
+        - OPTIMIZE=-OO NUMPYSPEC="numpy==1.7.2"
     - python: 2.7
       env:
         - NUMPYSPEC="--upgrade git+git://github.com/numpy/numpy.git@v1.9.2"
 
-addons:
-  apt:
-    packages:
-    - ccache
 cache:
   directories:
     - $HOME/.ccache

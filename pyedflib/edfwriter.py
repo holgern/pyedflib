@@ -422,9 +422,9 @@ class EdfWriter(object):
         Writes an annotation/event to the file
         """
         if (duration_in_seconds >= 0):
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(long), np.round(duration_in_seconds*10000).astype(long), description.encode('UTF-8'))
+            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), description.encode('UTF-8'))
         else:
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(long), -1, description.encode('UTF-8'))
+            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, description.encode('UTF-8'))
 
     def close(self):
         """
