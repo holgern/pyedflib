@@ -13,3 +13,5 @@ Authors
 [![Build Status](https://travis-ci.org/holgern/pyedflib.svg)](https://travis-ci.org/holgern/pyedflib)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true)](https://ci.appveyor.com/project/HolgerNahrstaedt/pyedflib)
+
+[![Documentation Status](https://readthedocs.org/projects/pyedflib/badge/?version=latest)](http://pyedflib.readthedocs.org/en/latest/?badge=latest)

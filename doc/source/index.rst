@@ -21,6 +21,7 @@ Main features
 The main features of PyEDFlib are:
 
   * reading writing EDF / BDF files
+  * PyEDFlib is based on the library EDFlib from Teunis van Beelen (http://www.teuniz.net/edflib/)
 
 Requirements
 ------------
@@ -40,7 +41,6 @@ Latest release, including source and binary package for Windows, is available
 for download from the `Python Package Index`_ or on the `Releases Page`_.
 
 
-PyYAWT is a free Open Source software released under the GPL license.
 
 Contents
 --------
