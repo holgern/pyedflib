@@ -11,3 +11,5 @@ Authors
 [![Coverage Status](https://coveralls.io/repos/holgern/pyedflib/badge.svg?branch=master&service=github)](https://coveralls.io/github/holgern/pyedflib?branch=master)
 
 [![Build Status](https://travis-ci.org/holgern/pyedflib.svg)](https://travis-ci.org/holgern/pyedflib)
+
+[![Build status](https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true)](https://ci.appveyor.com/project/HolgerNahrstaedt/pyedflib)

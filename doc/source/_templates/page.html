@@ -1,0 +1,29 @@
+{# Drop version number from the HTML documentation title #}
+{%- set docstitle = "PyEDFlib Documentation" %}
+
+{% extends "!page.html" %}
+
+{% block extrahead %}
+{{ super() }}
+<meta name="description" content="PyEDFlib is a  Python module for reading and writing EDF/BDF files."/>
+<meta name="keywords" content="pyedflib, edf, Python, bdf, "/>
+<meta name="author" content="Holger Nahrstaedt"/>
+<meta name="Distribution" content="Global"/>
+<meta name="Robots" content="INDEX,FOLLOW"/>
+
+<script type="text/javascript">
+    (function ($) {
+        $(document).ready(function () {
+            $("#toggle-edit-info").click(function (e) {
+                e.preventDefault();
+                $("#edit-info").toggle();
+            });
+        });
+    })(jQuery);
+</script>
+{% endblock %}
+
+{# Remove version number from the top and bottom path bars #}
+{%- block rootrellink %}
+    <li><a href="{{ pathto(master_doc) }}">Home{{ reldelim1 }}</a></li>
+{%- endblock %}
