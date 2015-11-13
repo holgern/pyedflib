@@ -40,7 +40,10 @@ https://github.com/holgern/pyedflib.
 Latest release, including source and binary package for Windows, is available
 for download from the `Python Package Index`_ or on the `Releases Page`_.
 
+License
+--------
 
+This code is licensed under the same BSD-style license that Teunis released `edflib`_ under and with the same disclaimer.
 
 Contents
 --------
@@ -57,7 +60,7 @@ Contents
 .. _GitHub: https://github.com/holgern/pyedflib
 .. _GitHub Issues: https://github.com/holgern/pyedflib/issues
 .. _Numpy: http://www.numpy.org
-.. _original developer: http://www.teuniz.net/edflib/
+.. _edflib: http://www.teuniz.net/edflib/
 .. _Python: http://python.org/
 .. _Python Package Index: http://pypi.python.org/pypi/pyedflib/
 .. _Releases Page: https://github.com/holgern/pyedflib/releases
