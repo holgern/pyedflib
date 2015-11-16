@@ -15,13 +15,23 @@ PyEDFlib is a free Open Source wavelet toolbox for reading / writing EDF/BDF fil
     >>>    sigbufs[i, :] = f.readSignal(i)
 
 
-Main features
+Description
 -------------
 
-The main features of PyEDFlib are:
+pyEDFlib is a python library to read/write EDF+/BDF+ files based on EDFlib.
 
-  * reading writing EDF / BDF files
-  * PyEDFlib is based on the library EDFlib from Teunis van Beelen (http://www.teuniz.net/edflib/)
+EDF means European Data Format (http://www.edfplus.info/) and was firstly published 1992
+(http://www.sciencedirect.com/science/article/pii/0013469492900097). In 2003, an improved
+version of the file protokoll named EDF+ has been published (http://www.sciencedirect.com/science/article/pii/0013469492900097).
+
+The EDF/EDF+ format saves all data with 16 Bit. A version which saves all data with 24 Bit,
+was introduces by the compony BioSemi (http://www.biosemi.com/faq/file_format.htm).
+
+The definition of the EDF/EDF+/BDF/BDF+ format can be found under http://www.edfplus.info/.
+
+This python toolbox uses the EDFlib (http://www.teuniz.net/edflib/) from Teunis van Beelen.
+The EDFlib is able to read and write EDF/EDF+/BDF/BDF+ files.
+
 
 Requirements
 ------------
