@@ -9,7 +9,7 @@ import subprocess
 MAJOR = 0
 MINOR = 1
 MICRO = 1
-ISRELEASED = False
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
@@ -134,18 +134,16 @@ def setup_package():
     metadata = dict(
         name="pyEDFlib",
         maintainer="Holger Nahrstaedt",
-        maintainer_email=" ",
+        maintainer_email="holgernahrstaedt@gmx.de",
         url="https://github.com/holgern/pyedflib",
-        download_url="https://github.com/holgern/pyedflib/releases",
         license="BSD",
         description="library to read/write EDF+/BDF+ files",
         long_description="""\
        pyedflib is a python library to read/write EDF+/BDF+ files based on EDFlib. 
-
         """,
         keywords=["EDFlib", "European data format", "EDF", "BDF", "EDF++", "BDF++"],
         classifiers=[
-            "Development Status :: 5 - Production/Stable",
+            "Development Status :: 4 - Beta",
             "Intended Audience :: Developers",
             "Intended Audience :: Education",
             "Intended Audience :: Science/Research",
@@ -153,9 +151,10 @@ def setup_package():
             "Operating System :: OS Independent",
             "Programming Language :: C",
             "Programming Language :: Python",
-            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 2",
             "Programming Language :: Python :: 2.6",
             "Programming Language :: Python :: 2.7",
+            "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.3",
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: 3.5",
