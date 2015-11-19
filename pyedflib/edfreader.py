@@ -281,6 +281,6 @@ class EdfReader(CyEdfReader):
     def file_info_long(self):
         self.file_info()
         for ii in np.arange(self.signals_in_file):
-            print("label:", self.getSignalTextLabels()[ii], "fs:",
+            print("label:", self.getSignalLabel(ii), "fs:",
                   self.getSignalFreqs()[ii], "nsamples",
                   self.getNSamples()[ii])
