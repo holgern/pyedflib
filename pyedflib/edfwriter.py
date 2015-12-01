@@ -27,11 +27,22 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy as np
+import sys
 from datetime import datetime, date
 import types
 from ._pyedflib import *
 
 __all__ = ['EdfWriter']
+
+
+if sys.version_info < (3,):
+    import codecs
+
+    def u(x):
+        return codecs.unicode_escape_decode(x)[0]
+else:
+    def u(x):
+        return x
 
 
 class EdfWriter(object):
@@ -96,13 +107,13 @@ class EdfWriter(object):
         """
         Updates header to edffile struct
         """
-        set_technician(self.handle, self.technician.decode('UTF-8').encode('UTF-8'))
-        set_recording_additional(self.handle, self.recording_additional.decode('UTF-8').encode('UTF-8'))
-        set_patientname(self.handle, self.patient_name.decode('UTF-8').encode('UTF-8'))
-        set_patientcode(self.handle, self.patient_code.decode('UTF-8').encode('UTF-8'))
-        set_patient_additional(self.handle, self.patient_additional.decode('UTF-8').encode('UTF-8'))
-        set_equipment(self.handle, self.equipment.decode('UTF-8').encode('UTF-8'))
-        set_admincode(self.handle, self.admincode.decode('UTF-8').encode('UTF-8'))
+        set_technician(self.handle, u(self.technician).encode('UTF-8'))
+        set_recording_additional(self.handle, u(self.recording_additional).encode('UTF-8'))
+        set_patientname(self.handle, u(self.patient_name).encode('UTF-8'))
+        set_patientcode(self.handle, u(self.patient_code).encode('UTF-8'))
+        set_patient_additional(self.handle, u(self.patient_additional).encode('UTF-8'))
+        set_equipment(self.handle, u(self.equipment).encode('UTF-8'))
+        set_admincode(self.handle, u(self.admincode).encode('UTF-8'))
         if isinstance(self.gender, int):
             set_gender(self.handle, self.gender)
         elif self.gender == "Male":
@@ -128,10 +139,10 @@ class EdfWriter(object):
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
             set_digital_minimum(self.handle, i, self.channels[i]['digital_min'])
-            set_label(self.handle, i, self.channels[i]['label'].decode('UTF-8').encode('UTF-8'))
-            set_physical_dimension(self.handle, i, self.channels[i]['dimension'].decode('UTF-8').encode('UTF-8'))
-            set_transducer(self.handle, i, self.channels[i]['transducer'].decode('UTF-8').encode('UTF-8'))
-            set_prefilter(self.handle, i, self.channels[i]['prefilter'].decode('UTF-8').encode('UTF-8'))
+            set_label(self.handle, i, u(self.channels[i]['label']).encode('UTF-8'))
+            set_physical_dimension(self.handle, i, u(self.channels[i]['dimension']).encode('UTF-8'))
+            set_transducer(self.handle, i, u(self.channels[i]['transducer']).encode('UTF-8'))
+            set_prefilter(self.handle, i, u(self.channels[i]['prefilter']).encode('UTF-8'))
 
     def setHeader(self, fileHeader):
         """
@@ -483,9 +494,9 @@ class EdfWriter(object):
         Writes an annotation/event to the file
         """
         if duration_in_seconds >= 0:
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), description.decode('UTF-8').encode('UTF-8'))
+            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), u(description).encode('UTF-8'))
         else:
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, description.decode('UTF-8').encode('UTF-8'))
+            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, u(description).encode('UTF-8'))
 
     def close(self):
         """
