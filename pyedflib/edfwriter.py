@@ -40,7 +40,7 @@ class EdfWriter(object):
 
     def __init__(self, file_name, n_channels,
                  file_type=FILETYPE_EDFPLUS):
-        '''Initialises an EDF file at @file_name.
+        """Initialises an EDF file at @file_name.
         @file_type is one of
             edflib.FILETYPE_EDF
             edflib.FILETYPE_EDFPLUS
@@ -60,7 +60,7 @@ class EdfWriter(object):
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
             'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
-        '''
+        """
         self.path = file_name
         self.file_type = file_type
         self.patient_name = ''
@@ -72,22 +72,22 @@ class EdfWriter(object):
         self.admincode = ''
         self.gender = 0
         self.recording_start_time = datetime.now()
-        self.birthdate = date(1900,1,1)
+        self.birthdate = date(1900, 1, 1)
         self.duration = 1
         self.n_channels = n_channels
         self.channels = []
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
-            if (self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_BDFPLUS):
-                self.channels.append({'label':'test_label', 'dimension':'mV', 'sample_rate':100,
-                             'physical_max':1.0,'physical_min':-1.0,
-                             'digital_max':8388607,'digital_min':-8388608,
-                             'prefilter':'pre1','transducer':'trans1'})
+            if self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_BDFPLUS:
+                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
+                                      'digital_max': 8388607,'digital_min': -8388608,
+                                      'prefilter': 'pre1', 'transducer': 'trans1'})
             else:
-                self.channels.append({'label':'test_label', 'dimension':'mV', 'sample_rate':100,
-                             'physical_max':1.0,'physical_min':-1.0,
-                             'digital_max':32767,'digital_min':-32768,
-                             'prefilter':'pre1','transducer':'trans1'})
+                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
+                                      'digital_max': 32767, 'digital_min': -32768,
+                                      'prefilter': 'pre1', 'transducer': 'trans1'})
 
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
@@ -96,40 +96,44 @@ class EdfWriter(object):
         """
         Updates header to edffile struct
         """
-        set_technician(self.handle, self.technician.encode('UTF-8'))
-        set_recording_additional(self.handle, self.recording_additional.encode('UTF-8'))
-        set_patientname(self.handle, self.patient_name.encode('UTF-8'))
-        set_patientcode(self.handle, self.patient_code.encode('UTF-8'))
-        set_patient_additional(self.handle, self.patient_additional.encode('UTF-8'))
-        set_equipment(self.handle, self.equipment.encode('UTF-8'))
-        set_admincode(self.handle, self.admincode.encode('UTF-8'))
-        if (isinstance(self.gender,int)):
+        set_technician(self.handle, self.technician.decode('UTF-8').encode('UTF-8'))
+        set_recording_additional(self.handle, self.recording_additional.decode('UTF-8').encode('UTF-8'))
+        set_patientname(self.handle, self.patient_name.decode('UTF-8').encode('UTF-8'))
+        set_patientcode(self.handle, self.patient_code.decode('UTF-8').encode('UTF-8'))
+        set_patient_additional(self.handle, self.patient_additional.decode('UTF-8').encode('UTF-8'))
+        set_equipment(self.handle, self.equipment.decode('UTF-8').encode('UTF-8'))
+        set_admincode(self.handle, self.admincode.decode('UTF-8').encode('UTF-8'))
+        if isinstance(self.gender, int):
             set_gender(self.handle, self.gender)
-        elif(self.gender == "Male"):
-            set_gender(self.handle,0)
-        elif(self.gender == "Female"):
-            set_gender(self.handle,1)
+        elif self.gender == "Male":
+            set_gender(self.handle, 0)
+        elif self.gender == "Female":
+            set_gender(self.handle, 1)
 
         set_datarecord_duration(self.handle, self.duration)
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
-        if (isinstance(self.birthdate, str)):
-            set_birthdate(self.handle, 1,1,1900)
+        if isinstance(self.birthdate, str):
+            if self.birthdate == '':
+                birthday = date(1900, 1, 1)
+            else:
+                birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
+            set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
-            set_samplefrequency(self.handle,i,self.channels[i]['sample_rate'])
-            set_physical_maximum(self.handle,i,self.channels[i]['physical_max'])
-            set_physical_minimum(self.handle,i,self.channels[i]['physical_min'])
-            set_digital_maximum(self.handle,i,self.channels[i]['digital_max'])
-            set_digital_minimum(self.handle,i,self.channels[i]['digital_min'])
-            set_label(self.handle,i,self.channels[i]['label'].encode('UTF-8'))
-            set_physical_dimension(self.handle,i,self.channels[i]['dimension'].encode('UTF-8'))
-            set_transducer(self.handle,i,self.channels[i]['transducer'].encode('UTF-8'))
-            set_prefilter(self.handle,i,self.channels[i]['prefilter'].encode('UTF-8'))
+            set_samplefrequency(self.handle, i, self.channels[i]['sample_rate'])
+            set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
+            set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
+            set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
+            set_digital_minimum(self.handle, i, self.channels[i]['digital_min'])
+            set_label(self.handle, i, self.channels[i]['label'].decode('UTF-8').encode('UTF-8'))
+            set_physical_dimension(self.handle, i, self.channels[i]['dimension'].decode('UTF-8').encode('UTF-8'))
+            set_transducer(self.handle, i, self.channels[i]['transducer'].decode('UTF-8').encode('UTF-8'))
+            set_prefilter(self.handle, i, self.channels[i]['prefilter'].decode('UTF-8').encode('UTF-8'))
 
-    def setHeader(self,fileHeader):
+    def setHeader(self, fileHeader):
         """
         Sets the file header
         """
@@ -145,7 +149,7 @@ class EdfWriter(object):
         self.birthdate = fileHeader["birthdate"]
         self.update_header()
 
-    def setSignalHeader(self,edfsignal,channel_info):
+    def setSignalHeader(self, edfsignal, channel_info):
         """
         Sets the parameter for signal edfsignal.
 
@@ -160,12 +164,12 @@ class EdfWriter(object):
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
             'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
         """
-        if (edfsignal < 0 or edfsignal > self.n_channels):
+        if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal] = channel_info
         self.update_header()
 
-    def setSignalHeaders(self,signalHeaders):
+    def setSignalHeaders(self, signalHeaders):
         """
         Sets the parameter for all signals
 
@@ -184,16 +188,16 @@ class EdfWriter(object):
             self.channels[edfsignal] = signalHeaders[edfsignal]
         self.update_header()
 
-    def setTechnician(self,technician):
+    def setTechnician(self, technician):
         """
-        Sets the technicians name.
+        Sets the technicians name to @technician.
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.technician = technician
         self.update_header()
 
-    def setRecordingAdditional(self,recording_additional):
+    def setRecordingAdditional(self, recording_additional):
         """
         Sets the additional recordinginfo
 
@@ -202,66 +206,74 @@ class EdfWriter(object):
         self.recording_additional = recording_additional
         self.update_header()
 
-    def setPatientName(self,patient_name):
+    def setPatientName(self, patient_name):
         """
-        Sets the patientname.
+        Sets the patientname to @patient_name.
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.patient_name = patient_name
         self.update_header()
 
-    def setPatientCode(self,patient_code):
+    def setPatientCode(self, patient_code):
         """
-        Sets the patientcode.
+        Sets the patientcode to @patient_code.
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.patient_code = patient_code
         self.update_header()
 
-    def setPatientAdditional(self,patient_additional):
+    def setPatientAdditional(self, patient_additional):
         """
-        Sets the additional patientinfo.
+        Sets the additional patientinfo to @patient_additional.
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.technician = patient_additional
         self.update_header()
 
-    def setEquipment(self,equipment):
+    def setEquipment(self, equipment):
         """
-        Sets the name of the equipment used during the aquisition.
+        Sets the name of the @param equipment used during the aquisition.
+
+        @param equipment used equipment
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.equipment = equipment
         self.update_header()
 
-    def setAdmincode(self,admincode):
+    def setAdmincode(self, admincode):
         """
         Sets the admincode.
+
+        :param admincode: str
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.admincode = admincode
         self.update_header()
 
-    def setGender(self,gender):
+    def setGender(self, gender):
         """
         Sets the gender. 1 is male, 0 is female
+
+        :param gender: int
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.gender = gender
         self.update_header()
 
-    def setDatarecordDuration(self,duration):
+    def setDatarecordDuration(self, duration):
         """
         Sets the datarecord duration. The default value is 1 second.
         This function is optional, normally you don't need to change
         the default value. The datarecord duration must be in the range 0.05 to 20.0 seconds.
         Returns 0 on success, otherwise -1.
+
+        :param duration: float
 
         This function is NOT REQUIRED but can be called after opening a file in writemode and
         before the first sample write action. This function can be used when you want
@@ -273,47 +285,56 @@ class EdfWriter(object):
         self.duration = duration
         self.update_header()
 
-    def setStartdatetime(self,recording_start_time):
+    def setStartdatetime(self, recording_start_time):
         """
-        Sets the technicians name.
+        Sets the recording start Time
+        :param recording_start_time:
         """
         self.recording_start_time = recording_start_time
         self.update_header()
 
-    def setBirthdate(self,birthdate):
+    def setBirthdate(self, birthdate):
         """
         Sets the birthdate.
+
+        :param birthdate:
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.birthdate = birthdate
         self.update_header()
 
-    def setSamplefrequency(self,edfsignal,samplefrequency):
+    def setSamplefrequency(self, edfsignal, samplefrequency):
         """
         Sets the samplefrequency of signal edfsignal.
 
         This function is required for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
-        if (edfsignal < 0 or edfsignal > self.n_channels):
+        if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal]['sample_rate'] = samplefrequency
         self.update_header()
 
-    def setPhysicalMaximum(self,edfsignal,physical_maximum):
+    def setPhysicalMaximum(self, edfsignal, physical_maximum):
         """
         Sets the physical_maximum of signal edfsignal.
 
+        :param edfsignal: int
+        :param physical_maximum: float
+
         This function is required for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
-        if (edfsignal < 0 or edfsignal > self.n_channels):
+        if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal]['physical_max'] = physical_maximum
         self.update_header()
 
-    def setPhysicalMinimum(self,edfsignal,physical_minimum):
+    def setPhysicalMinimum(self, edfsignal, physical_minimum):
         """
-        Sets the samplefrequency of signal edfsignal.
+        Sets the physical_minimum of signal edfsignal.
+
+        :param edfsignal: int
+        :param physical_minimum: float
 
         This function is required for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
@@ -322,10 +343,13 @@ class EdfWriter(object):
         self.channels[edfsignal]['physical_min'] = physical_minimum
         self.update_header()
 
-    def setDigitalMaximum(self,edfsignal,digital_maximum):
+    def setDigitalMaximum(self, edfsignal, digital_maximum):
         """
         Sets the samplefrequency of signal edfsignal.
         Usually, the value 32767 is used for EDF+ and 8388607 for BDF+.
+
+        :param edfsignal: int
+        :param digital_maximum: int
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
@@ -334,10 +358,13 @@ class EdfWriter(object):
         self.channels[edfsignal]['digital_max'] = digital_maximum
         self.update_header()
 
-    def setDigitalMinimum(self,edfsignal,digital_minimum):
+    def setDigitalMinimum(self, edfsignal, digital_minimum):
         """
         Sets the minimum digital value of signal edfsignal.
         Usually, the value -32768 is used for EDF+ and -8388608 for BDF+. Usually this will be (-(digital_maximum + 1)).
+
+        :param edfsignal: int
+        :param digital_minimum: int
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
@@ -346,9 +373,12 @@ class EdfWriter(object):
         self.channels[edfsignal]['digital_min'] = digital_minimum
         self.update_header()
 
-    def setLabel(self,edfsignal,label):
+    def setLabel(self, edfsignal, label):
         """
         Sets the label (name) of signal edfsignal ("FP1", "SaO2", etc.).
+
+        :param edfsignal: int
+        :param label: str
 
         This function is recommended for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
@@ -357,20 +387,26 @@ class EdfWriter(object):
         self.channels[edfsignal]['label'] = label
         self.update_header()
 
-    def setPhysicalDimension(self,edfsignal,physical_dimension):
+    def setPhysicalDimension(self, edfsignal, physical_dimension):
         """
         Sets the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
 
+        :param edfsignal: int
+        :param physical_dimension: str
+
         This function is recommended for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
-        if (edfsignal < 0 or edfsignal > self.n_channels):
+        if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal]['dimension'] = physical_dimension
         self.update_header()
 
-    def setTransducer(self,edfsignal,transducer):
+    def setTransducer(self, edfsignal, transducer):
         """
         Sets the transducer of signal edfsignal
+
+        :param edfsignal: int
+        :param transducer: str
 
         This function is optional for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
@@ -379,13 +415,16 @@ class EdfWriter(object):
         self.channels[edfsignal]['transducer'] = transducer
         self.update_header()
 
-    def setPrefilter(self,edfsignal,prefilter):
+    def setPrefilter(self, edfsignal, prefilter):
         """
         Sets the prefilter of signal edfsignal ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
 
+        :param edfsignal: int
+        :param prefilter: str
+
         This function is optional for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
-        if (edfsignal < 0 or edfsignal > self.n_channels):
+        if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal]['prefilter'] = prefilter
         self.update_header()
@@ -410,7 +449,7 @@ class EdfWriter(object):
         """
         write_physical_samples(self.handle, data)
 
-    def writeSamples(self,data_list):
+    def writeSamples(self, data_list):
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
         The physical samples will be converted to digital samples using the values
@@ -436,17 +475,17 @@ class EdfWriter(object):
                 ind[i] += self.channels[i]['sample_rate']
 
             for i in np.arange(len(data_list)):
-                if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+                if np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']:
                     notAtEnd = False
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description):
         """
         Writes an annotation/event to the file
         """
-        if (duration_in_seconds >= 0):
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), description.encode('UTF-8'))
+        if duration_in_seconds >= 0:
+            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), description.decode('UTF-8').encode('UTF-8'))
         else:
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, description.encode('UTF-8'))
+            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, description.decode('UTF-8').encode('UTF-8'))
 
     def close(self):
         """

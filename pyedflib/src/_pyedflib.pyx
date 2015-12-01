@@ -330,7 +330,7 @@ cdef unicode _ustring(s):
         # we can always create a copy instead
         return unicode(s)
     else:
-        raise TypeError(...)
+        raise TypeError()
         
 # define a global name for whatever char type is used in the module
 ctypedef unsigned char char_type

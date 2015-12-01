@@ -17,12 +17,12 @@ class TestEdfWriter(unittest.TestCase):
         self.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')
 
     def test_EdfWriter(self):
-        channel_info = {'label':'test_label', 'dimension':'mV', 'sample_rate':100,
-                         'physical_max':1.0,'physical_min':-1.0,
-                         'digital_max':8388607,'digital_min':-8388608,
-                         'prefilter':'pre1','transducer':'trans1'}
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdf_data_file, 1,
-                              file_type=pyedflib.FILETYPE_BDFPLUS)
+                               file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         f.setTechnician('tec1')
         data = np.ones(100) * 0.1
@@ -77,21 +77,21 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data2, data2_read)
 
     def test_AnnotationWriting(self):
-        channel_info = {'label':'test_label', 'dimension':'mV', 'sample_rate':100,
-                         'physical_max':1.0,'physical_min':-1.0,
-                         'digital_max':8388607,'digital_min':-8388608,
-                         'prefilter':'pre1','transducer':'trans1'}
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdf_data_file, 1,
-                              file_type=pyedflib.FILETYPE_BDFPLUS)
+                               file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         data = np.ones(100) * 0.1
         f.writePhyisicalSamples(data)
         f.writePhyisicalSamples(data)
         f.writePhyisicalSamples(data)
         f.writePhyisicalSamples(data)
-        f.writeAnnotation(1.23,0.2,"annotation1")
-        f.writeAnnotation(0.25,-1,"annotation2")
-        f.writeAnnotation(1.25,0,"annotation3")
+        f.writeAnnotation(1.23, 0.2, "annotation1")
+        f.writeAnnotation(0.25, -1, "annotation2")
+        f.writeAnnotation(1.25, 0, "annotation3")
         f.close()
         del f
 

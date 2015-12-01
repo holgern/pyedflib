@@ -50,16 +50,16 @@ class EdfReader(CyEdfReader):
         ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
         for i in np.arange(len(annot[:, 1])):
-            if (annot[i, 1] == ''):
+            if annot[i, 1] == '':
                 annot[i, 1] = '-1'
         ann_duration = self._get_float(annot[:, 1])
         return ann_time/10000000, ann_duration, ann_text
 
-    def _get_float(self,v):
+    def _get_float(self, v):
         result = np.zeros(np.size(v))
         for i in np.arange(np.size(v)):
             try:
-                if (not v[i]):
+                if not v[i]:
                     result[i] = -1
                 else:
                     result[i] = int(v[i])
@@ -77,7 +77,7 @@ class EdfReader(CyEdfReader):
                 "admincode": self.getAdmincode(), "gender": self.getGender(), "startdate": self.getStartdatetime(),
                 "birthdate": self.getBirthdate()}
 
-    def getSignalHeader(self,chn):
+    def getSignalHeader(self, chn):
         """
         Returns the  header of one signal as  dicts
         """
@@ -178,7 +178,7 @@ class EdfReader(CyEdfReader):
         """
         Returns the samplefrequency of signal edfsignal.
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return round(self.samplefrequency(chn))
         else:
             return 0
@@ -194,7 +194,7 @@ class EdfReader(CyEdfReader):
         """
         Returns the label (name) of signal chn ("FP1", "SaO2", etc.).
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.signal_label(chn).rstrip()
         else:
             return b''
@@ -203,7 +203,7 @@ class EdfReader(CyEdfReader):
         """
         Returns the prefilter of signal chn ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.prefilter(chn).rstrip()
         else:
             return b''
@@ -212,7 +212,7 @@ class EdfReader(CyEdfReader):
         """
         Returns the maximum physical value of signal edfsignal.
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.physical_max(chn)
         else:
             return 0
@@ -221,43 +221,43 @@ class EdfReader(CyEdfReader):
         """
         Returns the minimum physical value of signal edfsignal.
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.physical_min(chn)
         else:
             return 0
 
-    def getDigitalMaximum(self,chn):
+    def getDigitalMaximum(self, chn):
         """
         Returns the maximum digital value of signal edfsignal.
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.digital_max(chn)
         else:
             return 0
 
-    def getDigitalMinimum(self,chn):
+    def getDigitalMinimum(self, chn):
         """
         Returns the minimum digital value of signal edfsignal.
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.digital_min(chn)
         else:
             return 0
 
-    def getTransducer(self,chn):
+    def getTransducer(self, chn):
         """
         Returns the transducer of signal chn ("AgAgCl cup electrodes", etc.).
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.transducer(chn).rstrip()
         else:
             return b''
 
-    def getPhysicalDimension(self,chn):
+    def getPhysicalDimension(self, chn):
         """
         Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
         """
-        if (chn >= 0 and chn < self.signals_in_file):
+        if 0 <= chn < self.signals_in_file:
             return self.physical_dimension(chn).rstrip()
         else:
             return b''
@@ -265,7 +265,7 @@ class EdfReader(CyEdfReader):
     def readSignal(self, chn):
 
         nsamples = self.getNSamples()
-        if (chn < len(nsamples)):
+        if chn < len(nsamples):
             x = np.zeros(nsamples[chn], dtype=np.float64)
 
             v = x[chn*nsamples[chn]:(chn+1)*nsamples[chn]]
