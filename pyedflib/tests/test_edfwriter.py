@@ -109,6 +109,38 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_duration[2], 0)
         np.testing.assert_equal(ann_text[2], b"annotation3")
 
+    def test_AnnotationWritingUTF8(self):
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+        f = pyedflib.EdfWriter(self.bdf_data_file, 1,
+                               file_type=pyedflib.FILETYPE_BDFPLUS)
+        f.setSignalHeader(0,channel_info)
+        data = np.ones(100) * 0.1
+        f.writePhyisicalSamples(data)
+        f.writePhyisicalSamples(data)
+        f.writePhyisicalSamples(data)
+        f.writePhyisicalSamples(data)
+        f.writeAnnotation(1.23, 0.2, b"Zähne")
+        f.writeAnnotation(0.25, -1, u"Fuß")
+        f.writeAnnotation(1.25, 0, "abc")
+        f.close()
+        del f
+
+        f = pyedflib.EdfReader(self.bdf_data_file)
+        ann_time, ann_duration, ann_text = f.readAnnotations()
+        f._close()
+        del f
+        np.testing.assert_almost_equal(ann_time[0], 1.23)
+        np.testing.assert_almost_equal(ann_duration[0], 0.2)
+        np.testing.assert_equal(ann_text[0], b"Z..hne")
+        np.testing.assert_almost_equal(ann_time[1], 0.25)
+        np.testing.assert_almost_equal(ann_duration[1], -1)
+        np.testing.assert_equal(ann_text[1], b"Fu..")
+        np.testing.assert_almost_equal(ann_time[2], 1.25)
+        np.testing.assert_almost_equal(ann_duration[2], 0)
+        np.testing.assert_equal(ann_text[2], b"abc")
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

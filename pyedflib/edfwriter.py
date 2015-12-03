@@ -40,8 +40,17 @@ if sys.version_info < (3,):
 
     def u(x):
         return codecs.unicode_escape_decode(x)[0]
+
+    def du(x):
+        if isinstance(x,unicode):
+            return x.encode("utf-8")
+        else:
+            return x
 else:
     def u(x):
+        return x
+
+    def du(x):
         return x
 
 
@@ -184,16 +193,24 @@ class EdfWriter(object):
         """
         Sets the parameter for all signals
 
-        @signalHeaders should be a array of dicts with
-        these values:
-
-            'label' : channel label (string, <= 16 characters, must be unique)
-            'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
-            'physical_max' : maximum physical value (float)
-            'physical_min' : minimum physical value (float)
-            'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
-            'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
+        Parameters
+        ----------
+        signalHeaders : array_like
+            containing dict with
+                'label' : str
+                          channel label (string, <= 16 characters, must be unique)
+                'dimension' : str
+                          physical dimension (e.g., mV) (string, <= 8 characters)
+                'sample_rate' : int
+                          sample frequency in hertz
+                'physical_max' : float
+                          maximum physical value
+                'physical_min' : float
+                         minimum physical value
+                'digital_max' : int
+                         maximum digital value (-2**15 <= x < 2**15)
+                'digital_min' : int
+                         minimum digital value (-2**15 <= x < 2**15)
         """
         for edfsignal in np.arange(self.n_channels):
             self.channels[edfsignal] = signalHeaders[edfsignal]
@@ -248,9 +265,13 @@ class EdfWriter(object):
         """
         Sets the name of the @param equipment used during the aquisition.
 
-        @param equipment used equipment
-
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
+
+        Parameters
+        ----------
+        equipment : str
+                    Describes the measurement equpipment
+
         """
         self.equipment = equipment
         self.update_header()
@@ -259,20 +280,27 @@ class EdfWriter(object):
         """
         Sets the admincode.
 
-        :param admincode: str
-
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
+
+        Parameters
+        ----------
+        admincode : str
+                   admincode which is written into the header
+
         """
         self.admincode = admincode
         self.update_header()
 
     def setGender(self, gender):
         """
-        Sets the gender. 1 is male, 0 is female
-
-        :param gender: int
+        Sets the gender.
 
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
+
+        Parameters
+        ----------
+        gender : int
+                 1 is male, 0 is female
         """
         self.gender = gender
         self.update_header()
@@ -489,14 +517,20 @@ class EdfWriter(object):
                 if np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']:
                     notAtEnd = False
 
-    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description):
+    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
         Writes an annotation/event to the file
         """
-        if duration_in_seconds >= 0:
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), u(description).encode('UTF-8'))
+        if str_format == 'utf-8':
+            if duration_in_seconds >= 0:
+                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), du(description))
+            else:
+                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, du(description))
         else:
-            return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, u(description).encode('UTF-8'))
+            if duration_in_seconds >= 0:
+                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), u(description).encode('latin1'))
+            else:
+                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, u(description).encode('latin1'))
 
     def close(self):
         """
