@@ -345,15 +345,10 @@ def set_patientcode(int handle, char *patientcode):
     # check if rw?
     return edf_set_patientcode(handle, patientcode)
 
-    
-
 cpdef int write_annotation_latin1(int handle, long long onset, long long duration, char *description):
         return edfwrite_annotation_latin1(handle, onset, duration, description)
 
 cpdef int write_annotation_utf8(int handle, long long onset, long long duration, char *description):
-        # py_byte_string = description.encode('UTF-8')
-        # py_byte_string = description.encode('UTF-7')
-        # cdef char* c_string = py_byte_string
         return edfwrite_annotation_utf8(handle, onset, duration, description)
 
 cpdef int set_technician(int handle, char *technician):

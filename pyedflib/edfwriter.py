@@ -42,7 +42,7 @@ if sys.version_info < (3,):
         return codecs.unicode_escape_decode(x)[0]
 
     def du(x):
-        if isinstance(x,unicode):
+        if isinstance(x, unicode):
             return x.encode("utf-8")
         else:
             return x
@@ -51,7 +51,7 @@ else:
         return x
 
     def du(x):
-        return x
+        return x.encode("utf-8")
 
 
 class EdfWriter(object):
