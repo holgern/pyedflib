@@ -122,9 +122,9 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhyisicalSamples(data)
         f.writePhyisicalSamples(data)
         f.writePhyisicalSamples(data)
-        f.writeAnnotation(1.23, 0.2, b"Zähne")
+        f.writeAnnotation(1.23, 0.2, u"Zähne")
         f.writeAnnotation(0.25, -1, u"Fuß")
-        f.writeAnnotation(1.25, 0, "abc")
+        f.writeAnnotation(1.25, 0, u"abc")
         f.close()
         del f
 
@@ -134,13 +134,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], b"Z..hne")
+        np.testing.assert_equal(ann_text[0], u"Z..hne")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], b"Fu..")
+        np.testing.assert_equal(ann_text[1], u"Fu..")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"abc")
+        np.testing.assert_equal(ann_text[2], u"abc")
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
