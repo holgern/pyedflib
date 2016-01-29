@@ -82,17 +82,17 @@ class EdfReader(CyEdfReader):
         Returns the  header of one signal as  dicts
         """
         return {'label': self.getLabel(chn),
-                                 'dimension': self.getPhysicalDimension(chn),
+                'dimension': self.getPhysicalDimension(chn),
                                  'sample_rate': self.getSampleFrequency(chn),
-                                 'physical_max':self.getPhysicalMaximum(chn),
-                                 'physical_min': self.getPhysicalMinimum(chn),
-                                 'digital_max': self.getDigitalMaximum(chn),
-                                 'digital_min': self.getDigitalMinimum(chn),
-                                 'prefilter':self.getPrefilter(chn),
-                                 'transducer': self.getTransducer(chn)}
+                'physical_max':self.getPhysicalMaximum(chn),
+                'physical_min': self.getPhysicalMinimum(chn),
+                'digital_max': self.getDigitalMaximum(chn),
+                'digital_min': self.getDigitalMinimum(chn),
+                'prefilter':self.getPrefilter(chn),
+                'transducer': self.getTransducer(chn)}
 
     def getSignalHeaders(self):
-"""
+        """
         Returns the  header of all signals as array of dicts
         """
         signalHeader = []
