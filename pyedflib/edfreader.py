@@ -82,14 +82,14 @@ class EdfReader(CyEdfReader):
         Returns the  header of one signal as  dicts
         """
         return {'label': self.getLabel(chn),
-                                 'dimension': self.getPhysicalDimension(chn),
+                'dimension': self.getPhysicalDimension(chn),
                                  'sample_rate': self.getSampleFrequency(chn),
-                                 'physical_max':self.getPhysicialMaximum(chn),
-                                 'physical_min': self.getPhysicialMinimum(chn),
-                                 'digital_max': self.getDigitalMaximum(chn),
-                                 'digital_min': self.getDigitalMinimum(chn),
-                                 'prefilter':self.getPrefilter(chn),
-                                 'transducer': self.getTransducer(chn)}
+                'physical_max':self.getPhysicalMaximum(chn),
+                'physical_min': self.getPhysicalMinimum(chn),
+                'digital_max': self.getDigitalMaximum(chn),
+                'digital_min': self.getDigitalMinimum(chn),
+                'prefilter':self.getPrefilter(chn),
+                'transducer': self.getTransducer(chn)}
 
     def getSignalHeaders(self):
         """
@@ -208,7 +208,7 @@ class EdfReader(CyEdfReader):
         else:
             return b''
 
-    def getPhysicialMaximum(self,chn):
+    def getPhysicalMaximum(self,chn):
         """
         Returns the maximum physical value of signal edfsignal.
         """
@@ -217,7 +217,7 @@ class EdfReader(CyEdfReader):
         else:
             return 0
 
-    def getPhysicialMinimum(self,chn):
+    def getPhysicalMinimum(self,chn):
         """
         Returns the minimum physical value of signal edfsignal.
         """

@@ -117,7 +117,8 @@ cdef class CyEdfReader:
         return dbuffer
     
     def open(self, file_name, mode='r', annotations_mode='all'):
-        result = edfopen_file_readonly(file_name.encode(), &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
+        file_name_str = file_name.encode()
+        result = edfopen_file_readonly(file_name_str, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
         self.file_name = file_name
         return self.check_open_ok(result)
 
@@ -412,7 +413,8 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
-    return edfopen_file_writeonly(path.encode('UTF-8'), filetype, number_of_signals)
+    path_str = path.encode('UTF-8')
+    return edfopen_file_writeonly(path_str, filetype, number_of_signals)
     
 def set_patient_additional(handle, patient_additional):
     """int edf_set_patient_additional(int handle, const char *patient_additional)"""

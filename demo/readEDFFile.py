@@ -41,8 +41,8 @@ if __name__ == '__main__':
     print("label: %s" % f.getLabel(channel))
     print("samples in file: %i" % f.getNSamples()[channel])
     # print("samples in datarecord: %i" % f.get
-    print("physical maximum: %f" % f.getPhysicialMaximum(channel))
-    print("physical minimum: %f" % f.getPhysicialMinimum(channel))
+    print("physical maximum: %f" % f.getPhysicalMaximum(channel))
+    print("physical minimum: %f" % f.getPhysicalMinimum(channel))
     print("digital maximum: %i" % f.getDigitalMaximum(channel))
     print("digital minimum: %i" % f.getDigitalMinimum(channel))
     print("physical dimension: %s" % f.getPhysicalDimension(channel))

@@ -468,7 +468,7 @@ class EdfWriter(object):
         self.channels[edfsignal]['prefilter'] = prefilter
         self.update_header()
 
-    def writePhyisicalSamples(self, data):
+    def writePhysicalSamples(self, data):
         """
         Writes n physical samples (uV, mA, Ohm) belonging to one signal where n
         is the samplefrequency of the signal.
@@ -486,7 +486,7 @@ class EdfWriter(object):
 
         All parameters must be already written into the bdf/edf-file.
         """
-        write_physical_samples(self.handle, data)
+        return write_physical_samples(self.handle, data)
 
     def writeSamples(self, data_list):
         """
