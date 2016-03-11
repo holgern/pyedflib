@@ -62,14 +62,18 @@ else:
 class ChannelDoesNotExist(Exception):
     def __init__(self, value):
         self.parameter = value
+
     def __str__(self):
         return repr(self.parameter)
+
 
 class WrongInputSize(Exception):
     def __init__(self, value):
         self.parameter = value
+
     def __str__(self):
         return repr(self.parameter)
+
 
 class EdfWriter(object):
     def __exit__(self, exc_type, exc_val, ex_tb):
