@@ -26,8 +26,8 @@ class TestEdfWriter(unittest.TestCase):
         f.setSignalHeader(0,channel_info)
         f.setTechnician('tec1')
         data = np.ones(100) * 0.1
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
         f.close()
         del f
 
@@ -85,10 +85,10 @@ class TestEdfWriter(unittest.TestCase):
                                file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         data = np.ones(100) * 0.1
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
         f.writeAnnotation(1.23, 0.2, "annotation1")
         f.writeAnnotation(0.25, -1, "annotation2")
         f.writeAnnotation(1.25, 0, "annotation3")
@@ -118,10 +118,10 @@ class TestEdfWriter(unittest.TestCase):
                                file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         data = np.ones(100) * 0.1
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
-        f.writePhyisicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
         f.writeAnnotation(1.23, 0.2, u"Zähne")
         f.writeAnnotation(0.25, -1, u"Fuß")
         f.writeAnnotation(1.25, 0, u"abc")

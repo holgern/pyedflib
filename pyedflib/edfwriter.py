@@ -510,7 +510,7 @@ class EdfWriter(object):
         notAtEnd = True
         while notAtEnd:
             for i in np.arange(len(data_list)):
-                self.writePhyisicalSamples(data_list[i].flatten()[ind[i]:ind[i]+self.channels[i]['sample_rate']])
+                self.writePhysicalSamples(data_list[i].flatten()[ind[i]:ind[i]+self.channels[i]['sample_rate']])
                 ind[i] += self.channels[i]['sample_rate']
 
             for i in np.arange(len(data_list)):
