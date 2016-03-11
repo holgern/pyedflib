@@ -4,10 +4,9 @@ from __future__ import division, print_function, absolute_import
 
 import os
 import numpy as np
-from datetime import datetime, date
+from datetime import datetime
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
-import sys
 import unittest
 import pyedflib
 

@@ -6,7 +6,6 @@ import os
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
-import sys
 import unittest
 import pyedflib
 

@@ -24,9 +24,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from __future__ import division, print_function, absolute_import
-from datetime import datetime, date
+from datetime import datetime
 import numpy as np
-from ._pyedflib import *
+from ._pyedflib import CyEdfReader
 __all__ = ['EdfReader']
 
 
