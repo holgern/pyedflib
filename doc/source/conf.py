@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+	'numpydoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,8 +56,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyEDFlib'
-copyright = u'2015, Holger Nahrstaedt'
+project = u'pyEDFlib'
+copyright = u'2015, 2016, Holger Nahrstaedt'
 author = u'Holger Nahrstaedt'
 
 # The version info for the project you're documenting, acts as replacement for
