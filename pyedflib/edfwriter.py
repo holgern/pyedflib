@@ -525,18 +525,31 @@ class EdfWriter(object):
 
         if (len(data_list) != len(self.channels)):
             raise WrongInputSize(len(data_list))
+
         ind = []
+        notAtEnd = True
         for i in np.arange(len(data_list)):
             ind.append(0)
-        notAtEnd = True
+
+        for i in np.arange(len(data_list)):
+            if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+                notAtEnd = False
+
         while notAtEnd:
             for i in np.arange(len(data_list)):
                 self.writePhysicalSamples(data_list[i].flatten()[ind[i]:ind[i]+self.channels[i]['sample_rate']])
                 ind[i] += self.channels[i]['sample_rate']
 
             for i in np.arange(len(data_list)):
-                if np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']:
+                if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                     notAtEnd = False
+
+        for i in np.arange(len(data_list)):
+            lastSamples = np.zeros(self.channels[i]['sample_rate'])
+            lastSampleInd = np.max(data_list[i].shape) - ind[i]
+            if lastSampleInd > 0:
+                lastSamples[:lastSampleInd] = data_list[i].flatten()[-lastSampleInd:]
+                self.writePhysicalSamples(lastSamples)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
