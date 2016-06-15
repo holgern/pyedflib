@@ -22,7 +22,7 @@ class TestEdfReader(unittest.TestCase):
         except IOError:
             print('cannot open', self.edf_data_file)
             return
-            
+
         ann_index, ann_duration, ann_text = f.readAnnotations()
         np.testing.assert_almost_equal(ann_index[0], 0)
         np.testing.assert_almost_equal(ann_index[1], 600)
@@ -42,7 +42,7 @@ class TestEdfReader(unittest.TestCase):
             f = pyedflib.EdfReader(self.edf_data_file)
         except IOError:
             print('cannot open', self.edf_data_file)
-            return        
+            return
         datetimeSoll = datetime(2011,4,4,12,57,2)
         np.testing.assert_equal(f.getStartdatetime(),datetimeSoll)
         np.testing.assert_equal(f.getPatientCode(), b'abcxyz99')
@@ -64,7 +64,7 @@ class TestEdfReader(unittest.TestCase):
             f = pyedflib.EdfReader(self.edf_data_file)
         except IOError:
             print('cannot open', self.edf_data_file)
-            return                
+            return
         np.testing.assert_equal(f.getSignalLabels()[0], b'squarewave')
         np.testing.assert_equal(f.getLabel(0), b'squarewave')
         np.testing.assert_equal(f.getPhysicalDimension(0), b'uV')
