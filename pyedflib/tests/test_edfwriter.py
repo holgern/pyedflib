@@ -12,8 +12,9 @@ import pyedflib
 
 class TestEdfWriter(unittest.TestCase):
     def setUp(self):
-        data_dir = os.path.join(os.getcwd(), 'data')
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')
+        self.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
 
     def test_EdfWriter(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
