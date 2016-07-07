@@ -4,12 +4,23 @@
 import os
 import sys
 import subprocess
+from functools import partial
 
+from setuptools import setup, Extension
+from numpy import get_include as get_numpy_include
+from distutils.sysconfig import get_python_inc
+
+try:
+    from Cython.Build import cythonize
+except ImportError:
+    USE_CYTHON = False
+else:
+    USE_CYTHON = True
 
 MAJOR = 0
 MINOR = 1
-MICRO = 4
-ISRELEASED = True
+MICRO = 5
+ISRELEASED = False
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
@@ -75,14 +86,11 @@ if not release:
 """
     FULLVERSION, GIT_REVISION = get_version_info()
 
-    a = open(filename, 'w')
-    try:
+    with open(filename, 'w') as a:
         a.write(cnt % {'version': VERSION,
                        'full_version': FULLVERSION,
                        'git_revision': GIT_REVISION,
                        'isrelease': str(ISRELEASED)})
-    finally:
-        a.close()
 
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
@@ -96,42 +104,50 @@ if sys.platform == "darwin":
     os.environ["COPY_EXTENDED_ATTRIBUTES_DISABLE"] = "true"
     os.environ["COPYFILE_DISABLE"] = "true"
 
+make_ext_path = partial(os.path.join, "pyedflib", "src")
 
-setup_args = {}
+sources = ["edflib.c"]
+sources = list(map(make_ext_path, sources))
+headers = ["edflib.h"]
+headers = list(map(make_ext_path, headers))
 
+cython_modules = ['_pyedflib']
+cython_sources = [('{0}.pyx' if USE_CYTHON else '{0}.c').format(module)
+                  for module in cython_modules]
 
+c_macros = [("PY_EXTENSION", None)]
+cython_macros = []
+cythonize_opts = {}
+if os.environ.get("CYTHON_TRACE"):
+    cythonize_opts['linetrace'] = True
+    cython_macros.append(("CYTHON_TRACE_NOGIL", 1))
 
-def generate_cython():
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    print("Cythonizing sources")
-    p = subprocess.call([sys.executable,
-                          os.path.join(cwd, 'util', 'cythonize.py'),
-                          'pyedflib'],
-                         cwd=cwd)
-    if p != 0:
-        raise RuntimeError("Running cythonize failed!")
+# By default C object files are rebuilt for every extension
+# C files must be built once only for coverage to work
+c_lib = ('c_edf',{'sources': sources,
+                 'depends': headers,
+                 'include_dirs': [make_ext_path("c"), get_python_inc()],
+                 'macros': c_macros,})
 
+ext_modules = [
+    Extension('pyedflib.{0}'.format(module),
+              sources=[make_ext_path(source)],
+              # Doesn't automatically rebuild if library changes
+              depends=c_lib[1]['sources'] + c_lib[1]['depends'],
+              include_dirs=[make_ext_path("c"), get_numpy_include()],
+              define_macros=c_macros + cython_macros,
+              libraries=[c_lib[0]],)
+    for module, source, in zip(cython_modules, cython_sources)
+]
 
-def configuration(parent_package='',top_path=None):
-    from numpy.distutils.misc_util import Configuration
-    config = Configuration(None, parent_package, top_path)
-    config.set_options(ignore_setup_xxx_py=True,
-                       assume_default_configuration=True,
-                       delegate_options_to_subpackages=True,
-                       quiet=True)
-
-    config.add_subpackage('pyedflib')
-
-    config.get_version('pyedflib/version.py')
-    return config
-
-
-def setup_package():
+if __name__ == '__main__':
 
     # Rewrite the version file everytime
     write_version_py()
-
-    metadata = dict(
+    if USE_CYTHON:
+            ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
+            
+    setup(
         name="pyEDFlib",
         maintainer="Holger Nahrstaedt",
         maintainer_email="holgernahrstaedt@gmx.de",
@@ -161,42 +177,11 @@ def setup_package():
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
-        cmdclass={},
-        **setup_args
+        version=get_version_info()[0],
+        packages=['pyedflib'],
+        ext_modules=ext_modules,
+        libraries=[c_lib],
+        test_suite='nose.collector',
+        install_requires=["numpy"],
     )
-    if len(sys.argv) >= 2 and ('--help' in sys.argv[1:] or
-            sys.argv[1] in ('--help-commands', 'egg_info', '--version',
-                            'clean')):
-        # For these actions, NumPy is not required.
-        #
-        # They are required to succeed without Numpy for example when
-        # pip is used to install PyWavelets when Numpy is not yet present in
-        # the system.
-        try:
-            from setuptools import setup
-        except ImportError:
-            from distutils.core import setup
 
-        FULLVERSION, GIT_REVISION = get_version_info()
-        metadata['version'] = FULLVERSION
-    else:
-        if (len(sys.argv) >= 2 and sys.argv[1] == 'bdist_wheel') or (
-                    'develop' in sys.argv):
-            # bdist_wheel needs setuptools
-            import setuptools
-
-        from numpy.distutils.core import setup
-
-        cwd = os.path.abspath(os.path.dirname(__file__))
-        if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
-            # Generate Cython sources, unless building from source release
-            #expand_src_templates()
-            generate_cython()
-
-    metadata['configuration'] = configuration
-
-    setup(**metadata)
-
-
-if __name__ == '__main__':
-    setup_package()
