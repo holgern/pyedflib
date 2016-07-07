@@ -1,11 +1,21 @@
 # After changing this file, check it on:
 #   http://lint.travis-ci.org/
 language: python
+sudo: false
+
+env:
+  global:
+    # Use non-interactive backend
+    - MPLBACKEND: Agg
+    - CYTHON_TRACE: 1
+
 matrix:
   include:
     - python: 2.7
       env:
-        - PYFLAKES=1 PEP8=1 NUMPYSPEC=numpy
+        - PYFLAKES=1
+        - PEP8=1
+        - NUMPYSPEC=numpy
       before_install:
         - pip install pep8==1.6.2
         - pip install pyflakes
@@ -27,30 +37,28 @@ matrix:
         - OPTIMIZE=-OO NUMPYSPEC="numpy==1.7.2"
     - python: 2.7
       env:
-        - NUMPYSPEC=numpy
+        - NUMPYSPEC="numpy==1.9.1"
 
-cache:
-  directories:
-    - $HOME/.ccache
+cache: pip
 
 before_install:
-  - export PATH=/usr/lib/ccache:$PATH
   - uname -a
   - free -m
   - df -h
   - ulimit -a
-  # Speed up install by not compiling Cython
-  - travis_retry pip install --install-option="--no-cython-compile" Cython==0.23
-  - travis_retry pip install $NUMPYSPEC
-  - travis_retry pip install nose
-  - pip install coverage
-  - pip install coveralls
-  - python -V
-  - set -o pipefail
+  - pip install --upgrade pip
+  - pip install --upgrade wheel
+  # Set numpy version first, other packages link against it
+  - pip install $NUMPYSPEC
+  - pip install Cython matplotlib nose coverage codecov
+  - set -o pipefail 
 
 script:
-  # - python -u $OPTIMIZE runtests.py -g -m full --coverage
-  - python setup.py build_ext --inplace
-  - nosetests -v --with-coverage
+  # Define a fixed build dir so next step works
+  - CFLAGS="--coverage" python setup.py build --build-lib build/lib/ --build-temp build/tmp/
+  - nosetests build/lib/ --tests pyedflib/tests
 after_success:
-  - coveralls
+  - codecov
+  # Travis CI has old gcov, needs object dir explicitly specified
+  - gcov --object-directory build/tmp/pyedflib/_extensions/c/ build/tmp/pyedflib/_extensions/c/*.o
+  - bash <(curl -s https://codecov.io/bash)

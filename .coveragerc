@@ -1,12 +1,10 @@
 [run]
+branch = True
 include = 
     */pyedflib/*
 omit = 
     */version.py
-    */setup.py
-    */__init__.py
-    */util/*
-
-[report]
-exclude_lines =
-    pragma: no cover
+    */pyedflib/tests/*
+    *.pyx
+    stringsource
+plugins = Cython.Coverage
