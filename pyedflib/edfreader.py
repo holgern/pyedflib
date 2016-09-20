@@ -26,7 +26,7 @@
 from __future__ import division, print_function, absolute_import
 from datetime import datetime
 import numpy as np
-from ._pyedflib import CyEdfReader
+from ._extensions._pyedflib import CyEdfReader
 __all__ = ['EdfReader']
 
 
