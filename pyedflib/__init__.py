@@ -1,6 +1,6 @@
 from __future__ import division, print_function, absolute_import
 
-from ._pyedflib import *
+from ._extensions._pyedflib import *
 from .edfwriter import *
 from .edfreader import *
 

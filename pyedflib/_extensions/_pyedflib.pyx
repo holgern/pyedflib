@@ -37,7 +37,8 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
            'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS']
 
 
-from c_edf cimport *
+#from c_edf cimport *
+cimport c_edf
 cimport cpython
 import numpy as np
 cimport numpy as np
@@ -63,7 +64,7 @@ FILETYPE_BDFPLUS = EDFLIB_FILETYPE_BDFPLUS
 
 
 def lib_version():
-    return edflib_version()
+    return c_edf.edflib_version()
 
 cdef class CyEdfReader:
     """
@@ -83,7 +84,7 @@ cdef class CyEdfReader:
 
 
     cdef int handle
-    cdef edf_hdr_struct hdr
+    cdef c_edf.edf_hdr_struct hdr
     cdef size_t nsamples_per_record
     #I think it is ok not to do this in __cinit__(*,**)
     def __init__(self, file_name, annotations_mode='all'):
@@ -91,7 +92,7 @@ cdef class CyEdfReader:
 
     def __dealloc__(self):
         if self.hdr.handle:
-            edfclose_file(self.hdr.handle)
+            c_edf.edfclose_file(self.hdr.handle)
             
     def check_open_ok(self,result):
         if result == 0:
@@ -118,15 +119,15 @@ cdef class CyEdfReader:
     
     def open(self, file_name, mode='r', annotations_mode='all'):
         file_name_str = file_name.encode()
-        result = edfopen_file_readonly(file_name_str, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
+        result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
         self.file_name = file_name
         return self.check_open_ok(result)
 
     def read_annotation(self):
-        cdef edf_annotation_struct annot
+        cdef c_edf.edf_annotation_struct annot
         annotlist = [['','',''] for x in range(self.annotations_in_file)]
         for ii in range(self.annotations_in_file):
-            edf_get_annotation(self.hdr.handle, ii, &(annot))
+            c_edf.edf_get_annotation(self.hdr.handle, ii, &(annot))
             #get_annotation(self.hdr.handle, ii, &annotation)
             annotlist[ii][0] = annot.onset
             annotlist[ii][1] = annot.duration
@@ -278,13 +279,13 @@ cdef class CyEdfReader:
         
 
     def _close(self):   # should not be closed from python
-        edfclose_file(self.hdr.handle)
+        c_edf.edfclose_file(self.hdr.handle)
     
     def read_digital_signal(self, signalnum, start, n, np.ndarray[np.int32_t, ndim=1] sigbuf):
        """read @n number of samples from signal number @signum starting at @start
           into numpy int32 array @sigbuf sigbuf must be at least n long
        """
-       edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
+       c_edf.edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
        readn = read_int_samples(self.handle, signalnum, n, sigbuf)
        if readn != n:
            print "read %d, less than %d requested!!!" % (readn, n)    
@@ -295,8 +296,8 @@ cdef class CyEdfReader:
         @start into numpy float64 array @sigbuf sigbuf must be at least n long
         """
         
-        edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
-        readn = edfread_physical_samples(self.hdr.handle, signalnum, n, <double*>sigbuf.data)
+        c_edf.edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
+        readn = c_edf.edfread_physical_samples(self.hdr.handle, signalnum, n, <double*>sigbuf.data)
         # print "read %d samples" % readn
         if readn != n:
             print "read %d, less than %d requested!!!" % (readn, n)
@@ -306,8 +307,8 @@ cdef class CyEdfReader:
 
         if n < self.hdr.datarecords_in_file:
             for ii in range(self.signals_in_file):
-                edfseek(self.hdr.handle, ii, n*self.samples_in_datarecord(ii), EDFSEEK_SET) # just a guess
-                readn = edfread_physical_samples(self.hdr.handle, ii, self.samples_in_datarecord(ii),
+                c_edf.edfseek(self.hdr.handle, ii, n*self.samples_in_datarecord(ii), EDFSEEK_SET) # just a guess
+                readn = c_edf.edfread_physical_samples(self.hdr.handle, ii, self.samples_in_datarecord(ii),
                                                  (<double*>db.data)+offset)
                 print "readn this many samples", readn
                 offset += self.samples_in_datarecord(ii)
@@ -344,23 +345,23 @@ cdef char_type[:] _chars(s):
 
 def set_patientcode(int handle, char *patientcode):
     # check if rw?
-    return edf_set_patientcode(handle, patientcode)
+    return c_edf.edf_set_patientcode(handle, patientcode)
 
 cpdef int write_annotation_latin1(int handle, long long onset, long long duration, char *description):
-        return edfwrite_annotation_latin1(handle, onset, duration, description)
+        return c_edf.edfwrite_annotation_latin1(handle, onset, duration, description)
 
 cpdef int write_annotation_utf8(int handle, long long onset, long long duration, char *description):
-        return edfwrite_annotation_utf8(handle, onset, duration, description)
+        return c_edf.edfwrite_annotation_utf8(handle, onset, duration, description)
 
 cpdef int set_technician(int handle, char *technician):
-    return edf_set_technician(handle, technician)
+    return c_edf.edf_set_technician(handle, technician)
 
 cdef class EdfAnnotation:
-    cdef edf_annotation_struct annotation
+    cdef c_edf.edf_annotation_struct annotation
 
 
 cpdef int get_annotation(int handle, int n, EdfAnnotation edf_annotation):
-    return edf_get_annotation(handle, n, &(edf_annotation.annotation))
+    return c_edf.edf_get_annotation(handle, n, &(edf_annotation.annotation))
 
 # need to use npbuffers
 cpdef read_int_samples(int handle, int edfsignal, int n,
@@ -379,121 +380,121 @@ cpdef read_int_samples(int handle, int edfsignal, int n,
     returns how many were actually read
     doesn't currently check that buf can hold all the data
     """
-    return edfread_digital_samples(handle, edfsignal, n,<int*>buf.data)
+    return c_edf.edfread_digital_samples(handle, edfsignal, n,<int*>buf.data)
 
 cpdef int blockwrite_digital_samples(int handle, np.ndarray[np.int16_t,ndim=1] buf):
-    return edf_blockwrite_digital_samples(handle, <int*>buf.data)
+    return c_edf.edf_blockwrite_digital_samples(handle, <int*>buf.data)
 
 cpdef int blockwrite_physical_samples(int handle, np.ndarray[np.float64_t,ndim=1] buf):
-    return edf_blockwrite_physical_samples(handle, <double*>buf.data)
+    return c_edf.edf_blockwrite_physical_samples(handle, <double*>buf.data)
 
 cpdef int set_recording_additional(int handle, char *recording_additional):
-    return edf_set_recording_additional(handle,recording_additional)
+    return c_edf.edf_set_recording_additional(handle,recording_additional)
 
 cpdef int write_physical_samples(int handle, np.ndarray[np.float64_t] buf):
-    return edfwrite_physical_samples(handle, <double *>buf.data)
+    return c_edf.edfwrite_physical_samples(handle, <double *>buf.data)
 
 
 cpdef int set_patientname(int handle, char *name):
-    return edf_set_patientname(handle, name)
+    return c_edf.edf_set_patientname(handle, name)
 
 cpdef int set_physical_minimum(int handle, int edfsignal, double phys_min):
-    edf_set_physical_minimum(handle, edfsignal, phys_min)
+    c_edf.edf_set_physical_minimum(handle, edfsignal, phys_min)
 
 cpdef int read_physical_samples(int handle, int edfsignal, int n,
                                 np.ndarray[np.float64_t] buf):
-    return edfread_physical_samples(handle, edfsignal, n, <double *>buf.data)
+    return c_edf.edfread_physical_samples(handle, edfsignal, n, <double *>buf.data)
 
 def close_file(handle):
-    return edfclose_file(handle)
+    return c_edf.edfclose_file(handle)
 
 # so you can use the same name if defining a python only function
 def set_physical_maximum(handle, edfsignal, phys_max):
-    return edf_set_physical_maximum(handle, edfsignal, phys_max)
+    return c_edf.edf_set_physical_maximum(handle, edfsignal, phys_max)
 
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
     path_str = path.encode('UTF-8')
-    return edfopen_file_writeonly(path_str, filetype, number_of_signals)
+    return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)
     
 def set_patient_additional(handle, patient_additional):
     """int edf_set_patient_additional(int handle, const char *patient_additional)"""
-    return edf_set_patient_additional(handle, patient_additional)
+    return c_edf.edf_set_patient_additional(handle, patient_additional)
 
 def set_digital_maximum(handle, edfsignal, dig_max):
     "int edf_set_digital_maximum(int handle, int edfsignal, int dig_max)"
-    return edf_set_digital_maximum(handle, edfsignal, dig_max)
+    return c_edf.edf_set_digital_maximum(handle, edfsignal, dig_max)
         
 # see CyEdfreader() class
 # int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations)
 
 def set_birthdate(handle, birthdate_year, birthdate_month, birthdate_day):
     """int edf_set_birthdate(int handle, int birthdate_year, int birthdate_month, int birthdate_day)"""
-    return edf_set_birthdate(handle, birthdate_year,  birthdate_month, birthdate_day)
+    return c_edf.edf_set_birthdate(handle, birthdate_year,  birthdate_month, birthdate_day)
 
 def set_digital_minimum(handle, edfsignal, dig_min):
     """int edf_set_digital_minimum(int handle, int edfsignal, int dig_min)"""
-    return edf_set_digital_minimum(handle,  edfsignal, dig_min)
+    return c_edf.edf_set_digital_minimum(handle,  edfsignal, dig_min)
 
 def write_digital_samples(handle, np.ndarray[np.int32_t] buf):
     """write_digital_samples(int handle, np.ndarray[np.int32_t] buf)"""
-    return edfwrite_digital_samples(handle, <int*>buf.data)
+    return c_edf.edfwrite_digital_samples(handle, <int*>buf.data)
 
 def set_equipment(handle, equipment):
     """int edf_set_equipment(int handle, const char *equipment)"""
-    return edf_set_equipment(handle, equipment)
+    return c_edf.edf_set_equipment(handle, equipment)
 
 def set_samplefrequency(handle, edfsignal, samplefrequency):
     """int edf_set_samplefrequency(int handle, int edfsignal, int samplefrequency)"""
-    return edf_set_samplefrequency(handle, edfsignal, samplefrequency)
+    return c_edf.edf_set_samplefrequency(handle, edfsignal, samplefrequency)
 
 def set_admincode(handle, admincode):
     """int edf_set_admincode(int handle, const char *admincode)"""
-    return edf_set_admincode(handle, admincode)
+    return c_edf.edf_set_admincode(handle, admincode)
 
 def set_label(handle, edfsignal, label):
     """int edf_set_label(int handle, int edfsignal, const char *label)"""
-    return edf_set_label(handle, edfsignal, label)
+    return c_edf.edf_set_label(handle, edfsignal, label)
 
 
 #FIXME need to make sure this gives the proper values for large values
 def tell(handle, edfsignal):
     """long long edftell(int handle, int edfsignal)"""
-    return edftell(handle,  edfsignal)
+    return c_edf.edftell(handle,  edfsignal)
 
 def rewind(handle, edfsignal):
     """void edfrewind(int handle, int edfsignal)"""
-    edfrewind(handle, edfsignal)
+    c_edf.edfrewind(handle, edfsignal)
     
 def set_gender(handle, gender):
     """int edf_set_gender(int handle, int gender)"""
-    return edf_set_gender(handle, gender)
+    return c_edf.edf_set_gender(handle, gender)
 
 def set_physical_dimension(handle, edfsignal, phys_dim):
     """int edf_set_physical_dimension(int handle, int edfsignal, const char *phys_dim)"""
-    return edf_set_physical_dimension(handle, edfsignal, phys_dim)
+    return c_edf.edf_set_physical_dimension(handle, edfsignal, phys_dim)
 
 def set_transducer(handle, edfsignal, transducer):
     """int edf_set_transducer(int handle, int edfsignal, const char *transducer)"""
-    return edf_set_transducer(handle, edfsignal, transducer)
+    return c_edf.edf_set_transducer(handle, edfsignal, transducer)
 
 def set_prefilter(handle, edfsignal, prefilter):
     """int edf_set_prefilter(int handle, int edfsignal, const char*prefilter)"""
-    return edf_set_prefilter(handle, edfsignal, prefilter)
+    return c_edf.edf_set_prefilter(handle, edfsignal, prefilter)
 
 def seek(handle, edfsignal, offset, whence):
     """long long edfseek(int handle, int edfsignal, long long offset, int whence)"""
-    return edfseek(handle, edfsignal, offset, whence)
+    return c_edf.edfseek(handle, edfsignal, offset, whence)
 
 def set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
                                  starttime_hour, starttime_minute, starttime_second):
     """int edf_set_startdatetime(int handle, int startdate_year, int startdate_month, int startdate_day,
                                       int starttime_hour, int starttime_minute, int starttime_second)"""
-    return edf_set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
+    return c_edf.edf_set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
                                  starttime_hour, starttime_minute, starttime_second)
 
 
 def set_datarecord_duration(handle, duration):
     """int edf_set_datarecord_duration(int handle, int duration)"""
-    return edf_set_datarecord_duration(handle, duration)
+    return c_edf.edf_set_datarecord_duration(handle, duration)
 

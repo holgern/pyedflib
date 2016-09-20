@@ -537,7 +537,7 @@ class EdfWriter(object):
 
         while notAtEnd:
             for i in np.arange(len(data_list)):
-                self.writePhysicalSamples(data_list[i].flatten()[ind[i]:ind[i]+self.channels[i]['sample_rate']])
+                self.writePhysicalSamples(data_list[i].flatten()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
                 ind[i] += self.channels[i]['sample_rate']
 
             for i in np.arange(len(data_list)):
@@ -545,8 +545,9 @@ class EdfWriter(object):
                     notAtEnd = False
 
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(self.channels[i]['sample_rate'])
-            lastSampleInd = np.max(data_list[i].shape) - ind[i]
+            lastSamples = np.zeros(int(self.channels[i]['sample_rate']))
+            lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
+            lastSampleInd = int(np.min((lastSampleInd,int(self.channels[i]['sample_rate']))))
             if lastSampleInd > 0:
                 lastSamples[:lastSampleInd] = data_list[i].flatten()[-lastSampleInd:]
                 self.writePhysicalSamples(lastSamples)

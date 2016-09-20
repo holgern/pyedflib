@@ -104,11 +104,11 @@ if sys.platform == "darwin":
     os.environ["COPY_EXTENDED_ATTRIBUTES_DISABLE"] = "true"
     os.environ["COPYFILE_DISABLE"] = "true"
 
-make_ext_path = partial(os.path.join, "pyedflib", "src")
+make_ext_path = partial(os.path.join, "pyedflib", "_extensions")
 
-sources = ["edflib.c"]
+sources = ["c/edflib.c"]
 sources = list(map(make_ext_path, sources))
-headers = ["edflib.h"]
+headers = ["c/edflib.h"]
 headers = list(map(make_ext_path, headers))
 
 cython_modules = ['_pyedflib']
@@ -130,7 +130,7 @@ c_lib = ('c_edf',{'sources': sources,
                  'macros': c_macros,})
 
 ext_modules = [
-    Extension('pyedflib.{0}'.format(module),
+    Extension('pyedflib._extensions.{0}'.format(module),
               sources=[make_ext_path(source)],
               # Doesn't automatically rebuild if library changes
               depends=c_lib[1]['sources'] + c_lib[1]['depends'],
@@ -178,7 +178,7 @@ if __name__ == '__main__':
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
         version=get_version_info()[0],
-        packages=['pyedflib'],
+        packages=['pyedflib','pyedflib._extensions'],
         ext_modules=ext_modules,
         libraries=[c_lib],
         test_suite='nose.collector',
