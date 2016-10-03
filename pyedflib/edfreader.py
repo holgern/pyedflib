@@ -446,7 +446,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMaximum(0)
-        1000
+        1000.0
         >>> f._close()
         >>> del f
 
@@ -470,7 +470,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMinimum(0)
-        -1000
+        -1000.0
         >>> f._close()
         >>> del f
 
