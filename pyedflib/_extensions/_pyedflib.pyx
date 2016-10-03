@@ -121,6 +121,7 @@ cdef class CyEdfReader:
         file_name_str = file_name.encode()
         result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
         self.file_name = file_name
+
         return self.check_open_ok(result)
 
     def read_annotation(self):
