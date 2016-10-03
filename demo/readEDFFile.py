@@ -8,9 +8,7 @@ import pyedflib
 
 
 if __name__ == '__main__':
-    data_dir = os.path.join('.', 'data')
-    test_data_file = os.path.join(data_dir, 'test_generator.edf')
-    f = pyedflib.EdfReader(test_data_file)
+    f = pyedflib.data.test_generator()
     print("\nlibrary version: %s" % pyedflib.version.version)
 
     print("\ngeneral header:\n")

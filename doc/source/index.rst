@@ -11,7 +11,9 @@ Welcome to PyEDFlib's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   ref/index
+   dev/index
 
 
 

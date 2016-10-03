@@ -44,6 +44,10 @@ class EdfReader(CyEdfReader):
     def readAnnotations(self):
         """
         Annotations from a edf-file
+
+        Parameters
+        ----------
+        None
         """
         annot = self.read_annotation()
         annot = np.array(annot)
@@ -70,6 +74,10 @@ class EdfReader(CyEdfReader):
     def getHeader(self):
         """
         Returns the file header as dict
+
+        Parameters
+        ----------
+        None
         """
         return {"technician": self.getTechnician(), "recording_additional": self.getRecordingAdditional(),
                 "patientname": self.getPatientName(), "patient_additional": self.getPatientAdditional(),
@@ -80,6 +88,10 @@ class EdfReader(CyEdfReader):
     def getSignalHeader(self, chn):
         """
         Returns the  header of one signal as  dicts
+
+        Parameters
+        ----------
+        None
         """
         return {'label': self.getLabel(chn),
                 'dimension': self.getPhysicalDimension(chn),
@@ -94,6 +106,10 @@ class EdfReader(CyEdfReader):
     def getSignalHeaders(self):
         """
         Returns the  header of all signals as array of dicts
+
+        Parameters
+        ----------
+        None
         """
         signalHeader = []
         for chn in np.arange(self.n_channels):
@@ -103,60 +119,164 @@ class EdfReader(CyEdfReader):
     def getTechnician(self):
         """
         Returns the technicians name
+
+        Parameters
+        ----------
+        None
         """
         return self.technician.rstrip()
 
     def getRecordingAdditional(self):
         """
         Returns the additional recordinginfo
+
+        Parameters
+        ----------
+        None
         """
         return self.recording_additional.rstrip()
 
     def getPatientName(self):
         """
         Returns the patientname
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPatientName()
+        'X'
+
         """
         return self.patientname.rstrip()
 
     def getPatientCode(self):
         """
         Returns the patientcode
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPatientCode()
+        ''
+
         """
         return self.patientcode.rstrip()
 
     def getPatientAdditional(self):
         """
         Returns the additional patientinfo.
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPatientAdditional()
+        ''
+
         """
         return self.patient_additional.rstrip()
 
     def getEquipment(self):
         """
         Returns the used Equipment.
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getEquipment()
+        'test generator'
+
         """
         return self.equipment.rstrip()
 
     def getAdmincode(self):
         """
         Returns the Admincode.
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getAdmincode()
+        ''
+
         """
         return self.admincode.rstrip()
 
     def getGender(self):
         """
         Returns the Gender of the patient.
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getGender()
+        ''
+
         """
         return self.gender.rstrip()
 
     def getFileDuration(self):
         """
         Returns the duration of the file in seconds.
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getFileDuration()
+        600L
+
         """
         return self.file_duration
 
     def getStartdatetime(self):
         """
         Returns the date and starttime as datetime object
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getStartdatetime()
+        datetime.datetime(2011, 4, 4, 12, 57, 2)
+
         """
         return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
                                  self.starttime_hour, self.starttime_minute, self.starttime_second)
@@ -164,12 +284,37 @@ class EdfReader(CyEdfReader):
     def getBirthdate(self):
         """
         Returns the birthdate as string object
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getBirthdate()
+        '30 jun 1969'
+
         """
         return self.birthdate.rstrip()
 
     def getSampleFrequencies(self):
         """
         Returns  samplefrequencies of all signals.
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getSampleFrequencies()
+        array([ 200.,  200.,  200.,  200.,  200.,  200.,  200.,  200.,  200.,
+                200.,  200.])
+
         """
         return np.array([round(self.samplefrequency(chn))
                          for chn in np.arange(self.signals_in_file)])
@@ -177,6 +322,19 @@ class EdfReader(CyEdfReader):
     def getSampleFrequency(self,chn):
         """
         Returns the samplefrequency of signal edfsignal.
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getSampleFrequency(0)
+        200.0
+
         """
         if 0 <= chn < self.signals_in_file:
             return round(self.samplefrequency(chn))
@@ -186,6 +344,17 @@ class EdfReader(CyEdfReader):
     def getSignalLabels(self):
         """
         Returns all labels (name) ("FP1", "SaO2", etc.).
+
+        Parameters
+        ----------
+        None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getSignalLabels()
+        ['squarewave', 'ramp', 'pulse', 'noise', 'sine 1 Hz', 'sine 8 Hz', 'sine 8.1777 Hz', 'sine 8.5 Hz', 'sine 15 Hz', 'sine 17 Hz', 'sine 50 Hz']
         """
         return [self.signal_label(chn).strip()
                 for chn in np.arange(self.signals_in_file)]
@@ -193,6 +362,19 @@ class EdfReader(CyEdfReader):
     def getLabel(self,chn):
         """
         Returns the label (name) of signal chn ("FP1", "SaO2", etc.).
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getLabel(0)
+        'squarewave'
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.signal_label(chn).rstrip()
@@ -202,6 +384,19 @@ class EdfReader(CyEdfReader):
     def getPrefilter(self,chn):
         """
         Returns the prefilter of signal chn ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPrefilter(0)
+        ''
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.prefilter(chn).rstrip()
@@ -211,6 +406,19 @@ class EdfReader(CyEdfReader):
     def getPhysicalMaximum(self,chn):
         """
         Returns the maximum physical value of signal edfsignal.
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPhysicalMaximum(0)
+        1000.0
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.physical_max(chn)
@@ -220,6 +428,19 @@ class EdfReader(CyEdfReader):
     def getPhysicalMinimum(self,chn):
         """
         Returns the minimum physical value of signal edfsignal.
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPhysicalMinimum(0)
+        -1000.0
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.physical_min(chn)
@@ -229,6 +450,19 @@ class EdfReader(CyEdfReader):
     def getDigitalMaximum(self, chn):
         """
         Returns the maximum digital value of signal edfsignal.
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getDigitalMaximum(0)
+        32767
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.digital_max(chn)
@@ -238,6 +472,19 @@ class EdfReader(CyEdfReader):
     def getDigitalMinimum(self, chn):
         """
         Returns the minimum digital value of signal edfsignal.
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getDigitalMinimum(0)
+        -32768
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.digital_min(chn)
@@ -247,6 +494,19 @@ class EdfReader(CyEdfReader):
     def getTransducer(self, chn):
         """
         Returns the transducer of signal chn ("AgAgCl cup electrodes", etc.).
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getTransducer(0)
+        ''
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.transducer(chn).rstrip()
@@ -256,6 +516,19 @@ class EdfReader(CyEdfReader):
     def getPhysicalDimension(self, chn):
         """
         Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
+
+        Parameters
+        ----------
+        chn : int
+            channel number
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getPhysicalDimension(0)
+        'uV'
+
         """
         if 0 <= chn < self.signals_in_file:
             return self.physical_dimension(chn).rstrip()

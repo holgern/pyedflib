@@ -10,7 +10,7 @@ from stacklineplot import stackplot
 
 
 if __name__ == '__main__':
-    f = pyedflib.EdfReader("data/test_generator.edf")
+    f = pyedflib.data.test_generator()
     n = f.signals_in_file
     signal_labels = f.getSignalLabels()
 

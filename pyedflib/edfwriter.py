@@ -81,16 +81,16 @@ class EdfWriter(object):
 
     def __init__(self, file_name, n_channels,
                  file_type=FILETYPE_EDFPLUS):
-        """Initialises an EDF file at @file_name.
-        @file_type is one of
+        """Initialises an EDF file at file_name.
+        file_type is one of
             edflib.FILETYPE_EDF
             edflib.FILETYPE_EDFPLUS
             edflib.FILETYPE_BDF
             edflib.FILETYPE_BDFPLUS
-        @n_channels is the number of channels without the annotation channel
+        n_channels is the number of channels without the annotation channel
         (only FILETYPE_EDFPLUS or FILETYPE_BDFPLUS)
 
-        @channel_info should be a
+        channel_info should be a
         list of dicts, one for each channel in the data. Each dict needs
         these values:
 
@@ -194,7 +194,7 @@ class EdfWriter(object):
         """
         Sets the parameter for signal edfsignal.
 
-        @channel_info should be a dict with
+        channel_info should be a dict with
         these values:
 
             'label' : channel label (string, <= 16 characters, must be unique)
@@ -239,8 +239,10 @@ class EdfWriter(object):
 
     def setTechnician(self, technician):
         """
-        Sets the technicians name to @technician.
+        Sets the technicians name to `technician`.
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.technician = technician
@@ -250,6 +252,8 @@ class EdfWriter(object):
         """
         Sets the additional recordinginfo
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.recording_additional = recording_additional
@@ -257,8 +261,10 @@ class EdfWriter(object):
 
     def setPatientName(self, patient_name):
         """
-        Sets the patientname to @patient_name.
+        Sets the patientname to `patient_name`.
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.patient_name = patient_name
@@ -266,8 +272,10 @@ class EdfWriter(object):
 
     def setPatientCode(self, patient_code):
         """
-        Sets the patientcode to @patient_code.
+        Sets the patientcode to `patient_code`.
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.patient_code = patient_code
@@ -275,8 +283,10 @@ class EdfWriter(object):
 
     def setPatientAdditional(self, patient_additional):
         """
-        Sets the additional patientinfo to @patient_additional.
+        Sets the additional patientinfo to `patient_additional`.
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.technician = patient_additional
@@ -284,14 +294,13 @@ class EdfWriter(object):
 
     def setEquipment(self, equipment):
         """
-        Sets the name of the @param equipment used during the aquisition.
-
+        Sets the name of the param equipment used during the aquisition.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
 
         Parameters
         ----------
         equipment : str
-                    Describes the measurement equpipment
+            Describes the measurement equpipment
 
         """
         self.equipment = equipment
@@ -306,7 +315,7 @@ class EdfWriter(object):
         Parameters
         ----------
         admincode : str
-                   admincode which is written into the header
+            admincode which is written into the header
 
         """
         self.admincode = admincode
@@ -315,13 +324,12 @@ class EdfWriter(object):
     def setGender(self, gender):
         """
         Sets the gender.
-
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
 
         Parameters
         ----------
         gender : int
-                 1 is male, 0 is female
+            1 is male, 0 is female
         """
         self.gender = gender
         self.update_header()
@@ -333,8 +341,13 @@ class EdfWriter(object):
         the default value. The datarecord duration must be in the range 0.05 to 20.0 seconds.
         Returns 0 on success, otherwise -1.
 
-        :param duration: float
+        Parameters
+        ----------
+        duration : float
+            Sets the datarecord duration
 
+        Notes
+        -----
         This function is NOT REQUIRED but can be called after opening a file in writemode and
         before the first sample write action. This function can be used when you want
         to use a samplerate which is not an integer. For example, if you want to use
@@ -348,7 +361,11 @@ class EdfWriter(object):
     def setStartdatetime(self, recording_start_time):
         """
         Sets the recording start Time
-        :param recording_start_time:
+
+        Parameters
+        ----------
+        recording_start_time: datetime object
+            Sets the recording start Time
         """
         self.recording_start_time = recording_start_time
         self.update_header()
@@ -357,8 +374,12 @@ class EdfWriter(object):
         """
         Sets the birthdate.
 
-        :param birthdate:
+        Parameters
+        ----------
+        birthdate:
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         self.birthdate = birthdate
@@ -368,6 +389,8 @@ class EdfWriter(object):
         """
         Sets the samplefrequency of signal edfsignal.
 
+        Notes
+        -----
         This function is required for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
@@ -379,9 +402,15 @@ class EdfWriter(object):
         """
         Sets the physical_maximum of signal edfsignal.
 
-        :param edfsignal: int
-        :param physical_maximum: float
+        Parameters
+        ----------
+        edfsignal: int
+            signal number
+        physical_maximum: float
+            Sets the physical maximum
 
+        Notes
+        -----
         This function is required for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
@@ -393,9 +422,15 @@ class EdfWriter(object):
         """
         Sets the physical_minimum of signal edfsignal.
 
-        :param edfsignal: int
-        :param physical_minimum: float
+        Parameters
+        ----------
+        edfsignal: int
+            signal number
+        physical_minimum: float
+            Sets the physical minimum
 
+        Notes
+        -----
         This function is required for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if (edfsignal < 0 or edfsignal > self.n_channels):
@@ -408,9 +443,15 @@ class EdfWriter(object):
         Sets the samplefrequency of signal edfsignal.
         Usually, the value 32767 is used for EDF+ and 8388607 for BDF+.
 
-        :param edfsignal: int
-        :param digital_maximum: int
+        Parameters
+        ----------
+        edfsignal : int
+            signal number
+        digital_maximum : int
+            Sets the maximum digital value
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         if (edfsignal < 0 or edfsignal > self.n_channels):
@@ -423,9 +464,15 @@ class EdfWriter(object):
         Sets the minimum digital value of signal edfsignal.
         Usually, the value -32768 is used for EDF+ and -8388608 for BDF+. Usually this will be (-(digital_maximum + 1)).
 
-        :param edfsignal: int
-        :param digital_minimum: int
+        Parameters
+        ----------
+        edfsignal : int
+            signal number
+        digital_minimum : int
+            Sets the minimum digital value
 
+        Notes
+        -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
         if (edfsignal < 0 or edfsignal > self.n_channels):
@@ -437,9 +484,15 @@ class EdfWriter(object):
         """
         Sets the label (name) of signal edfsignal ("FP1", "SaO2", etc.).
 
-        :param edfsignal: int
-        :param label: str
+        Parameters
+        ----------
+        edfsignal : int
+            signal number on which the label should be changed
+        label : str
+            signal label
 
+        Notes
+        -----
         This function is recommended for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if (edfsignal < 0 or edfsignal > self.n_channels):
@@ -454,6 +507,8 @@ class EdfWriter(object):
         :param edfsignal: int
         :param physical_dimension: str
 
+        Notes
+        -----
         This function is recommended for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
@@ -468,6 +523,8 @@ class EdfWriter(object):
         :param edfsignal: int
         :param transducer: str
 
+        Notes
+        -----
         This function is optional for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if (edfsignal < 0 or edfsignal > self.n_channels):
@@ -482,6 +539,8 @@ class EdfWriter(object):
         :param edfsignal: int
         :param prefilter: str
 
+        Notes
+        -----
         This function is optional for every signal and can be called only after opening a file in writemode and before the first sample write action.
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
@@ -494,9 +553,10 @@ class EdfWriter(object):
         Writes n physical samples (uV, mA, Ohm) belonging to one signal where n
         is the samplefrequency of the signal.
 
-        @data_vec belonging to one signal. The size must be the samplefrequency of the signal.
+        data_vec belonging to one signal. The size must be the samplefrequency of the signal.
 
-
+        Notes
+        -----
         Writes n physical samples (uV, mA, Ohm) from data_vec belonging to one signal where n
         is the samplefrequency of the signal. The physical samples will be converted to digital
         samples using the values of physical maximum, physical minimum, digital maximum and digital
