@@ -331,7 +331,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getSampleFrequencies()
-        array([ 200,  200,  200,  200,  200,  200,  200,  200,  200,  200,  200])
+        array([200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200])
         >>> f._close()
         >>> del f
 
@@ -398,7 +398,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getLabel(0)
-        'squarewave'
+        b'squarewave'
         >>> f._close()
         >>> del f
 
@@ -422,7 +422,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPrefilter(0)
-        ''
+        b''
         >>> f._close()
         >>> del f
 
@@ -446,7 +446,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMaximum(0)
-        1000.0
+        1000
         >>> f._close()
         >>> del f
 
@@ -470,7 +470,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMinimum(0)
-        -1000.0
+        -1000
         >>> f._close()
         >>> del f
 
@@ -542,7 +542,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getTransducer(0)
-        ''
+        b''
         >>> f._close()
         >>> del f
 
@@ -566,7 +566,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalDimension(0)
-        'uV'
+        b'uV'
         >>> f._close()
         >>> del f
 
