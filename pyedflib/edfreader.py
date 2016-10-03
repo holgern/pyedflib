@@ -150,6 +150,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientName()
         'X'
+        >>> f._close()
+        >>> del f
 
         """
         return self.patientname.rstrip()
@@ -168,6 +170,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientCode()
         ''
+        >>> f._close()
+        >>> del f
 
         """
         return self.patientcode.rstrip()
@@ -186,6 +190,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientAdditional()
         ''
+        >>> f._close()
+        >>> del f
 
         """
         return self.patient_additional.rstrip()
@@ -204,6 +210,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getEquipment()
         'test generator'
+        >>> f._close()
+        >>> del f
 
         """
         return self.equipment.rstrip()
@@ -222,6 +230,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getAdmincode()
         ''
+        >>> f._close()
+        >>> del f
 
         """
         return self.admincode.rstrip()
@@ -240,6 +250,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getGender()
         ''
+        >>> f._close()
+        >>> del f
 
         """
         return self.gender.rstrip()
@@ -258,6 +270,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getFileDuration()
         600L
+        >>> f._close()
+        >>> del f
 
         """
         return self.file_duration
@@ -276,6 +290,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getStartdatetime()
         datetime.datetime(2011, 4, 4, 12, 57, 2)
+        >>> f._close()
+        >>> del f
 
         """
         return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
@@ -295,6 +311,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getBirthdate()
         '30 jun 1969'
+        >>> f._close()
+        >>> del f
 
         """
         return self.birthdate.rstrip()
@@ -314,6 +332,8 @@ class EdfReader(CyEdfReader):
         >>> f.getSampleFrequencies()
         array([ 200.,  200.,  200.,  200.,  200.,  200.,  200.,  200.,  200.,
                 200.,  200.])
+        >>> f._close()
+        >>> del f
 
         """
         return np.array([round(self.samplefrequency(chn))
@@ -334,6 +354,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getSampleFrequency(0)
         200.0
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -355,6 +377,9 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getSignalLabels()
         ['squarewave', 'ramp', 'pulse', 'noise', 'sine 1 Hz', 'sine 8 Hz', 'sine 8.1777 Hz', 'sine 8.5 Hz', 'sine 15 Hz', 'sine 17 Hz', 'sine 50 Hz']
+        >>> f._close()
+        >>> del f
+
         """
         return [self.signal_label(chn).strip()
                 for chn in np.arange(self.signals_in_file)]
@@ -374,6 +399,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getLabel(0)
         'squarewave'
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -396,6 +423,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPrefilter(0)
         ''
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -418,6 +447,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMaximum(0)
         1000.0
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -440,6 +471,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMinimum(0)
         -1000.0
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -462,6 +495,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getDigitalMaximum(0)
         32767
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -484,6 +519,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getDigitalMinimum(0)
         -32768
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -506,6 +543,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getTransducer(0)
         ''
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -528,6 +567,8 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalDimension(0)
         'uV'
+        >>> f._close()
+        >>> del f
 
         """
         if 0 <= chn < self.signals_in_file:
