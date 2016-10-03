@@ -150,7 +150,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientName()
-        'X'
+        b'X'
         >>> f._close()
         >>> del f
 
@@ -170,7 +170,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientCode()
-        ''
+        b''
         >>> f._close()
         >>> del f
 
@@ -190,7 +190,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientAdditional()
-        ''
+        b''
         >>> f._close()
         >>> del f
 
@@ -210,7 +210,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getEquipment()
-        'test generator'
+        b'test generator'
         >>> f._close()
         >>> del f
 
@@ -230,7 +230,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getAdmincode()
-        ''
+        b''
         >>> f._close()
         >>> del f
 
@@ -250,7 +250,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getGender()
-        ''
+        b''
         >>> f._close()
         >>> del f
 
@@ -270,7 +270,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getFileDuration()
-        600L
+        600
         >>> f._close()
         >>> del f
 
@@ -311,7 +311,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getBirthdate()
-        '30 jun 1969'
+        b'30 jun 1969'
         >>> f._close()
         >>> del f
 
@@ -331,8 +331,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getSampleFrequencies()
-        array([ 200.,  200.,  200.,  200.,  200.,  200.,  200.,  200.,  200.,
-                200.,  200.])
+        array([ 200,  200,  200,  200,  200,  200,  200,  200,  200,  200,  200])
         >>> f._close()
         >>> del f
 
@@ -354,7 +353,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getSampleFrequency(0)
-        200.0
+        200
         >>> f._close()
         >>> del f
 
@@ -377,7 +376,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getSignalLabels()
-        ['squarewave', 'ramp', 'pulse', 'noise', 'sine 1 Hz', 'sine 8 Hz', 'sine 8.1777 Hz', 'sine 8.5 Hz', 'sine 15 Hz', 'sine 17 Hz', 'sine 50 Hz']
+        [b'squarewave', b'ramp', b'pulse', b'noise', b'sine 1 Hz', b'sine 8 Hz', b'sine 8.1777 Hz', b'sine 8.5 Hz', b'sine 15 Hz', b'sine 17 Hz', b'sine 50 Hz']
         >>> f._close()
         >>> del f
 
