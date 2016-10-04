@@ -32,12 +32,12 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
         f = pyedflib.EdfReader(self.bdf_data_file)
-        np.testing.assert_equal(f.technician.rstrip(), u'tec1')
+        np.testing.assert_equal(f.technician.rstrip(), 'tec1')
 
-        np.testing.assert_equal(f.getLabel(0), u'test_label')
-        np.testing.assert_equal(f.getPhysicalDimension(0), u'mV')
-        np.testing.assert_equal(f.getPrefilter(0), u'pre1')
-        np.testing.assert_equal(f.getTransducer(0), u'trans1')
+        np.testing.assert_equal(f.getLabel(0), 'test_label')
+        np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
+        np.testing.assert_equal(f.getPrefilter(0), 'pre1')
+        np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
         f._close()
         del f
@@ -101,13 +101,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], "annotation1")
+        np.testing.assert_equal(ann_text[0] == "annotation1", True)
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], "annotation2")
+        np.testing.assert_equal(ann_text[1] == "annotation2", True)
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], "annotation3")
+        np.testing.assert_equal(ann_text[2] == "annotation3", True)
 
     def test_AnnotationWritingUTF8(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
@@ -134,13 +134,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], "Z..hne")
+        np.testing.assert_equal(ann_text[0] == "Z..hne", True)
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], "Fu..")
+        np.testing.assert_equal(ann_text[1] == "Fu..", True)
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], "abc")
+        np.testing.assert_equal(ann_text[2] == "abc", True)
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
