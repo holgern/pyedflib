@@ -80,9 +80,9 @@ class EdfReader(CyEdfReader):
             # unicode = lambda s: str(s)
             UNICODE_EXISTS = False
         if UNICODE_EXISTS:
-            return str(s)
+            return unicode(s)
         else:
-            return s
+            return str(s,'utf-8')
 
     def getHeader(self):
         """
@@ -162,7 +162,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientName()
-        'X'
+        u'X'
         >>> f._close()
         >>> del f
 
@@ -182,7 +182,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientCode()
-        ''
+        u''
         >>> f._close()
         >>> del f
 
@@ -202,7 +202,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientAdditional()
-        ''
+        u''
         >>> f._close()
         >>> del f
 
@@ -222,7 +222,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getEquipment()
-        'test generator'
+        u'test generator'
         >>> f._close()
         >>> del f
 
@@ -242,7 +242,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getAdmincode()
-        ''
+        u''
         >>> f._close()
         >>> del f
 
@@ -262,7 +262,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getGender()
-        ''
+        u''
         >>> f._close()
         >>> del f
 
@@ -323,7 +323,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getBirthdate()
-        '30 jun 1969'
+        u'30 jun 1969'
         >>> f._close()
         >>> del f
 
@@ -388,7 +388,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getSignalLabels()
-        ['squarewave', 'ramp', 'pulse', 'noise', 'sine 1 Hz', 'sine 8 Hz', 'sine 8.1777 Hz', 'sine 8.5 Hz', 'sine 15 Hz', 'sine 17 Hz', 'sine 50 Hz']
+        [u'squarewave', u'ramp', u'pulse', u'noise', u'sine 1 Hz', u'sine 8 Hz', u'sine 8.1777 Hz', u'sine 8.5 Hz', u'sine 15 Hz', u'sine 17 Hz', u'sine 50 Hz']
         >>> f._close()
         >>> del f
 
@@ -410,7 +410,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getLabel(0)
-        'squarewave'
+        u'squarewave'
         >>> f._close()
         >>> del f
 
@@ -434,7 +434,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPrefilter(0)
-        ''
+        u''
         >>> f._close()
         >>> del f
 
@@ -554,7 +554,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getTransducer(0)
-        ''
+        u''
         >>> f._close()
         >>> del f
 
@@ -578,7 +578,7 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalDimension(0)
-        'uV'
+        u'uV'
         >>> f._close()
         >>> del f
 
