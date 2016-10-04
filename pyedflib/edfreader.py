@@ -54,9 +54,8 @@ class EdfReader(CyEdfReader):
         annot = np.array(annot)
         ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
-        
         for i in np.arange(len(annot[:, 1])):
-            ann_text = self._convert_string(ann_text)
+            ann_text[i] = self._convert_string(ann_text[i])
             if annot[i, 1] == '':
                 annot[i, 1] = '-1'
         ann_duration = self._get_float(annot[:, 1])
