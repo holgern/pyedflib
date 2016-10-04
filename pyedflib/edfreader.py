@@ -137,8 +137,18 @@ class EdfReader(CyEdfReader):
         Parameters
         ----------
         None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getTechnician()==''
+        True
+        >>> f._close()
+        >>> del f
+
         """
-        return self.technician.rstrip()
+        return self._convert_string(self.technician.rstrip())
 
     def getRecordingAdditional(self):
         """
@@ -147,8 +157,18 @@ class EdfReader(CyEdfReader):
         Parameters
         ----------
         None
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> f.getRecordingAdditional()==''
+        True
+        >>> f._close()
+        >>> del f
+
         """
-        return self.recording_additional.rstrip()
+        return self._convert_string(self.recording_additional.rstrip())
 
     def getPatientName(self):
         """

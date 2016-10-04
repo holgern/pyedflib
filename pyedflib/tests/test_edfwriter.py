@@ -32,12 +32,12 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
         f = pyedflib.EdfReader(self.bdf_data_file)
-        np.testing.assert_equal(f.getTechnician(), b'tec1')
+        np.testing.assert_equal(f.getTechnician(), 'tec1')
 
-        np.testing.assert_equal(f.getLabel(0), b'test_label')
-        np.testing.assert_equal(f.getPhysicalDimension(0), b'mV')
-        np.testing.assert_equal(f.getPrefilter(0), b'pre1')
-        np.testing.assert_equal(f.getTransducer(0), b'trans1')
+        np.testing.assert_equal(f.getLabel(0), 'test_label')
+        np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
+        np.testing.assert_equal(f.getPrefilter(0), 'pre1')
+        np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
         f._close()
         del f
