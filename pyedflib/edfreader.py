@@ -54,7 +54,9 @@ class EdfReader(CyEdfReader):
         annot = np.array(annot)
         ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
+        
         for i in np.arange(len(annot[:, 1])):
+            ann_text = self._convert_string(ann_text)
             if annot[i, 1] == '':
                 annot[i, 1] = '-1'
         ann_duration = self._get_float(annot[:, 1])
@@ -161,8 +163,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getPatientName()
-        u'X'
+        >>> f.getPatientName()=='X'
+        True
         >>> f._close()
         >>> del f
 
@@ -181,8 +183,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getPatientCode()
-        u''
+        >>> f.getPatientCode()==''
+        True
         >>> f._close()
         >>> del f
 
@@ -201,8 +203,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getPatientAdditional()
-        u''
+        >>> f.getPatientAdditional()==''
+        True
         >>> f._close()
         >>> del f
 
@@ -221,8 +223,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getEquipment()
-        u'test generator'
+        >>> f.getEquipment()=='test generator'
+        True
         >>> f._close()
         >>> del f
 
@@ -241,8 +243,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getAdmincode()
-        u''
+        >>> f.getAdmincode()==''
+        True
         >>> f._close()
         >>> del f
 
@@ -261,8 +263,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getGender()
-        u''
+        >>> f.getGender()==''
+        True
         >>> f._close()
         >>> del f
 
@@ -322,8 +324,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getBirthdate()
-        u'30 jun 1969'
+        >>> f.getBirthdate()=='30 jun 1969'
+        True
         >>> f._close()
         >>> del f
 
@@ -387,8 +389,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getSignalLabels()
-        [u'squarewave', u'ramp', u'pulse', u'noise', u'sine 1 Hz', u'sine 8 Hz', u'sine 8.1777 Hz', u'sine 8.5 Hz', u'sine 15 Hz', u'sine 17 Hz', u'sine 50 Hz']
+        >>> f.getSignalLabels()==['squarewave', 'ramp', 'pulse', 'noise', 'sine 1 Hz', 'sine 8 Hz', 'sine 8.1777 Hz', 'sine 8.5 Hz', 'sine 15 Hz', 'sine 17 Hz', 'sine 50 Hz']
+        True
         >>> f._close()
         >>> del f
 
@@ -409,8 +411,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getLabel(0)
-        u'squarewave'
+        >>> f.getLabel(0)=='squarewave'
+        True
         >>> f._close()
         >>> del f
 
@@ -433,8 +435,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getPrefilter(0)
-        u''
+        >>> f.getPrefilter(0)==''
+        True
         >>> f._close()
         >>> del f
 
@@ -553,8 +555,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getTransducer(0)
-        u''
+        >>> f.getTransducer(0)==''
+        True
         >>> f._close()
         >>> del f
 
@@ -577,8 +579,8 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getPhysicalDimension(0)
-        u'uV'
+        >>> f.getPhysicalDimension(0)=='uV'
+        True
         >>> f._close()
         >>> del f
 

@@ -32,12 +32,12 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
         f = pyedflib.EdfReader(self.bdf_data_file)
-        np.testing.assert_equal(f.technician.rstrip(), b'tec1')
+        np.testing.assert_equal(f.technician.rstrip(), u'tec1')
 
-        np.testing.assert_equal(f.getLabel(0), b'test_label')
-        np.testing.assert_equal(f.getPhysicalDimension(0), b'mV')
-        np.testing.assert_equal(f.getPrefilter(0), b'pre1')
-        np.testing.assert_equal(f.getTransducer(0), b'trans1')
+        np.testing.assert_equal(f.getLabel(0), u'test_label')
+        np.testing.assert_equal(f.getPhysicalDimension(0), u'mV')
+        np.testing.assert_equal(f.getPrefilter(0), u'pre1')
+        np.testing.assert_equal(f.getTransducer(0), u'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
         f._close()
         del f
@@ -89,9 +89,9 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.writeAnnotation(1.23, 0.2, "annotation1")
-        f.writeAnnotation(0.25, -1, "annotation2")
-        f.writeAnnotation(1.25, 0, "annotation3")
+        f.writeAnnotation(1.23, 0.2, u"annotation1")
+        f.writeAnnotation(0.25, -1, u"annotation2")
+        f.writeAnnotation(1.25, 0, u"annotation3")
         f.close()
         del f
 
@@ -101,13 +101,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], b"annotation1")
+        np.testing.assert_equal(ann_text[0], "annotation1")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], b"annotation2")
+        np.testing.assert_equal(ann_text[1], "annotation2")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"annotation3")
+        np.testing.assert_equal(ann_text[2], "annotation3")
 
     def test_AnnotationWritingUTF8(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
@@ -134,13 +134,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], b"Z..hne")
+        np.testing.assert_equal(ann_text[0], "Z..hne")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], b"Fu..")
+        np.testing.assert_equal(ann_text[1], "Fu..")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"abc")
+        np.testing.assert_equal(ann_text[2], "abc")
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
