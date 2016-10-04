@@ -82,7 +82,7 @@ class EdfReader(CyEdfReader):
         if UNICODE_EXISTS:
             return unicode(s)
         else:
-            return str(s,'utf-8')
+            return s.decode("utf-8", "strict")
 
     def getHeader(self):
         """
