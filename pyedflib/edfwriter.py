@@ -35,6 +35,7 @@ from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_techn
 from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration
 from ._extensions._pyedflib import set_startdatetime, set_samplefrequency, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
+from ._extensions._pyedflib import blockwrite_physical_samples
 
 
 __all__ = ['EdfWriter']
@@ -569,6 +570,28 @@ class EdfWriter(object):
         """
         return write_physical_samples(self.handle, data)
 
+    def blockWritePhysicalSamples(self, data):
+        """
+        Writes physical samples (uV, mA, Ohm)
+        must be filled with samples from all signals
+        where each signal has n samples which is the samplefrequency of the signal.
+
+        data_vec belonging to one signal. The size must be the samplefrequency of the signal.
+
+        Notes
+        -----
+        buf must be filled with samples from all signals, starting with signal 0, 1, 2, etc.
+        one block equals one second
+        The physical samples will be converted to digital samples using the
+        values of physical maximum, physical minimum, digital maximum and digital minimum
+        The number of samples written is equal to the sum of the samplefrequencies of all signals
+        Size of buf should be equal to or bigger than sizeof(double) multiplied by the sum of the samplefrequencies of all signals
+        Returns 0 on success, otherwise -1
+
+        All parameters must be already written into the bdf/edf-file.
+        """
+        return blockwrite_physical_samples(self.handle, data)
+
     def writeSamples(self, data_list):
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
@@ -591,26 +614,37 @@ class EdfWriter(object):
         for i in np.arange(len(data_list)):
             ind.append(0)
 
+        sampleLength = 0
         for i in np.arange(len(data_list)):
             if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                 notAtEnd = False
+            sampleLength += self.channels[i]['sample_rate']
 
+        dataOfOneSecond = np.zeros(sampleLength)
+        
         while notAtEnd:
+            dataOfOneSecondInd = 0
             for i in np.arange(len(data_list)):
-                self.writePhysicalSamples(data_list[i].flatten()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
+                dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].flatten()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
+                # self.writePhysicalSamples(data_list[i].flatten()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
                 ind[i] += self.channels[i]['sample_rate']
-
+                dataOfOneSecondInd += self.channels[i]['sample_rate']
+            self.blockWritePhysicalSamples(dataOfOneSecond)
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                     notAtEnd = False
 
+        dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
             lastSamples = np.zeros(int(self.channels[i]['sample_rate']))
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd,int(self.channels[i]['sample_rate']))))
             if lastSampleInd > 0:
                 lastSamples[:lastSampleInd] = data_list[i].flatten()[-lastSampleInd:]
+                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
+                # dataOfOneSecondInd += self.channels[i]['sample_rate']
                 self.writePhysicalSamples(lastSamples)
+        # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
