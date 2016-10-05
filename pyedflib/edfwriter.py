@@ -621,7 +621,7 @@ class EdfWriter(object):
             sampleLength += self.channels[i]['sample_rate']
 
         dataOfOneSecond = np.zeros(sampleLength)
-        
+
         while notAtEnd:
             dataOfOneSecondInd = 0
             for i in np.arange(len(data_list)):
