@@ -22,9 +22,12 @@ pip-log.txt
 .pydevproject
 .settings
 .wpr
+*.wpu
+*.wpr
 
 # Project working files
 _edflib.[ch]
+_pyedflib.[ch]
 edf.[ch]
 cythonize.dat
 pyedflib/__config__.py
