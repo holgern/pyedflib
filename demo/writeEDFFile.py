@@ -25,8 +25,7 @@ import pyedflib
 
 
 if __name__ == '__main__':
-    data_dir = os.path.join('.', 'data')
-    test_data_file = os.path.join(data_dir, 'test_generator2.edf')
+    test_data_file = os.path.join('.', 'test_generator2.edf')
     file_duration = 600
     f = pyedflib.EdfWriter(test_data_file, 13,
                            file_type=pyedflib.FILETYPE_EDFPLUS)
