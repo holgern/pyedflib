@@ -627,7 +627,7 @@ class EdfWriter(object):
         while notAtEnd:
             # dataOfOneSecondInd = 0
             del dataOfOneSecond
-            dataOfOneSecond = np.array([])            
+            dataOfOneSecond = np.array([])
             for i in np.arange(len(data_list)):
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
                 dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
