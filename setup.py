@@ -19,8 +19,8 @@ else:
 
 MAJOR = 0
 MINOR = 1
-MICRO = 6
-ISRELEASED = True
+MICRO = 7
+ISRELEASED = False
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 

@@ -41,7 +41,7 @@ Register all files with
 
 and upload with
 
-```twine upload -s dist/*```
+```twine upload  dist\filename_which_should_uploaded.whl```
 
 Prepare for continued development
 ---------------------------------
