@@ -28,7 +28,9 @@ Tests are implemented with `nose`_, so use one of:
 
     $ nosetests pyedflib
 
-    >>> pyedflib.test()
+    >>> pyedflib.test()  # doctest: +SKIP
+    
+Note doctests require `Matplotlib`_ in addition to the usual dependencies.
 
 
 Running tests with Tox
@@ -44,3 +46,4 @@ For more information see the `Tox`_ documentation.
 
 .. _nose: http://nose.readthedocs.org/en/latest/ 
 .. _Tox: http://tox.testrun.org/ 
+.. _Matplotlib: http://matplotlib.org

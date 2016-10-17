@@ -4460,6 +4460,7 @@ int edfwrite_physical_samples(int handle, double *buf)
          phys_offset;
 
   FILE *file;
+  char *digbuf;
 
   struct edfhdrblock *hdr;
 
@@ -4520,6 +4521,11 @@ int edfwrite_physical_samples(int handle, double *buf)
 
   phys_offset = hdr->edfparam[edfsignal].offset;
 
+  if(hdr->bdf)
+    digbuf = (char *)calloc(1, sf*3);
+  else
+    digbuf = (char *)calloc(1, sf*2);
+      
   for(i=0; i<sf; i++)
   {
     value = buf[i] / bitvalue;
@@ -4536,19 +4542,30 @@ int edfwrite_physical_samples(int handle, double *buf)
       value = digmin;
     }
 
-    fputc(value&0xff, file);
+    //fputc(value&0xff, file);
 
-    if(fputc((value>>8)&0xff, file)==EOF)
-    {
-      return(-1);
-    }
+    //if(fputc((value>>8)&0xff, file)==EOF)
+    //{
+    //  return(-1);
+    //}
 
     if(hdr->bdf)
     {
-      fputc((value>>16)&0xff, file);
+      digbuf[3*i] =value&0xff;
+      digbuf[3*i + 1] = (value>>8)&0xff;
+      digbuf[3*i + 2] = (value>>16)&0xff;
+    }
+    else
+    {
+      digbuf[2*i] = value&0xff;
+      digbuf[2*i + 1] = (value>>8)&0xff;
     }
   }
-
+  if(hdr->bdf)
+    fwrite(digbuf, 1, sf*3, file);
+  else
+    fwrite(digbuf, 1, sf*2, file);
+  free (digbuf);
   hdr->signal_write_sequence_pos++;
 
   if(hdr->signal_write_sequence_pos == hdr->edfsignals)
@@ -4594,6 +4611,7 @@ int edf_blockwrite_physical_samples(int handle, double *buf)
          phys_offset;
 
   FILE *file;
+  char *digbuf;
 
   struct edfhdrblock *hdr;
 
@@ -4659,6 +4677,10 @@ int edf_blockwrite_physical_samples(int handle, double *buf)
     bitvalue = hdr->edfparam[j].bitvalue;
 
     phys_offset = hdr->edfparam[j].offset;
+    if(hdr->bdf)
+      digbuf = (char *)calloc(1, sf*3);
+    else
+      digbuf = (char *)calloc(1, sf*2);
 
     for(i=0; i<sf; i++)
     {
@@ -4676,18 +4698,31 @@ int edf_blockwrite_physical_samples(int handle, double *buf)
         value = digmin;
       }
 
-      fputc(value&0xff, file);
+      //fputc(value&0xff, file);
+      
 
-      if(fputc((value>>8)&0xff, file)==EOF)
-      {
-        return(-1);
-      }
+      //if(fputc((value>>8)&0xff, file)==EOF)
+      //{
+      //  return(-1);
+      //}
 
       if(hdr->bdf)
       {
-        fputc((value>>16)&0xff, file);
+        digbuf[3*i] =value&0xff;
+        digbuf[3*i + 1] = (value>>8)&0xff;
+        digbuf[3*i + 2] = (value>>16)&0xff;
+      }
+      else
+      {
+        digbuf[2*i] = value&0xff;
+        digbuf[2*i + 1] = (value>>8)&0xff;
       }
     }
+    if(hdr->bdf)
+      fwrite(digbuf, 1, sf*3, file);
+    else
+      fwrite(digbuf, 1, sf*2, file);
+    free (digbuf);
 
     buf_offset += sf;
   }

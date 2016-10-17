@@ -615,32 +615,37 @@ class EdfWriter(object):
             ind.append(0)
 
         sampleLength = 0
+        sampleRates = np.zeros(len(data_list), dtype=int)
         for i in np.arange(len(data_list)):
+            sampleRates[i] = f.channels[i]['sample_rate']
             if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                 notAtEnd = False
             sampleLength += self.channels[i]['sample_rate']
 
-        dataOfOneSecond = np.zeros(sampleLength)
+        dataOfOneSecond = np.array([])
 
         while notAtEnd:
-            dataOfOneSecondInd = 0
+            # dataOfOneSecondInd = 0
+            del dataOfOneSecond
+            dataOfOneSecond = np.array([])            
             for i in np.arange(len(data_list)):
-                dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].flatten()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
-                # self.writePhysicalSamples(data_list[i].flatten()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
-                ind[i] += self.channels[i]['sample_rate']
-                dataOfOneSecondInd += self.channels[i]['sample_rate']
+                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
+                dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
+                # self.writePhysicalSamples(data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
+                ind[i] += sampleRates[i]
+                # dataOfOneSecondInd += sampleRates[i]
             self.blockWritePhysicalSamples(dataOfOneSecond)
             for i in np.arange(len(data_list)):
-                if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+                if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
                     notAtEnd = False
 
-        dataOfOneSecondInd = 0
+        # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(int(self.channels[i]['sample_rate']))
+            lastSamples = np.zeros(sampleRates[i])
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
-            lastSampleInd = int(np.min((lastSampleInd,int(self.channels[i]['sample_rate']))))
+            lastSampleInd = int(np.min((lastSampleInd,sampleRates[i])))
             if lastSampleInd > 0:
-                lastSamples[:lastSampleInd] = data_list[i].flatten()[-lastSampleInd:]
+                lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
                 # dataOfOneSecondInd += self.channels[i]['sample_rate']
                 self.writePhysicalSamples(lastSamples)
