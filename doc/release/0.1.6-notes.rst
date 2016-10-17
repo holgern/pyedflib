@@ -1,0 +1,20 @@
+==============================
+PyEDFlib 0.1.6 Release Notes
+==============================
+
+.. contents::
+
+- Faster writing of BDF/EDF files
+- bug fixes
+
+Authors
+=======
+* Holger Nahrstaedt
+
+
+Issues closed for v0.1.6
+------------------------
+- `#5 <github.com/holgern/pyedflib/issues/5>`__: edf writer code executing really slow
+
+Pull requests for v0.1.6
+------------------------
