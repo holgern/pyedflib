@@ -617,7 +617,7 @@ class EdfWriter(object):
         sampleLength = 0
         sampleRates = np.zeros(len(data_list), dtype=int)
         for i in np.arange(len(data_list)):
-            sampleRates[i] = f.channels[i]['sample_rate']
+            sampleRates[i] = self.channels[i]['sample_rate']
             if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                 notAtEnd = False
             sampleLength += self.channels[i]['sample_rate']
