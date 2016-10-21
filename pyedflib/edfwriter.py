@@ -60,6 +60,13 @@ else:
         return x.encode("utf-8")
 
 
+def isstr(s):
+    try:
+        return isinstance(s, basestring)
+    except NameError:
+        return isinstance(s, str)
+
+
 class ChannelDoesNotExist(Exception):
     def __init__(self, value):
         self.parameter = value
@@ -156,7 +163,7 @@ class EdfWriter(object):
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
-        if isinstance(self.birthdate, str):
+        if isstr(self.birthdate):
             if self.birthdate == '':
                 birthday = date(1900, 1, 1)
             else:
