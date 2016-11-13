@@ -1807,7 +1807,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     }
     strncpy(edfhdr->edfparam[i].transducer, edf_hdr + 256 + (edfhdr->edfsignals * 16) + (i * 80), 80);
     edfhdr->edfparam[i].transducer[80] = 0;
-
+/*
     if((edfhdr->edfplus) || (edfhdr->bdfplus))
     {
       if(edfhdr->edfparam[i].annotation)
@@ -1825,6 +1825,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
         }
       }
     }
+*/
   }
 
 /**************************** PHYSICAL DIMENSIONS *************************************/
@@ -2107,7 +2108,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     }
     strncpy(edfhdr->edfparam[i].prefilter, edf_hdr + 256 + (edfhdr->edfsignals * 136) + (i * 80), 80);
     edfhdr->edfparam[i].prefilter[80] = 0;
-
+/*
     if((edfhdr->edfplus) || (edfhdr->bdfplus))
     {
       if(edfhdr->edfparam[i].annotation)
@@ -2125,6 +2126,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
         }
       }
     }
+*/
   }
 
 /*********************** NR OF SAMPLES IN EACH DATARECORD ********************/
