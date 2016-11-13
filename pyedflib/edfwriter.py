@@ -344,10 +344,10 @@ class EdfWriter(object):
 
     def setDatarecordDuration(self, duration):
         """
-        Sets the datarecord duration. The default value is 1 second.
+        Sets the datarecord duration. The default value is 100000 which is 1 second.
         ATTENTION: the argument "duration" is expressed in units of 10 microSeconds!
         So, if you want to set the datarecord duration to 0.1 second, you must give
-         the argument "duration" a value of "10000". 
+        the argument "duration" a value of "10000".
         This function is optional, normally you don't need to change
         the default value. The datarecord duration must be in the range 0.001 to 60  seconds.
         Returns 0 on success, otherwise -1.
