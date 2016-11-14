@@ -69,7 +69,7 @@ cdef extern from "c/edflib.h":
         long long int annotations_in_file
         edf_param_struct * signalparam
     
-    int edfopen_file_readonly(char *, edf_hdr_struct *, int)
+    int edfopen_file_readonly(char *, edf_hdr_struct *, int, int)
     int edf_set_birthdate(int, int, int, int)
     int edf_set_digital_minimum(int, int, int)
     int edfwrite_digital_samples(int, int *)

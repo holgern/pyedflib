@@ -72,11 +72,17 @@
 #define EDFLIB_NUMBER_OF_SIGNALS_INVALID    -9
 #define EDFLIB_FILE_IS_DISCONTINUOUS       -10
 #define EDFLIB_INVALID_READ_ANNOTS_VALUE   -11
+#define EDFLIB_INVALID_CHECK_SIZE_VALUE    -12
 
 /* values for annotations */
 #define EDFLIB_DO_NOT_READ_ANNOTATIONS 0
 #define EDFLIB_READ_ANNOTATIONS        1
 #define EDFLIB_READ_ALL_ANNOTATIONS    2
+
+/* values for size check on edfopen_file_readonly */
+#define EDFLIB_CHECK_FILE_SIZE              0
+#define EDFLIB_DO_NOT_CHECK_FILE_SIZE       1
+#define EDFLIB_REPAIR_FILE_SIZE_IF_WRONG    2
 
 /* the following defines are possible errors returned by edfopen_file_writeonly() */
 #define EDFLIB_NO_SIGNALS                  -20
@@ -154,7 +160,7 @@ struct edf_hdr_struct{                     /* this structure contains all the re
 
 /*****************  the following functions are used to read files **************************/
 
-int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations);
+int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations, int check_file_size);
 
 /* opens an existing file for reading */
 /* path is a null-terminated string containing the path to the file */
@@ -166,6 +172,11 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
 /*   EDFLIB_READ_ANNOTATIONS             annotations will be read immediately, stops when an annotation has */
 /*                                       been found which contains the description "Recording ends"         */
 /*   EDFLIB_READ_ALL_ANNOTATIONS         all annotations will be read immediately                           */
+
+/* check_file_size must have one of the following values:   */
+/* EDFLIB_CHECK_FILE_SIZE                file size is checked and if wrong, the file will not be opened*/
+/* EDFLIB_DO_NOT_CHECK_FILE_SIZE         the file will alsways be opened and the file size is not checked*/
+/* EDFLIB_REPAIR_FILE_SIZE_IF_WRONG      the file size is checked and if it is wrong it will be fixed*/
 
 /* returns 0 on success, in case of an error it returns -1 and an errorcode will be set in the member "filetype" of struct edf_hdr_struct */
 /* This function is required if you want to read a file */

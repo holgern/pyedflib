@@ -13,7 +13,8 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
            'write_digital_samples', 'set_equipment', 'set_samplefrequency','set_admincode', 'set_label',
            'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
            'seek', 'set_startdatetime' ,'set_datarecord_duration', 'open_errors', 'FILETYPE_EDFPLUS',
-           'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors']
+           'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors', 'get_number_of_open_files',
+           'get_handle', 'is_file_used']
 
 
 #from c_edf cimport *
@@ -41,14 +42,19 @@ open_errors = {
     }
 
 write_errors = {
-    EDFLIB_MALLOC_ERROR : "malloc error",  
-    EDFLIB_FILE_WRITE_ERROR              : "a write error occured",
-    EDFLIB_NO_SIGNALS                    : "no signals to write",
-    EDFLIB_TOO_MANY_SIGNALS              : "too many signals",
-    EDFLIB_NO_SAMPLES_IN_RECORD          : "no samples in record",
-    EDFLIB_DIGMIN_IS_DIGMAX              : "digmin is equal to digmax",
-    EDFLIB_DIGMAX_LOWER_THAN_DIGMIN      : "digmax is lower than digmin",
-    EDFLIB_PHYSMIN_IS_PHYSMAX            : "physmin is physmax",
+    EDFLIB_MALLOC_ERROR                 : "malloc error",  
+    EDFLIB_NO_SUCH_FILE_OR_DIRECTORY    : "can not open file, no such file or directory",
+    EDFLIB_MAXFILES_REACHED             : "to many files opened",
+    EDFLIB_FILE_ALREADY_OPENED          : "file has already been opened",
+    EDFLIB_FILETYPE_ERROR               : "Wrong file type",
+    EDFLIB_FILE_WRITE_ERROR             : "a write error occured",
+    EDFLIB_NUMBER_OF_SIGNALS_INVALID    : "The number of signals is invalid",
+    EDFLIB_NO_SIGNALS                   : "no signals to write",
+    EDFLIB_TOO_MANY_SIGNALS             : "too many signals",
+    EDFLIB_NO_SAMPLES_IN_RECORD         : "no samples in record",
+    EDFLIB_DIGMIN_IS_DIGMAX             : "digmin is equal to digmax",
+    EDFLIB_DIGMAX_LOWER_THAN_DIGMIN     : "digmax is lower than digmin",
+    EDFLIB_PHYSMIN_IS_PHYSMAX           : "physmin is physmax",
     'default' : "unknown error"
 }
 
@@ -83,8 +89,11 @@ cdef class CyEdfReader:
     cdef c_edf.edf_hdr_struct hdr
     cdef size_t nsamples_per_record
     #I think it is ok not to do this in __cinit__(*,**)
-    def __init__(self, file_name, annotations_mode='all'):
-        self.open(file_name, mode='r', annotations_mode=annotations_mode)
+    def __init__(self, file_name, annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):
+        """
+        EdfReader(file_name, annotations_mode, check_file_size)
+        """
+        self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
 
     def __dealloc__(self):
         if self.hdr.handle:
@@ -113,9 +122,12 @@ cdef class CyEdfReader:
         dbuffer = np.zeros(tmp, dtype='float64') # will get physical samples, not the orignal digital samples
         return dbuffer
     
-    def open(self, file_name, mode='r', annotations_mode='all'):
+    def open(self, file_name, mode='r', annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):
+        """
+        open(file_name, annotations_mode, check_file_size)
+        """
         file_name_str = file_name.encode()
-        result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
+        result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, annotations_mode, check_file_size)
         
         self.file_name = file_name
 
@@ -405,6 +417,16 @@ cpdef int read_physical_samples(int handle, int edfsignal, int n,
 
 def close_file(handle):
     return c_edf.edfclose_file(handle)
+
+def get_number_of_open_files():
+    return c_edf.edflib_get_number_of_open_files()
+
+def get_handle(file_number):
+    return c_edf.edflib_get_handle(file_number)
+
+def is_file_used(path):
+    path_str = path.encode('UTF-8')
+    return c_edf.edflib_is_file_used(path_str)
 
 # so you can use the same name if defining a python only function
 def set_physical_maximum(handle, edfsignal, phys_max):

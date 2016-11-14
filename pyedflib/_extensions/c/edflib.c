@@ -169,7 +169,8 @@ static int edf_files_open=0;
 static struct edfhdrblock *hdrlist[EDFLIB_MAXFILES];
 
 
-static struct edfhdrblock * edflib_check_edf_file(FILE *, int *);
+static struct edfhdrblock * edflib_check_edf_file(FILE *, int *, int);
+static int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr);
 static int edflib_is_integer_number(char *);
 static int edflib_is_number(char *);
 static long long edflib_get_long_duration(char *);
@@ -241,7 +242,7 @@ int edflib_get_handle(int file_number)
 }
 
 
-int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations)
+int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations, int check_file_size)
 {
   int i, j,
       channel,
@@ -262,6 +263,20 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
   if(read_annotations>2)
   {
     edfhdr->filetype = EDFLIB_INVALID_READ_ANNOTS_VALUE;
+
+    return(-1);
+  }
+  
+    if(check_file_size<0)
+  {
+    edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;
+
+    return(-1);
+  }
+
+  if(check_file_size>2)
+  {
+    edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;
 
     return(-1);
   }
@@ -296,7 +311,17 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
     return(-1);
   }
 
-  hdr = edflib_check_edf_file(file, &edf_error);
+  hdr = edflib_check_edf_file(file, &edf_error,check_file_size);
+  if (hdr==NULL && edf_error == EDFLIB_FILE_CONTAINS_FORMAT_ERRORS && check_file_size == EDFLIB_REPAIR_FILE_SIZE_IF_WRONG)
+  {
+    hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_DO_NOT_CHECK_FILE_SIZE);
+    fclose(file);
+    edflib_repair_file_size(path, hdr);
+    free(hdr->edfparam);
+    free(hdr);
+    file = fopeno(path, "rb");
+    hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_CHECK_FILE_SIZE);
+  }
   if(hdr==NULL)
   {
     edfhdr->filetype = edf_error;
@@ -1222,7 +1247,7 @@ int edf_get_annotation(int handle, int n, struct edf_annotation_struct *annot)
 }
 
 
-static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_error)
+static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_error, int check_file_size)
 {
   int i, j, p, r=0, n,
       dotposition,
@@ -2574,16 +2599,18 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
   edfhdr->hdrsize = edfhdr->edfsignals * 256 + 256;
 
-  fseeko(inputfile, 0LL, SEEK_END);
-  if(ftello(inputfile)!=(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
+  if (check_file_size != EDFLIB_DO_NOT_CHECK_FILE_SIZE)
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
-    free(edf_hdr);
-    free(edfhdr->edfparam);
-    free(edfhdr);
-    return(NULL);
+    fseeko(inputfile, 0LL, SEEK_END);
+    if(ftello(inputfile)!=(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
+    {
+        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        free(edf_hdr);
+        free(edfhdr->edfparam);
+        free(edfhdr);
+        return(NULL);
+    }
   }
-
   n = 0;
 
   for(i=0; i<edfhdr->edfsignals; i++)
@@ -2825,6 +2852,24 @@ int edflib_version(void)
   return(EDFLIB_VERSION);
 }
 
+int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr)
+{
+  int p;
+  FILE *file;
+  
+  file = fopeno(path, "wb");  
+  if(edfhdr->datarecords<100000000LL)
+  {
+    fseeko(file, 236LL, SEEK_SET);
+    p = edflib_fprint_int_number_nonlocalized(file, (int)(edfhdr->datarecords), 0, 0);
+    if(p < 2)
+    {
+      fputc(' ', file);
+    }
+  }
+  fclose(file);
+  return 0;
+}
 
 static int edflib_get_annotations(struct edfhdrblock *edfhdr, int hdl, int read_annotations)
 {

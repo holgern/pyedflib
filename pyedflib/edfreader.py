@@ -7,7 +7,18 @@ from datetime import datetime
 import numpy as np
 
 from ._extensions._pyedflib import CyEdfReader
-__all__ = ['EdfReader']
+
+__all__ = ['EdfReader', 'DO_NOT_READ_ANNOTATIONS',
+           'READ_ANNOTATIONS', 'READ_ALL_ANNOTATIONS', 'CHECK_FILE_SIZE',
+           'DO_NOT_CHECK_FILE_SIZE', 'REPAIR_FILE_SIZE_IF_WRONG']
+
+DO_NOT_READ_ANNOTATIONS = 0
+READ_ANNOTATIONS = 1
+READ_ALL_ANNOTATIONS = 2
+
+CHECK_FILE_SIZE = 0
+DO_NOT_CHECK_FILE_SIZE = 1
+REPAIR_FILE_SIZE_IF_WRONG = 2
 
 
 class EdfReader(CyEdfReader):
@@ -34,6 +45,8 @@ class EdfReader(CyEdfReader):
         """
         annot = self.read_annotation()
         annot = np.array(annot)
+        if (annot.shape[0] == 0):
+            return np.array([]), np.array([]), np.array([])
         ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
         for i in np.arange(len(annot[:, 1])):

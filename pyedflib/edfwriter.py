@@ -7,13 +7,14 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 import sys
 from datetime import datetime, date
-from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS
+from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_BDF, FILETYPE_EDF
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
 from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration
 from ._extensions._pyedflib import set_startdatetime, set_samplefrequency, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors
+
 
 __all__ = ['EdfWriter']
 
@@ -68,12 +69,9 @@ class EdfWriter(object):
                  file_type=FILETYPE_EDFPLUS):
         """Initialises an EDF file at file_name.
         file_type is one of
-            edflib.FILETYPE_EDF
             edflib.FILETYPE_EDFPLUS
-            edflib.FILETYPE_BDF
             edflib.FILETYPE_BDFPLUS
         n_channels is the number of channels without the annotation channel
-        (only FILETYPE_EDFPLUS or FILETYPE_BDFPLUS)
 
         channel_info should be a
         list of dicts, one for each channel in the data. Each dict needs
@@ -104,12 +102,12 @@ class EdfWriter(object):
         self.channels = []
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
-            if self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_BDFPLUS:
+            if self.file_type == FILETYPE_BDFPLUS:
                 self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
-            else:
+            elif (self.file_type == FILETYPE_EDFPLUS):
                 self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
