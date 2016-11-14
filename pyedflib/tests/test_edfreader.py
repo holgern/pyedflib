@@ -68,19 +68,19 @@ class TestEdfReader(unittest.TestCase):
         except IOError:
             print('cannot open', self.edf_data_file)
             return
-        np.testing.assert_equal(f.getSignalLabels()[0], b'squarewave')
-        np.testing.assert_equal(f.getLabel(0), b'squarewave')
-        np.testing.assert_equal(f.getPhysicalDimension(0), b'uV')
-        np.testing.assert_equal(f.getPrefilter(0), b'pre1')
-        np.testing.assert_equal(f.getTransducer(0), b'trans1')
+        np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
+        np.testing.assert_equal(f.getLabel(0), 'squarewave')
+        np.testing.assert_equal(f.getPhysicalDimension(0), 'uV')
+        np.testing.assert_equal(f.getPrefilter(0), 'pre1')
+        np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 200)
         np.testing.assert_equal(f.getSampleFrequencies()[0], 200)
 
-        np.testing.assert_equal(f.getSignalLabels()[1], b'ramp')
-        np.testing.assert_equal(f.getSignalLabels()[2], b'pulse')
-        np.testing.assert_equal(f.getSignalLabels()[3], b'noise')
-        np.testing.assert_equal(f.getSignalLabels()[4], b'sine 1 Hz')
-        np.testing.assert_equal(f.getSignalLabels()[5], b'sine 8 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[1], 'ramp')
+        np.testing.assert_equal(f.getSignalLabels()[2], 'pulse')
+        np.testing.assert_equal(f.getSignalLabels()[3], 'noise')
+        np.testing.assert_equal(f.getSignalLabels()[4], 'sine 1 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[5], 'sine 8 Hz')
         f._close()
         del f
 
