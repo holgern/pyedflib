@@ -1,30 +1,9 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# See LICENSE for license details.
 
-__doc__ = """Pyrex wrapper for low-level C edflib implementation."""
+__doc__ = """Cython wrapper for low-level C edflib implementation."""
 __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 
            'write_annotation_latin1', 'write_annotation_utf8', 'set_technician', 'EdfAnnotation',
            'get_annotation', 'read_int_samples', 'blockwrite_digital_samples', 'blockwrite_physical_samples',
@@ -34,7 +13,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
            'write_digital_samples', 'set_equipment', 'set_samplefrequency','set_admincode', 'set_label',
            'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
            'seek', 'set_startdatetime' ,'set_datarecord_duration', 'open_errors', 'FILETYPE_EDFPLUS',
-           'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS']
+           'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors']
 
 
 #from c_edf cimport *
@@ -60,6 +39,18 @@ open_errors = {
     EDFLIB_INVALID_READ_ANNOTS_VALUE   : "an annotation value could not be read",
     'default' : "unknown error"
     }
+
+write_errors = {
+    EDFLIB_MALLOC_ERROR : "malloc error",  
+    EDFLIB_FILE_WRITE_ERROR              : "a write error occured",
+    EDFLIB_NO_SIGNALS                    : "no signals to write",
+    EDFLIB_TOO_MANY_SIGNALS              : "too many signals",
+    EDFLIB_NO_SAMPLES_IN_RECORD          : "no samples in record",
+    EDFLIB_DIGMIN_IS_DIGMAX              : "digmin is equal to digmax",
+    EDFLIB_DIGMAX_LOWER_THAN_DIGMIN      : "digmax is lower than digmin",
+    EDFLIB_PHYSMIN_IS_PHYSMAX            : "physmin is physmax",
+    'default' : "unknown error"
+}
 
 # constants are redeclared here so we can access them from Python
 FILETYPE_EDF = EDFLIB_FILETYPE_EDF
