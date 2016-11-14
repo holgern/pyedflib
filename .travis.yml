@@ -60,7 +60,7 @@ before_install:
 
 script:
   # Define a fixed build dir so next step works
-    - |
+  - |
     if [ "${REFGUIDE_CHECK}" == "1" ]; then
         pip install -e . -v
         python util/refguide_check.py --doctests
@@ -68,6 +68,7 @@ script:
         CFLAGS="--coverage" python setup.py build --build-lib build/lib/ --build-temp build/tmp/
         nosetests build/lib/ --tests pyedflib/tests
     fi
+
 after_success:
   - codecov
   # Travis CI has old gcov, needs object dir explicitly specified
