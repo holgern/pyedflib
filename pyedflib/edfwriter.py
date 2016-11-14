@@ -15,7 +15,6 @@ from ._extensions._pyedflib import set_startdatetime, set_samplefrequency, set_p
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors
 
-
 __all__ = ['EdfWriter']
 
 
@@ -119,7 +118,7 @@ class EdfWriter(object):
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
         if (self.handle < 0):
-            raise IOError, write_errors[self.handle]
+            raise IOError(write_errors[self.handle])
 
     def update_header(self):
         """

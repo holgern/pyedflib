@@ -13,9 +13,7 @@ __all__ = ['EdfReader']
 class EdfReader(CyEdfReader):
     """
     This provides a simple interface to read EDF, EDF+, BDF and BDF+ files.
-
-
-    """    
+    """
     def __enter__(self):
         return self
 
