@@ -53,6 +53,11 @@ open_errors = {
     EDFLIB_MAXFILES_REACHED            : "to many files opened",
     EDFLIB_FILE_READ_ERROR             : "a read error occurred",
     EDFLIB_FILE_ALREADY_OPENED         : "file has already been opened",
+    EDFLIB_FILETYPE_ERROR              : "Wrong file type",
+    EDFLIB_FILE_WRITE_ERROR            : "a write error occured",
+    EDFLIB_NUMBER_OF_SIGNALS_INVALID   : "The number of signals is invalid",
+    EDFLIB_FILE_IS_DISCONTINUOUS       : "The file is discontinous and cannot be read",
+    EDFLIB_INVALID_READ_ANNOTS_VALUE   : "an annotation value could not be read",
     'default' : "unknown error"
     }
 
@@ -98,7 +103,7 @@ cdef class CyEdfReader:
         if result == 0:
             return True
         else:
-            raise IOError, open_errors[result]
+            raise IOError, open_errors[self.hdr.filetype]
             # return False
             
     def make_buffer(self):
@@ -120,6 +125,7 @@ cdef class CyEdfReader:
     def open(self, file_name, mode='r', annotations_mode='all'):
         file_name_str = file_name.encode()
         result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, EDFLIB_READ_ALL_ANNOTATIONS)
+        
         self.file_name = file_name
 
         return self.check_open_ok(result)

@@ -32,12 +32,13 @@ matrix:
     - python: 3.3
       env:
         - NUMPYSPEC=numpy
-    - python: 2.6
-      env:
-        - OPTIMIZE=-OO NUMPYSPEC="numpy==1.7.2"
     - python: 2.7
       env:
-        - NUMPYSPEC="numpy==1.9.1"
+        - NUMPYSPEC="numpy==1.9.3"
+    - python: 3.5
+      env:
+        - NUMPYSPEC=numpy
+        - REFGUIDE_CHECK=1  # run doctests only
 
 cache: pip
 
@@ -52,11 +53,21 @@ before_install:
   - pip install $NUMPYSPEC
   - pip install Cython matplotlib nose coverage codecov
   - set -o pipefail 
+  - |
+    if [ "${REFGUIDE_CHECK}" == "1" ]; then
+        pip install sphinx numpydoc
+    fi
 
 script:
   # Define a fixed build dir so next step works
-  - CFLAGS="--coverage" python setup.py build --build-lib build/lib/ --build-temp build/tmp/
-  - nosetests build/lib/ --tests pyedflib/tests
+    - |
+    if [ "${REFGUIDE_CHECK}" == "1" ]; then
+        pip install -e . -v
+        python util/refguide_check.py --doctests
+    else
+        CFLAGS="--coverage" python setup.py build --build-lib build/lib/ --build-temp build/tmp/
+        nosetests build/lib/ --tests pyedflib/tests
+    fi
 after_success:
   - codecov
   # Travis CI has old gcov, needs object dir explicitly specified
