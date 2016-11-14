@@ -13,8 +13,8 @@ import pyedflib
 
 class TestEdfReader(unittest.TestCase):
     def setUp(self):
-        data_dir = os.path.join(os.getcwd(), 'data')
-        # data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        #data_dir = os.path.join(os.getcwd(), 'data')
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         self.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
@@ -48,17 +48,17 @@ class TestEdfReader(unittest.TestCase):
             return
         datetimeSoll = datetime(2011,4,4,12,57,2)
         np.testing.assert_equal(f.getStartdatetime(),datetimeSoll)
-        np.testing.assert_equal(f.getPatientCode(), b'abcxyz99')
-        np.testing.assert_equal(f.getPatientName(), b'Hans Muller')
-        np.testing.assert_equal(f.getGender(), b'Male')
-        np.testing.assert_equal(f.getBirthdate(), b'30 jun 1969')
-        np.testing.assert_equal(f.getPatientAdditional(), b'patient')
-        np.testing.assert_equal(f.getAdmincode(), b'Dr. X')
-        np.testing.assert_equal(f.getTechnician(), b'Mr. Spotty')
-        np.testing.assert_equal(f.getRecordingAdditional(), b'unit test file')
+        np.testing.assert_equal(f.getPatientCode(), 'abcxyz99')
+        np.testing.assert_equal(f.getPatientName(), 'Hans Muller')
+        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getBirthdate(), '30 jun 1969')
+        np.testing.assert_equal(f.getPatientAdditional(), 'patient')
+        np.testing.assert_equal(f.getAdmincode(), 'Dr. X')
+        np.testing.assert_equal(f.getTechnician(), 'Mr. Spotty')
+        np.testing.assert_equal(f.getRecordingAdditional(), 'unit test file')
         np.testing.assert_equal(f.getFileDuration(), 600)
         fileHeader = f.getHeader()
-        np.testing.assert_equal(fileHeader["patientname"], b'Hans Muller')
+        np.testing.assert_equal(fileHeader["patientname"], 'Hans Muller')
         f._close()
         del f
 
