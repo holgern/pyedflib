@@ -121,7 +121,7 @@ class EdfReader(CyEdfReader):
         None
         """
         signalHeader = []
-        for chn in np.arange(self.n_channels):
+        for chn in np.arange(self.signals_in_file):
             signalHeader.append(self.getSignalHeader(chn))
         return signalHeader
 
