@@ -33,3 +33,6 @@ cythonize.dat
 pyedflib/__config__.py
 pyedflib/version.py
 build.log
+
+# Generated test files
+pyedflib/tests/data/tmp_*
