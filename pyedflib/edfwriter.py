@@ -13,7 +13,7 @@ from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_techn
 from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration
 from ._extensions._pyedflib import set_startdatetime, set_samplefrequency, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
-from ._extensions._pyedflib import blockwrite_physical_samples, write_errors
+from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples
 
 
 __all__ = ['EdfWriter']
