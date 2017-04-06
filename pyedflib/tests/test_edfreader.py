@@ -139,6 +139,8 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
+        np.testing.assert_equal(f.getSignalHeader(0), channel_info)
+        np.testing.assert_equal(f.getSignalHeaders(), [channel_info])
         f._close()
         del f
 
