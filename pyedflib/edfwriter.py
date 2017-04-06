@@ -557,6 +557,12 @@ class EdfWriter(object):
         """
         return write_physical_samples(self.handle, data)
 
+    def writeDigitalSamples(self, data):
+        return write_digital_samples(self.handle, data)
+
+    def writeDigitalShortSamples(self, data):
+        return write_digital_short_samples(self.handle, data)
+
     def blockWritePhysicalSamples(self, data):
         """
         Writes physical samples (uV, mA, Ohm)
@@ -578,6 +584,12 @@ class EdfWriter(object):
         All parameters must be already written into the bdf/edf-file.
         """
         return blockwrite_physical_samples(self.handle, data)
+
+    def blockWriteDigitalSamples(self, data):
+        return blockwrite_digital_samples(self.handle, data)
+
+    def blockWriteDigitalShortSamples(self, data):
+        return blockwrite_digital_short_samples(self.handle, data)
 
     def writeSamples(self, data_list):
         """

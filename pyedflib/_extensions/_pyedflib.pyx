@@ -14,7 +14,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
            'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
            'seek', 'set_startdatetime' ,'set_datarecord_duration', 'open_errors', 'FILETYPE_EDFPLUS',
            'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors', 'get_number_of_open_files',
-           'get_handle', 'is_file_used']
+           'get_handle', 'is_file_used', 'blockwrite_digital_short_samples', 'write_digital_short_samples']
 
 
 #from c_edf cimport *
@@ -101,6 +101,7 @@ cdef class CyEdfReader:
             
     def check_open_ok(self,result):
         if result == 0:
+            self.handle = self.hdr.handle
             return True
         else:
             raise IOError, open_errors[self.hdr.filetype]
@@ -392,8 +393,11 @@ cpdef read_int_samples(int handle, int edfsignal, int n,
     """
     return c_edf.edfread_digital_samples(handle, edfsignal, n,<int*>buf.data)
 
-cpdef int blockwrite_digital_samples(int handle, np.ndarray[np.int16_t,ndim=1] buf):
+cpdef int blockwrite_digital_samples(int handle, np.ndarray[np.int32_t,ndim=1] buf):
     return c_edf.edf_blockwrite_digital_samples(handle, <int*>buf.data)
+
+cpdef int blockwrite_digital_short_samples(int handle, np.ndarray[np.int16_t,ndim=1] buf):
+    return c_edf.edf_blockwrite_digital_short_samples(handle, <short*>buf.data)
 
 cpdef int blockwrite_physical_samples(int handle, np.ndarray[np.float64_t,ndim=1] buf):
     return c_edf.edf_blockwrite_physical_samples(handle, <double*>buf.data)
@@ -401,9 +405,11 @@ cpdef int blockwrite_physical_samples(int handle, np.ndarray[np.float64_t,ndim=1
 cpdef int set_recording_additional(int handle, char *recording_additional):
     return c_edf.edf_set_recording_additional(handle,recording_additional)
 
+cpdef int write_digital_short_samples(int handle, np.ndarray[np.int16_t] buf):
+    return c_edf.edfwrite_digital_short_samples(handle, <short *>buf.data)
+
 cpdef int write_physical_samples(int handle, np.ndarray[np.float64_t] buf):
     return c_edf.edfwrite_physical_samples(handle, <double *>buf.data)
-
 
 cpdef int set_patientname(int handle, char *name):
     return c_edf.edf_set_patientname(handle, name)
