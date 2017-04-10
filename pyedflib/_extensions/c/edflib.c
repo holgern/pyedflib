@@ -29,11 +29,7 @@
 */
 
 
-
-
 /* compile with options "-D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE" */
-
-
 
 
 #include "edflib.h"

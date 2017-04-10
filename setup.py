@@ -115,7 +115,8 @@ cython_modules = ['_pyedflib']
 cython_sources = [('{0}.pyx' if USE_CYTHON else '{0}.c').format(module)
                   for module in cython_modules]
 
-c_macros = [("PY_EXTENSION", None)]
+c_macros = [("PY_EXTENSION", None), ("_LARGEFILE64_SOURCE", None), ("_LARGEFILE_SOURCE", None)]
+
 cython_macros = []
 cythonize_opts = {}
 if os.environ.get("CYTHON_TRACE"):
@@ -136,7 +137,7 @@ ext_modules = [
               depends=c_lib[1]['sources'] + c_lib[1]['depends'],
               include_dirs=[make_ext_path("c"), get_numpy_include()],
               define_macros=c_macros + cython_macros,
-              libraries=[c_lib[0]],)
+              libraries=[c_lib[0]])
     for module, source, in zip(cython_modules, cython_sources)
 ]
 
