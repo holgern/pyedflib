@@ -85,7 +85,6 @@ cdef class CyEdfReader:
     """
 
 
-    cdef int handle
     cdef c_edf.edf_hdr_struct hdr
     cdef size_t nsamples_per_record
     #I think it is ok not to do this in __cinit__(*,**)
@@ -101,7 +100,6 @@ cdef class CyEdfReader:
             
     def check_open_ok(self,result):
         if result == 0:
-            self.handle = self.hdr.handle
             return True
         else:
             raise IOError, open_errors[self.hdr.filetype]
@@ -150,7 +148,7 @@ cdef class CyEdfReader:
     property handle:
         "edflib internal int handle"
         def __get__(self):
-            return self.handle
+            return self.hdr.handle
         
     property datarecords_in_file:
         "number of data records"
@@ -297,7 +295,7 @@ cdef class CyEdfReader:
           into numpy int32 array @sigbuf sigbuf must be at least n long
        """
        c_edf.edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
-       readn = read_int_samples(self.handle, signalnum, n, sigbuf)
+       readn = read_int_samples(self.hdr.handle, signalnum, n, sigbuf)
        if readn != n:
            print "read %d, less than %d requested!!!" % (readn, n)    
 

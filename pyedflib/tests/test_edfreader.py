@@ -144,6 +144,36 @@ class TestEdfReader(unittest.TestCase):
         f._close()
         del f
 
+    def test_EdfReader_Close_file(self):
+        try:
+            f = pyedflib.EdfReader(self.edf_data_file)
+        except IOError:
+            print('cannot open', self.edf_data_file)
+            np.testing.assert_raises(IOError,'cannot open file')
+            return
+        np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
+        f._close()
+        f._close()
+        del f
+        try:
+            f = pyedflib.EdfReader(self.edf_data_file)
+        except IOError:
+            print('cannot open', self.edf_data_file)
+            np.testing.assert_raises(IOError,'cannot open file')
+            return
+        np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
+        f._close()
+
+        try:
+            f = pyedflib.EdfReader(self.edf_data_file)
+        except IOError:
+            print('cannot open', self.edf_data_file)
+            np.testing.assert_raises(IOError,'cannot open file')
+            return
+        np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
+        f._close()
+        del f
+
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()

@@ -28,6 +28,9 @@ class EdfReader(CyEdfReader):
     def __enter__(self):
         return self
 
+    def __del_(self):
+        self._close()
+
     def __exit__(self, exc_type, exc_val, ex_tb):
         self._close()  # cleanup the file
 
