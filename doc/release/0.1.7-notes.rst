@@ -32,6 +32,6 @@ Issues closed for v0.1.7
 
 
 Pull requests for v0.1.7
+------------------------
 - `#12 <github.com/holgern/pyedflib/pull/12>`__: Fix getSignalHeaders
 - `#13 <github.com/holgern/pyedflib/pull/13>`__: Don't crash when writing files on 64bit machines 
-------------------------
