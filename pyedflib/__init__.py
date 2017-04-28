@@ -13,6 +13,9 @@ from .edfreader import *
 
 from . import data
 
+from pyedflib.version import version as __version__
+from numpy.testing import Tester
+
 __all__ = [s for s in dir() if not s.startswith('_')]
 try:
     # In Python 2.x the name of the tempvar leaks out of the list
@@ -21,6 +24,5 @@ try:
 except NameError:
     pass
 
-from pyedflib.version import version as __version__
-from numpy.testing import Tester
+
 test = Tester().test
