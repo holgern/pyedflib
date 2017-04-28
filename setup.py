@@ -12,15 +12,19 @@ from distutils.sysconfig import get_python_inc
 
 try:
     from Cython.Build import cythonize
+    USE_CYTHON = True
 except ImportError:
     USE_CYTHON = False
-else:
-    USE_CYTHON = True
+    if not os.path.exists(os.path.join('pyedflib', '_extensions', '_pyedflib.c')):
+        msg = ("Cython must be installed when working with a development "
+               "version of PyEDFlib")
+        raise RuntimeError(msg)    
+
 
 MAJOR = 0
 MINOR = 1
 MICRO = 7
-ISRELEASED = False
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
@@ -210,13 +214,11 @@ if __name__ == '__main__':
             "Operating System :: OS Independent",
             "Programming Language :: C",
             "Programming Language :: Python",
-            "Programming Language :: Python :: 2",
-            "Programming Language :: Python :: 2.6",
             "Programming Language :: Python :: 2.7",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.3",
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: 3.5",
+            "Programming Language :: Python :: 3.6",
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
@@ -227,6 +229,6 @@ if __name__ == '__main__':
         libraries=[c_lib],
         cmdclass={'develop': develop_build_clib},
         test_suite='nose.collector',
-        install_requires=["numpy"],
+        install_requires=["numpy>=1.9.1"],
     )
 

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2015, Holger Nahrstaedt
+# Copyright (c) 2015 - 2017 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
+# Copyright (c) 2016-2017 The pyedflib Developers
+#                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
+
 from __future__ import division, print_function, absolute_import
 from datetime import datetime
 import numpy as np

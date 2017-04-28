@@ -1,0 +1,37 @@
+==============================
+PyEDFlib 0.1.7 Release Notes
+==============================
+
+.. contents::
+
+- Fix Crash on 64 Bit
+- Fix strings on python 3
+- Fix edf handle
+- Fix getSignalHeaders
+
+Authors
+=======
+
+* Matthias Klumpp +
+* Holger Nahrstaedt
+* Jukka Zitting +
+
+
+A total of 3 people contributed to this release.
+People with a "+" by their names contributed a patch for the first time.
+This list of names is automatically generated, and may not be fully
+complete.
+
+Issues closed for v0.1.7
+------------------------
+- `#7 <github.com/holgern/pyedflib/issues/7>`__: Handling of wrong paths 
+- `#8 <github.com/holgern/pyedflib/issues/8>`__: Wrong and misleading docstring for setDatarecordDuration 
+- `#9 <github.com/holgern/pyedflib/issues/9>`__: How to close an already opened file?
+- `#10 <github.com/holgern/pyedflib/issues/10>`__: Incorrect results from calling read_digital_signal when opening more than one file 
+
+
+
+Pull requests for v0.1.7
+- `#12 <github.com/holgern/pyedflib/pull/12>`__: Fix getSignalHeaders
+- `#13 <github.com/holgern/pyedflib/pull/13>`__: Don't crash when writing files on 64bit machines 
+------------------------
