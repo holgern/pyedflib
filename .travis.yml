@@ -80,7 +80,14 @@ script:
         pushd demo
         nosetests pyedflib
         popd
-    if [ "${REFGUIDE_CHECK}" == "1" ]; then
+    elif [ "${USE_SDIST}" == "1" ]; then
+        python setup.py sdist
+        # Move out of source directory to avoid finding local pyedflib
+        pushd dist
+        pip install PyEDFlib* -v
+        nosetests pyedflib
+        popd
+    elif [ "${REFGUIDE_CHECK}" == "1" ]; then
         pip install -e . -v
         python util/refguide_check.py --doctests
     else
