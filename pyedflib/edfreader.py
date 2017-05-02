@@ -55,12 +55,13 @@ class EdfReader(CyEdfReader):
             return np.array([]), np.array([]), np.array([])
         ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
+        ann_text_out = ["" for x in range(len(annot[:, 1]))]
         for i in np.arange(len(annot[:, 1])):
-            ann_text[i] = self._convert_string(ann_text[i])
+            ann_text_out[i] = self._convert_string(ann_text[i])
             if annot[i, 1] == '':
                 annot[i, 1] = '-1'
         ann_duration = self._get_float(annot[:, 1])
-        return ann_time/10000000, ann_duration, ann_text
+        return ann_time/10000000, ann_duration, np.array(ann_text_out)
 
     def _get_float(self, v):
         result = np.zeros(np.size(v))

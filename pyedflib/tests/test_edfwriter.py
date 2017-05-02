@@ -115,9 +115,10 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.writeAnnotation(1.23, 0.2, u"annotation1")
-        f.writeAnnotation(0.25, -1, u"annotation2")
-        f.writeAnnotation(1.25, 0, u"annotation3")
+        f.writeAnnotation(1.23, 0.2, u"annotation1_ä")
+        f.writeAnnotation(0.25, -1, u"annotation2_ü")
+        f.writeAnnotation(1.25, 0, u"annotation3_ö")
+        f.writeAnnotation(1.30, -1, u"annotation4_ß")
         f.close()
         del f
 
@@ -127,13 +128,16 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], b"annotation1")
+        np.testing.assert_equal(ann_text[0], "annotation1_..")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], b"annotation2")
+        np.testing.assert_equal(ann_text[1], "annotation2_..")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"annotation3")
+        np.testing.assert_equal(ann_text[2], "annotation3_..")
+        np.testing.assert_almost_equal(ann_time[3], 1.30)
+        np.testing.assert_almost_equal(ann_duration[3], -1)
+        np.testing.assert_equal(ann_text[3], "annotation4_..")
 
     def test_AnnotationWritingUTF8(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
@@ -160,13 +164,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], b"Z..hne")
+        np.testing.assert_equal(ann_text[0], "Z..hne")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], b"Fu..")
+        np.testing.assert_equal(ann_text[1], "Fu..")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"abc")
+        np.testing.assert_equal(ann_text[2], "abc")
 
     def test_BytesChars(self):
         channel_info = {'label': b'test_label', 'dimension': b'mV', 'sample_rate': 100,
@@ -181,9 +185,9 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.writeAnnotation(1.23, 0.2, u"Zähne")
-        f.writeAnnotation(0.25, -1, u"Fuß")
-        f.writeAnnotation(1.25, 0, u"abc")
+        f.writeAnnotation(1.23, 0.2, b'Zaehne')
+        f.writeAnnotation(0.25, -1, b'Fuss')
+        f.writeAnnotation(1.25, 0, b'abc')
         f.close()
         del f
 
@@ -193,13 +197,13 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], b"Z..hne")
+        np.testing.assert_equal(ann_text[0], "Zaehne")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], b"Fu..")
+        np.testing.assert_equal(ann_text[1], "Fuss")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], b"abc")
+        np.testing.assert_equal(ann_text[2], "abc")
 
 
 if __name__ == '__main__':

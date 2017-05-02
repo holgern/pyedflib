@@ -34,7 +34,7 @@ if sys.version_info < (3,):
             return x
 else:
     def u(x):
-        return x
+        return x.decode("utf-8", "strict")
 
     def du(x):
         if isbytestr(x):
