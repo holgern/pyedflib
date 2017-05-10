@@ -2,6 +2,7 @@
 *****************************************************************************
 *
 * Copyright (c) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
+*               2017 Holger Nahrstaedt
 * All rights reserved.
 *
 * email: teuniz@gmail.com
