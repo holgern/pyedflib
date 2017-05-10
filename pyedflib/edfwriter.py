@@ -111,12 +111,12 @@ class EdfWriter(object):
         self.channels = []
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
-            if self.file_type == FILETYPE_BDFPLUS:
+            if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
                 self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
-            elif (self.file_type == FILETYPE_EDFPLUS):
+            elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
                 self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,

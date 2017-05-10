@@ -85,6 +85,7 @@
 #define EDFLIB_REPAIR_FILE_SIZE_IF_WRONG    2
 
 /* the following defines are possible errors returned by edfopen_file_writeonly() */
+/* Errors only for EDF+/BDF+*/
 #define EDFLIB_NO_SIGNALS                  -20
 #define EDFLIB_TOO_MANY_SIGNALS            -21
 #define EDFLIB_NO_SAMPLES_IN_RECORD        -22

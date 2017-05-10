@@ -441,7 +441,7 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.signal_label(chn).rstrip())
         else:
-            return self._convert_string(b'')
+            return self._convert_string('')
 
     def getPrefilter(self,chn):
         """
@@ -465,9 +465,9 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.prefilter(chn).rstrip())
         else:
-            return self._convert_string(b'')
+            return self._convert_string('')
 
-    def getPhysicalMaximum(self,chn):
+    def getPhysicalMaximum(self,chn=None):
         """
         Returns the maximum physical value of signal edfsignal.
 
@@ -486,12 +486,18 @@ class EdfReader(CyEdfReader):
         >>> del f
 
         """
-        if 0 <= chn < self.signals_in_file:
-            return self.physical_max(chn)
+        if chn is not None:
+            if 0 <= chn < self.signals_in_file:
+                return self.physical_max(chn)
+            else:
+                return 0
         else:
-            return 0
+            physMax = np.zeros(self.signals_in_file)
+            for i in np.arange(self.signals_in_file):
+                physMax[i] = self.physical_max(i)
+            return physMax
 
-    def getPhysicalMinimum(self,chn):
+    def getPhysicalMinimum(self,chn=None):
         """
         Returns the minimum physical value of signal edfsignal.
 
@@ -510,12 +516,18 @@ class EdfReader(CyEdfReader):
         >>> del f
 
         """
-        if 0 <= chn < self.signals_in_file:
-            return self.physical_min(chn)
+        if chn is not None:
+            if 0 <= chn < self.signals_in_file:
+                return self.physical_min(chn)
+            else:
+                return 0
         else:
-            return 0
+            physMin = np.zeros(self.signals_in_file)
+            for i in np.arange(self.signals_in_file):
+                physMin[i] = self.physical_min(i)
+            return physMin
 
-    def getDigitalMaximum(self, chn):
+    def getDigitalMaximum(self, chn=None):
         """
         Returns the maximum digital value of signal edfsignal.
 
@@ -534,12 +546,18 @@ class EdfReader(CyEdfReader):
         >>> del f
 
         """
-        if 0 <= chn < self.signals_in_file:
-            return self.digital_max(chn)
+        if chn is not None:
+            if 0 <= chn < self.signals_in_file:
+                return self.digital_max(chn)
+            else:
+                return 0
         else:
-            return 0
+            digMax = np.zeros(self.signals_in_file)
+            for i in np.arange(self.signals_in_file):
+                digMax[i] = self.digital_max(i)
+            return digMax
 
-    def getDigitalMinimum(self, chn):
+    def getDigitalMinimum(self, chn=None):
         """
         Returns the minimum digital value of signal edfsignal.
 
@@ -558,10 +576,16 @@ class EdfReader(CyEdfReader):
         >>> del f
 
         """
-        if 0 <= chn < self.signals_in_file:
-            return self.digital_min(chn)
+        if chn is not None:
+            if 0 <= chn < self.signals_in_file:
+                return self.digital_min(chn)
+            else:
+                return 0
         else:
-            return 0
+            digMin = np.zeros(self.signals_in_file)
+            for i in np.arange(self.signals_in_file):
+                digMin[i] = self.digital_min(i)
+            return digMin
 
     def getTransducer(self, chn):
         """
@@ -609,7 +633,7 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.physical_dimension(chn).rstrip())
         else:
-            return self._convert_string(b'')
+            return self._convert_string('')
 
     def readSignal(self, chn):
 
