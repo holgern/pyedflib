@@ -375,6 +375,14 @@ class EdfWriter(object):
         ----------
         birthdate: date object from datetime
 
+        Examples
+        --------
+        >>> import pyedflib
+        >>> from datetime import datetime, date
+        >>> f = pyedflib.EdfWriter('test.bdf', 1, file_type=pyedflib.FILETYPE_BDFPLUS)
+        >>> f.setBirthdate(date(1951, 8, 2))
+        >>> f.close()
+
         Notes
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.

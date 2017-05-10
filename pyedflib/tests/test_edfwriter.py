@@ -38,10 +38,19 @@ class TestEdfWriter(unittest.TestCase):
         f.setPatientCode('code1')
         f.setPatientAdditional('patAdd1')
         f.setAdmincode('admin1')
+        f.setEquipment('eq1')
         f.setGender(1)
         f.setBirthdate(date(1951, 8, 2))
+        f.setStartdatetime(datetime(2017, 1, 1, 1, 1, 1))
+        f.setSamplefrequency(1,200)
+        f.setPhysicalMaximum(1,2)
+        f.setPhysicalMinimum(1,-2)
+        f.setLabel(1,'test 2')
+        f.setPhysicalDimension(1,'l2')
+        f.setTransducer(1,'trans2')
+        f.setPrefilter(1,'pre2')
         data1 = np.ones(100) * 0.1
-        data2 = np.ones(100) * 0.2
+        data2 = np.ones(200) * 0.2
         f.writePhysicalSamples(data1)
         f.writePhysicalSamples(data2)
         f.writePhysicalSamples(data1)
@@ -56,14 +65,24 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(f.getPatientCode(), 'code1')
         np.testing.assert_equal(f.getPatientAdditional(), 'patAdd1')
         np.testing.assert_equal(f.getAdmincode(), 'admin1')
+        np.testing.assert_equal(f.getEquipment(), 'eq1')
         np.testing.assert_equal(f.getGender(), 'Male')
         np.testing.assert_equal(f.getBirthdate(), '02 aug 1951')
+        np.testing.assert_equal(f.getStartdatetime(), datetime(2017, 1, 1, 1, 1, 1))
 
         np.testing.assert_equal(f.getLabel(0), 'test_label')
         np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
+
+        np.testing.assert_equal(f.getLabel(1), 'test 2')
+        np.testing.assert_equal(f.getPhysicalDimension(1), 'l2')
+        np.testing.assert_equal(f.getPrefilter(1), 'pre2')
+        np.testing.assert_equal(f.getTransducer(1), 'trans2')
+        np.testing.assert_equal(f.getSampleFrequency(1), 200)
+        np.testing.assert_equal(f.getPhysicalMaximum(1), 2)
+        np.testing.assert_equal(f.getPhysicalMinimum(1), -2)
         f._close()
         del f
 
@@ -106,8 +125,12 @@ class TestEdfWriter(unittest.TestCase):
                         'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
                                file_type=pyedflib.FILETYPE_EDFPLUS)
+
+        header = {'technician': 'tec1', 'recording_additional': 'recAdd1', 'patientname': 'pat1',
+                  'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
+                  'admincode':'admin1','gender':1,'startdate':datetime(2017, 1, 1, 1, 1, 1),'birthdate':date(1951, 8, 2)}
+        f.setHeader(header)
         f.setSignalHeader(0,channel_info)
-        f.setTechnician('tec1')
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
@@ -116,6 +139,15 @@ class TestEdfWriter(unittest.TestCase):
 
         f = pyedflib.EdfReader(self.edfplus_data_file)
         np.testing.assert_equal(f.getTechnician(), 'tec1')
+        np.testing.assert_equal(f.getRecordingAdditional(), 'recAdd1')
+        np.testing.assert_equal(f.getPatientName(), 'pat1')
+        np.testing.assert_equal(f.getPatientCode(), 'code1')
+        np.testing.assert_equal(f.getEquipment(), 'eq1')
+        np.testing.assert_equal(f.getPatientAdditional(), 'patAdd1')
+        np.testing.assert_equal(f.getAdmincode(), 'admin1')
+        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getBirthdate(), '02 aug 1951')
+        np.testing.assert_equal(f.getStartdatetime(), datetime(2017, 1, 1, 1, 1, 1))
 
         np.testing.assert_equal(f.getLabel(0), 'test_label')
         np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
