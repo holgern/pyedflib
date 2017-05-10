@@ -1,4 +1,10 @@
-# pyEDFlib
+pyEDFlib
+========
+
+.. contents::
+
+What is pyEDFlib
+----------------
 pyEDFlib is a python library to read/write EDF+/BDF+ files based on EDFlib.
 
 EDF means [European Data Format](http://www.edfplus.info/) and was firstly published [1992](http://www.sciencedirect.com/science/article/pii/0013469492900097). 
@@ -13,14 +19,34 @@ This python toolbox is a fork of the [toolbox from Christopher Lee-Messer](https
 and uses the [EDFlib](http://www.teuniz.net/edflib/) from Teunis van Beelen.
 The EDFlib is able to read and write EDF/EDF+/BDF/BDF+ files.
 
-Authors
-* Holger Nahrstaedt
-* Teunis van Beelen (edflib.c, edflib.h, http://www.teuniz.net/edflib/)
-* Chris Lee-Messer (https://bitbucket.org/cleemesser/python-edf)
+Documentation
+-------------
 
+Documentation is available online at http://pyedflib.readthedocs.org.
 
+Installation
+------------
 
-[![Coverage Status](https://coveralls.io/repos/holgern/pyedflib/badge.svg?branch=master&service=github)](https://coveralls.io/github/holgern/pyedflib?branch=master)
+pyEDFlib can be used with python 2.7.x or >=3.4. It depends on the numpy package.
+To use the newest source code from git, you have to download the source code.
+You need a C compiler and a recent version of Cython. Go then to the source directory and type:
+
+    python setup.py build
+    python setup.py install
+
+There are binary wheels which can be installed by
+
+    pip install pyEDFlib
+
+License
+-------
+
+pyEDFlib is a free Open Source software released under the BSD 2-clause license.
+
+Badges
+------
+
+[![codecov](https://codecov.io/gh/holgern/pyedflib/branch/master/graph/badge.svg)](https://codecov.io/gh/holgern/pyedflib)
 
 [![Build Status](https://travis-ci.org/holgern/pyedflib.svg)](https://travis-ci.org/holgern/pyedflib)
 
