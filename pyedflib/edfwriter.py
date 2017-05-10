@@ -283,7 +283,7 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
-        self.technician = patient_additional
+        self.patient_additional = patient_additional
         self.update_header()
 
     def setEquipment(self, equipment):
@@ -373,7 +373,7 @@ class EdfWriter(object):
 
         Parameters
         ----------
-        birthdate:
+        birthdate: date object from datetime
 
         Notes
         -----

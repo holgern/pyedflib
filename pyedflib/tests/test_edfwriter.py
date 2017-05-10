@@ -8,6 +8,7 @@ import numpy as np
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
 import pyedflib
+from datetime import datetime, date
 
 
 class TestEdfWriter(unittest.TestCase):
@@ -19,22 +20,44 @@ class TestEdfWriter(unittest.TestCase):
         self.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
 
     def test_EdfWriter_BDFplus(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
+        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                             'physical_max': 1.0, 'physical_min': -1.0,
+                            'digital_max': 8388607, 'digital_min': -8388608,
+                            'prefilter': 'pre1', 'transducer': 'trans1'}
+        f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
                                file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info)
+        f.setSignalHeader(0,channel_info1)
+        f.setSignalHeader(1,channel_info2)
         f.setTechnician('tec1')
-        data = np.ones(100) * 0.1
-        f.writePhysicalSamples(data)
-        f.writePhysicalSamples(data)
+        f.setRecordingAdditional('recAdd1')
+        f.setPatientName('pat1')
+        f.setPatientCode('code1')
+        f.setPatientAdditional('patAdd1')
+        f.setAdmincode('admin1')
+        f.setGender(1)
+        f.setBirthdate(date(1951, 8, 2))
+        data1 = np.ones(100) * 0.1
+        data2 = np.ones(100) * 0.2
+        f.writePhysicalSamples(data1)
+        f.writePhysicalSamples(data2)
+        f.writePhysicalSamples(data1)
+        f.writePhysicalSamples(data2)
         f.close()
         del f
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
         np.testing.assert_equal(f.getTechnician(), 'tec1')
+        np.testing.assert_equal(f.getRecordingAdditional(), 'recAdd1')
+        np.testing.assert_equal(f.getPatientName(), 'pat1')
+        np.testing.assert_equal(f.getPatientCode(), 'code1')
+        np.testing.assert_equal(f.getPatientAdditional(), 'patAdd1')
+        np.testing.assert_equal(f.getAdmincode(), 'admin1')
+        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getBirthdate(), '02 aug 1951')
 
         np.testing.assert_equal(f.getLabel(0), 'test_label')
         np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')

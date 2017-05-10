@@ -36,6 +36,20 @@ There are binary wheels which can be installed by
 
     pip install pyEDFlib
 
+Users of the Anaconda_ Python distribution may wish to obtain pre-built
+Windows, Intel Linux or macOS / OSX binaries from the conda-forge channel.
+This can be done via::
+
+    conda install -c conda-forge pywavelets
+
+
+The most recent *development* version can be found on GitHub at
+https://github.com/PyWavelets/pywt.
+
+The latest release, including source and binary packages for Linux,
+macOS and Windows, is available for download from the `Python Package Index`_.
+You can find source releases at the `Releases Page`_.
+
 License
 -------
 
@@ -51,3 +65,13 @@ Badges
 [![Build status](https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true)](https://ci.appveyor.com/project/HolgerNahrstaedt/pyedflib)
 
 [![Documentation Status](https://readthedocs.org/projects/pyedflib/badge/?version=latest)](http://pyedflib.readthedocs.org/en/latest/?badge=latest)
+
+
+.. _Cython: http://cython.org/
+.. _Anaconda: https://www.continuum.io
+.. _GitHub: https://github.com/holgern/pyedflib
+.. _GitHub Issues: https://github.com/holgern/pyedflib/issues
+.. _Numpy: http://www.numpy.org
+.. _Python: http://python.org/
+.. _Python Package Index: http://pypi.python.org/pypi/pyEDFlib/
+.. _Releases Page: https://github.com/holgern/pyedflib/releases
