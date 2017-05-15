@@ -25,9 +25,9 @@ Documentation is available online at http://pyedflib.readthedocs.org.
 Installation
 ------------
 
-pyEDFlib can be used with python 2.7.x or >=3.4. It depends on the numpy package.
+pyEDFlib can be used with `Python`_ 2.7.x or >=3.4. It depends on the `Numpy`_ package.
 To use the newest source code from git, you have to download the source code.
-You need a C compiler and a recent version of Cython. Go then to the source directory and type:
+You need a C compiler and a recent version of `Cython`_. Go then to the source directory and type:
 
     python setup.py build
     python setup.py install
@@ -36,7 +36,7 @@ There are binary wheels which can be installed by
 
     pip install pyEDFlib
 
-Users of the Anaconda_ Python distribution may wish to obtain pre-built
+Users of the Anaconda_ Python distribution can directly obtain pre-built
 Windows, Intel Linux or macOS / OSX binaries from the conda-forge channel.
 This can be done via::
 
