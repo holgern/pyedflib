@@ -5,7 +5,7 @@ What is pyEDFlib
 ----------------
 pyEDFlib is a python library to read/write EDF+/BDF+ files based on EDFlib.
 
-EDF means [European Data Format](http://www.edfplus.info/) and was firstly published [1992](http://www.sciencedirect.com/science/article/pii/0013469492900097). 
+EDF means [European Data Format](http://www.edfplus.info/) and was firstly published [1992](http://www.sciencedirect.com/science/article/pii/0013469492900097).
 In 2003, an improved version of the file protokoll named EDF+ has been published and can be found [here](http://www.sciencedirect.com/science/article/pii/0013469492900097).
 
 The EDF/EDF+ format saves all data with 16 Bit. A version which saves all data with 24 Bit,
@@ -40,11 +40,11 @@ Users of the Anaconda_ Python distribution may wish to obtain pre-built
 Windows, Intel Linux or macOS / OSX binaries from the conda-forge channel.
 This can be done via::
 
-    conda install -c conda-forge pywavelets
+    conda install -c conda-forge pyedflib
 
 
 The most recent *development* version can be found on GitHub at
-https://github.com/PyWavelets/pywt.
+https://github.com/holgern/pyedflib.
 
 The latest release, including source and binary packages for Linux,
 macOS and Windows, is available for download from the `Python Package Index`_.
