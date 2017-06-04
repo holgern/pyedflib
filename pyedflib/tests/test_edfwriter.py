@@ -220,6 +220,50 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data1, data1_read)
         np.testing.assert_almost_equal(data2, data2_read)
 
+    def test_TestRoundingEDF(self):
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+                         'physical_max':1.0,'physical_min':-1.0,
+                         'digital_max':32767,'digital_min':-32768,
+                         'prefilter':'pre1','transducer':'trans1'}
+        f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                              file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeader(0,channel_info1)
+
+        time = np.linspace(0,5,500)
+        data1 = np.sin(2*np.pi*1*time)
+        data_list = []
+        data_list.append(data1)
+        f.writeSamples(data_list)
+
+        f.close()
+        del f
+
+        f = pyedflib.EdfReader(self.edfplus_data_file)
+        data1_read = f.readSignal(0)
+        f._close()
+        del f
+        np.testing.assert_equal(len(data1), len(data1_read))
+        np.testing.assert_almost_equal(data1, data1_read,decimal=4)
+
+        f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                                   file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeader(0,channel_info1)
+
+        data_list = []
+        data_list.append(data1_read)
+        f.writeSamples(data_list)
+
+        f.close()
+        del f
+
+        f = pyedflib.EdfReader(self.edfplus_data_file)
+        data2_read = f.readSignal(0)
+        f._close()
+        del f
+        np.testing.assert_equal(len(data1), len(data2_read))
+        np.testing.assert_almost_equal(data1, data2_read,decimal=4)
+        np.testing.assert_almost_equal(data1_read, data2_read, decimal=10)
+
     def test_AnnotationWriting(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
