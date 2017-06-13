@@ -3,16 +3,22 @@ PyEDFlib 0.1.9 Release Notes
 ==============================
 
 .. contents::
-
+- Fix proper reading of EDF/BDF files
+- Bug fixes
+- Improved error messages
 
 Authors
 =======
 
+* Zaccharie Ramzi +
+* Holger Nahrstaedt
 
 
 Issues closed for v0.1.9
 ------------------------
-
+- `#16 <github.com/holgern/pyedflib/issues/16>`__:Double rounding when writing to file leads to accumulating errors
+- `#17 <github.com/holgern/pyedflib/issues/17>`__:Error with chb17b_69 in CHB-MIT (Physionet) Database 
 
 Pull requests for v0.1.9
 ------------------------
+- `#15 <github.com/holgern/pyedflib/pull/15>`__: Essentially corrected a typo in readme
