@@ -262,7 +262,7 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_equal(len(data1), len(data2_read))
         np.testing.assert_almost_equal(data1, data2_read,decimal=4)
-        np.testing.assert_almost_equal(data1_read, data2_read, decimal=10)
+        np.testing.assert_almost_equal(data1_read, data2_read, decimal=4)
 
     def test_AnnotationWriting(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
