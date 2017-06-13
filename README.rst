@@ -72,14 +72,12 @@ Badges
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
 
- .. image:: https://anaconda.org/conda-forge/pyedflib/badges/installer/conda.svg
-  :target: https://anaconda.org/conda-forge/pyedflib
-
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/version.svg
-  :target: https://anaconda.org/conda-forge/pyedflib
-
- .. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg
-  :target: https://anaconda.org/conda-forge/pyedflib
+.. image:: https://anaconda.org/conda-forge/pyedflib/badges/installer/conda.svg   :target: https://conda.anaconda.org/conda-forge  
+  
+ .. image:: https://anaconda.org/conda-forge/pyedflib/badges/version.svg   :target: https://anaconda.org/conda-forge/pyedflib 
+  
+ .. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   :target: https://anaconda.org/conda-forge/pyedflib 
+  
   
 .. _Cython: http://cython.org/
 .. _Anaconda: https://www.continuum.io
