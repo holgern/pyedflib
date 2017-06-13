@@ -1382,7 +1382,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1403,7 +1403,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   if(error)
   {
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1417,7 +1417,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 168, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1427,7 +1427,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 168, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1453,7 +1453,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1476,7 +1476,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1490,7 +1490,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1500,7 +1500,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1510,7 +1510,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1534,7 +1534,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_NUMBER_SIGNALS;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1543,7 +1543,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
   if(edflib_is_integer_number(scratchpad))
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_NUMBER_SIGNALS;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1551,7 +1551,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   edfhdr->edfsignals = edflib_atof_nonlocalized(scratchpad);
   if(edfhdr->edfsignals<1)
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_NUMBER_SIGNALS;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1559,7 +1559,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
   if(edfhdr->edfsignals>EDFLIB_MAXSIGNALS)
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_NUMBER_SIGNALS;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1574,7 +1574,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_BYTES_HEADER;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1583,7 +1583,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
   if(edflib_is_integer_number(scratchpad))
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_BYTES_HEADER;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1592,7 +1592,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   n  = edflib_atof_nonlocalized(scratchpad);
   if((edfhdr->edfsignals * 256 + 256)!=n)
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_BYTES_HEADER;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1609,7 +1609,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_RESERVED_FIELD;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1656,7 +1656,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1665,7 +1665,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
   if(edflib_is_integer_number(scratchpad))
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1674,7 +1674,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   edfhdr->datarecords = edflib_atof_nonlocalized(scratchpad);
   if(edfhdr->datarecords<1)
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1689,7 +1689,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_DURATION;
       free(edf_hdr);
       free(edfhdr);
       return(NULL);
@@ -1698,7 +1698,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
   if(edflib_is_number(scratchpad))
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_DURATION;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1707,7 +1707,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   edfhdr->data_record_duration = edflib_atof_nonlocalized(scratchpad);
   if(edfhdr->data_record_duration < -0.000001)
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_DURATION;
     free(edf_hdr);
     free(edfhdr);
     return(NULL);
@@ -1755,7 +1755,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_LABEL;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1785,7 +1785,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   }
   if(edfhdr->edfplus&&(!edfhdr->nr_annot_chns))
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_LABEL;
     free(edf_hdr);
     free(edfhdr->edfparam);
     free(edfhdr);
@@ -1793,7 +1793,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   }
   if(edfhdr->bdfplus&&(!edfhdr->nr_annot_chns))
   {
-    *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+    *edf_error = EDFLIB_FILE_ERRORS_LABEL;
     free(edf_hdr);
     free(edfhdr->edfparam);
     free(edfhdr);
@@ -1803,7 +1803,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if(edfhdr->data_record_duration<0.0000001)
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_LABEL;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1820,7 +1820,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_TRANSDUCER;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1838,7 +1838,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
         {
           if(edfhdr->edfparam[i].transducer[j]!=' ')
           {
-            *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+            *edf_error = EDFLIB_FILE_ERRORS_TRANSDUCER;
             free(edf_hdr);
             free(edfhdr->edfparam);
             free(edfhdr);
@@ -1859,7 +1859,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_DIMENSION;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1881,7 +1881,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_DIMENSION;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1891,7 +1891,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_PHYS_DIMENSION;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1912,7 +1912,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MAX;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1922,7 +1922,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_PHYS_MAX;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1932,7 +1932,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     edfhdr->edfparam[i].phys_max = edflib_atof_nonlocalized(scratchpad);
     if(edfhdr->edfparam[i].phys_max==edfhdr->edfparam[i].phys_min && (edfhdr->bdfplus || edfhdr->edfplus))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_PHYS_MAX;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1951,7 +1951,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1961,7 +1961,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_integer_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1975,7 +1975,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       {
         if(n!=-32768)
         {
-          *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+          *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
           free(edf_hdr);
           free(edfhdr->edfparam);
           free(edfhdr);
@@ -1989,7 +1989,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       {
         if(n!=-8388608)
         {
-          *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+          *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
           free(edf_hdr);
           free(edfhdr->edfparam);
           free(edfhdr);
@@ -2001,7 +2001,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((n>32767)||(n<-32768))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2012,7 +2012,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((n>8388607)||(n<-8388608))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2033,7 +2033,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2043,7 +2043,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_integer_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2057,7 +2057,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       {
         if(n!=32767)
         {
-          *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+          *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
           free(edf_hdr);
           free(edfhdr->edfparam);
           free(edfhdr);
@@ -2071,7 +2071,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       {
         if(n!=8388607)
         {
-          *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+          *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
           free(edf_hdr);
           free(edfhdr->edfparam);
           free(edfhdr);
@@ -2083,7 +2083,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((n>32767)||(n<-32768))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2094,7 +2094,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((n>8388607)||(n<-8388608))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2104,7 +2104,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     edfhdr->edfparam[i].dig_max = n;
     if(edfhdr->edfparam[i].dig_max<(edfhdr->edfparam[i].dig_min + 1) && (edfhdr->bdfplus || edfhdr->edfplus))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2121,7 +2121,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_PREFILTER;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2139,7 +2139,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
         {
           if(edfhdr->edfparam[i].prefilter[j]!=' ')
           {
-            *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+            *edf_error = EDFLIB_FILE_ERRORS_PREFILTER;
             free(edf_hdr);
             free(edfhdr->edfparam);
             free(edfhdr);
@@ -2164,7 +2164,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2174,7 +2174,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_integer_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2184,7 +2184,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     n = edflib_atof_nonlocalized(scratchpad);
     if(n<1)
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2200,7 +2200,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edfhdr->recordsize > 15728640)
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2213,7 +2213,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edfhdr->recordsize > 10485760)
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2467,7 +2467,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(error)
     {
-      *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+      *edf_error = EDFLIB_FILE_ERRORS_RECORDINGFIELD;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -2488,7 +2488,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       if(edflib_atof_nonlocalized(scratchpad+6)!=edflib_atof_nonlocalized(scratchpad2+9))  error = 1;
       if(error)
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_RECORDINGFIELD;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2499,7 +2499,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
       if(edfhdr->startdate_year<1970)
       {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+        *edf_error = EDFLIB_FILE_ERRORS_RECORDINGFIELD;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2599,9 +2599,10 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   if (check_file_size != EDFLIB_DO_NOT_CHECK_FILE_SIZE)
   {
     fseeko(inputfile, 0LL, SEEK_END);
-    if(ftello(inputfile)!=(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
+    if(ftello(inputfile)<(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
     {
-        *edf_error = EDFLIB_FILE_CONTAINS_FORMAT_ERRORS;
+         printf("filesize %d != %d*%d+%d ",ftello(inputfile),edfhdr->recordsize, edfhdr->datarecords, edfhdr->hdrsize);
+        *edf_error = EDFLIB_FILE_ERRORS_FILESIZE;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
