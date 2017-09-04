@@ -1,0 +1,18 @@
+==============================
+PyEDFlib 0.1.11 Release Notes
+==============================
+
+.. contents::
+
+
+Authors
+=======
+
+* Holger Nahrstaedt
+
+
+Issues closed for v0.1.11
+------------------------
+
+Pull requests for v0.1.11
+------------------------

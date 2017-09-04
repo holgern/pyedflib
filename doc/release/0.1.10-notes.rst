@@ -4,6 +4,9 @@ PyEDFlib 0.1.10 Release Notes
 
 .. contents::
 
+- Add function for access subset of data
+- Improved error messages
+
 Authors
 =======
 
@@ -12,6 +15,9 @@ Authors
 
 Issues closed for v0.1.10
 ------------------------
+- #19 : IOError: the file is not EDF(+) or BDF(+) compliant (Label)
+- #20 : access subset of data
 
 Pull requests for v0.1.10
 ------------------------
+
