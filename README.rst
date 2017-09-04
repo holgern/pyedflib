@@ -72,11 +72,17 @@ Badges
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
 
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/installer/conda.svg   :target: https://conda.anaconda.org/conda-forge  
+.. image:: https://api.codacy.com/project/badge/Grade/a80bc8bdb6a342be83b9d03138bfd078    
+    :target: https://www.codacy.com/app/holgern/pyedflib?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=holgern/pyedflib&amp;utm_campaign=Badge_Grade
+
+.. image:: https://anaconda.org/conda-forge/pyedflib/badges/installer/conda.svg   
+    :target: https://conda.anaconda.org/conda-forge  
   
- .. image:: https://anaconda.org/conda-forge/pyedflib/badges/version.svg   :target: https://anaconda.org/conda-forge/pyedflib 
+.. image:: https://anaconda.org/conda-forge/pyedflib/badges/version.svg   
+    :target: https://anaconda.org/conda-forge/pyedflib 
   
- .. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   :target: https://anaconda.org/conda-forge/pyedflib 
+.. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   
+    :target: https://anaconda.org/conda-forge/pyedflib 
   
   
 .. _Cython: http://cython.org/

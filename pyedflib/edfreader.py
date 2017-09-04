@@ -635,14 +635,45 @@ class EdfReader(CyEdfReader):
         else:
             return self._convert_string('')
 
-    def readSignal(self, chn):
+    def readSignal(self, chn, start=0, n=None):
+        """
+        Returns the physical data of signal chn. When start and n is set, a subset is returned
 
+        Parameters
+        ----------
+        chn : int
+            channel number
+        start : int
+            start pointer (default is 0)
+        n : int
+            length of data to read (default is None, by which the complete data of the channel are returned)
+
+        Examples
+        --------
+        >>> import pyedflib
+        >>> f = pyedflib.data.test_generator()
+        >>> x = f.readSignal(0,0,1000)
+        >>> x.shape[0]
+        1000
+        >>> x2 = f.readSignal(0)
+        >>> x2.shape[0]
+        120000
+        >>> f._close()
+        >>> del f
+
+        """
+        if start < 0:
+            return np.array([])
+        if n is not None and n < 0:
+            return np.array([])
         nsamples = self.getNSamples()
         if chn < len(nsamples):
-            x = np.zeros(nsamples[chn], dtype=np.float64)
-
-            v = x[chn*nsamples[chn]:(chn+1)*nsamples[chn]]
-            self.readsignal(chn, 0, nsamples[chn], v)
+            if n is None:
+                n = nsamples[chn]
+            elif n > nsamples[chn]:
+                return np.array([])
+            x = np.zeros(n, dtype=np.float64)
+            self.readsignal(chn, start, n, x)
             return x
         else:
             return np.array([])
