@@ -9,4 +9,4 @@ dependencies:
 
 test:
   override:
-    - python -u runtests.py -g --shell -- -c 'make -C doc PYTHON=python html-pyedflib'
+    - nosetests build/lib/ --tests pyedflib/tests
