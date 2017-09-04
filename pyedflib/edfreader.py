@@ -653,10 +653,10 @@ class EdfReader(CyEdfReader):
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
         >>> x = f.readSignal(0,0,1000)
-        >>> x.shape[0]
+        >>> int(x.shape[0])
         1000
         >>> x2 = f.readSignal(0)
-        >>> x2.shape[0]
+        >>> int(x2.shape[0])
         120000
         >>> f._close()
         >>> del f

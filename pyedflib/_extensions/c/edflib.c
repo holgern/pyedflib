@@ -1801,7 +1801,8 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   }
   if((edfhdr->edfsignals!=edfhdr->nr_annot_chns)||((!edfhdr->edfplus)&&(!edfhdr->bdfplus)))
   {
-    if(edfhdr->data_record_duration<0.0000001)
+    //if(edfhdr->data_record_duration<0.0000001)
+    if(edfhdr->data_record_duration<0)
     {
       *edf_error = EDFLIB_FILE_ERRORS_LABEL;
       free(edf_hdr);
