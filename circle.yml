@@ -8,7 +8,6 @@ dependencies:
     - git submodule update
     - python setup.py build
     - python setup.py build_ext
-    - python setup.py install --user
 
 
 test:
