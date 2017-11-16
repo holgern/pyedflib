@@ -37,8 +37,9 @@ class TestEdfReader(unittest.TestCase):
         for i in np.arange(11):
             np.testing.assert_almost_equal(f.getSampleFrequencies()[i], 200)
             np.testing.assert_equal(f.getNSamples()[i], 120000)
-
+        np.testing.assert_equal(f.handle, 0)
         f._close()
+        np.testing.assert_equal(f.handle, -1)
         del f
 
     def test_EdfReader_headerInfos(self):
@@ -56,6 +57,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getPatientAdditional(), 'patient')
         np.testing.assert_equal(f.getAdmincode(), 'Dr. X')
         np.testing.assert_equal(f.getTechnician(), 'Mr. Spotty')
+        np.testing.assert_equal(f.getEquipment(), 'test generator')
         np.testing.assert_equal(f.getRecordingAdditional(), 'unit test file')
         np.testing.assert_equal(f.getFileDuration(), 600)
         fileHeader = f.getHeader()
@@ -71,17 +73,23 @@ class TestEdfReader(unittest.TestCase):
             return
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
         np.testing.assert_equal(f.getLabel(0), 'squarewave')
-        np.testing.assert_equal(f.getPhysicalDimension(0), 'uV')
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
-        np.testing.assert_equal(f.getTransducer(0), 'trans1')
-        np.testing.assert_equal(f.getSampleFrequency(0), 200)
-        np.testing.assert_equal(f.getSampleFrequencies()[0], 200)
+        np.testing.assert_equal(f.getTransducer(0), 'trans1')        
+        for i in np.arange(1,11):
+            np.testing.assert_equal(f.getPhysicalDimension(i), 'uV')
+            np.testing.assert_equal(f.getSampleFrequency(i), 200)
+            np.testing.assert_equal(f.getSampleFrequencies()[i], 200)
 
         np.testing.assert_equal(f.getSignalLabels()[1], 'ramp')
         np.testing.assert_equal(f.getSignalLabels()[2], 'pulse')
         np.testing.assert_equal(f.getSignalLabels()[3], 'noise')
         np.testing.assert_equal(f.getSignalLabels()[4], 'sine 1 Hz')
         np.testing.assert_equal(f.getSignalLabels()[5], 'sine 8 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[6], 'sine 8.1777 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[7], 'sine 8.5 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[8], 'sine 15 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[9], 'sine 17 Hz')
+        np.testing.assert_equal(f.getSignalLabels()[10], 'sine 50 Hz')
         f._close()
         del f
 

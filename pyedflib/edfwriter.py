@@ -370,7 +370,10 @@ class EdfWriter(object):
         recording_start_time: datetime object
             Sets the recording start Time
         """
-        self.recording_start_time = recording_start_time
+        if isinstance(recording_start_time,datetime):
+            self.recording_start_time = recording_start_time
+        else:
+            self.recording_start_time = datetime.strptime(recording_start_time,"%d %b %Y %H:%M:%S")
         self.update_header()
 
     def setBirthdate(self, birthdate):
@@ -693,3 +696,4 @@ class EdfWriter(object):
         Closes the file.
         """
         close_file(self.handle)
+        self.handle = -1

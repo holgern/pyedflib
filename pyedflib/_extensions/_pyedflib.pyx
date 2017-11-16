@@ -38,25 +38,25 @@ open_errors = {
     EDFLIB_NUMBER_OF_SIGNALS_INVALID   : "The number of signals is invalid",
     EDFLIB_FILE_IS_DISCONTINUOUS       : "The file is discontinous and cannot be read",
     EDFLIB_INVALID_READ_ANNOTS_VALUE   : "an annotation value could not be read",
-     EDFLIB_FILE_ERRORS_STARTDATE      : "the file is not EDF(+) or BDF(+) compliant (startdate)",
+    EDFLIB_FILE_ERRORS_STARTDATE      : "the file is not EDF(+) or BDF(+) compliant (startdate)",
     EDFLIB_FILE_ERRORS_STARTTIME      : "the file is not EDF(+) or BDF(+) compliant (starttime)",
     EDFLIB_FILE_ERRORS_NUMBER_SIGNALS : "the file is not EDF(+) or BDF(+) compliant (number of signals)",
-   EDFLIB_FILE_ERRORS_BYTES_HEADER   : "the file is not EDF(+) or BDF(+) compliant (Bytes Header)",
-  EDFLIB_FILE_ERRORS_RESERVED_FIELD : "the file is not EDF(+) or BDF(+) compliant (Reserved field)",
- EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS : "the file is not EDF(+) or BDF(+) compliant (Number of Datarecords)",
- EDFLIB_FILE_ERRORS_DURATION : "the file is not EDF(+) or BDF(+) compliant (Duration)",
- EDFLIB_FILE_ERRORS_LABEL : "the file is not EDF(+) or BDF(+) compliant (Label)",
- EDFLIB_FILE_ERRORS_TRANSDUCER : "the file is not EDF(+) or BDF(+) compliant (Transducer)",
- EDFLIB_FILE_ERRORS_PHYS_DIMENSION : "the file is not EDF(+) or BDF(+) compliant (Physical Dimension)",
- EDFLIB_FILE_ERRORS_PHYS_MAX : "the file is not EDF(+) or BDF(+) compliant (Physical Maximum)",
- EDFLIB_FILE_ERRORS_PHYS_MIN : "the file is not EDF(+) or BDF(+) compliant (Physical Minimum)",
- EDFLIB_FILE_ERRORS_DIG_MAX : "the file is not EDF(+) or BDF(+) compliant (Digital Maximum)",
- EDFLIB_FILE_ERRORS_DIG_MIN : "the file is not EDF(+) or BDF(+) compliant (Digital Minimum)",
- EDFLIB_FILE_ERRORS_PREFILTER : "the file is not EDF(+) or BDF(+) compliant (Prefilter)",
- EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD : "the file is not EDF(+) or BDF(+) compliant (Sample in Datarecord)",
- EDFLIB_FILE_ERRORS_FILESIZE : "the file is not EDF(+) or BDF(+) compliant (Filesize)",
- EDFLIB_FILE_ERRORS_RECORDINGFIELD : "the file is not EDF(+) or BDF(+) compliant (EDF+ Recordingfield)",
- EDFLIB_FILE_ERRORS_PATIENTNAME : "the file is not EDF(+) or BDF(+) compliant (EDF+ Patientname)",
+    EDFLIB_FILE_ERRORS_BYTES_HEADER   : "the file is not EDF(+) or BDF(+) compliant (Bytes Header)",
+    EDFLIB_FILE_ERRORS_RESERVED_FIELD : "the file is not EDF(+) or BDF(+) compliant (Reserved field)",
+    EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS : "the file is not EDF(+) or BDF(+) compliant (Number of Datarecords)",
+    EDFLIB_FILE_ERRORS_DURATION : "the file is not EDF(+) or BDF(+) compliant (Duration)",
+    EDFLIB_FILE_ERRORS_LABEL : "the file is not EDF(+) or BDF(+) compliant (Label)",
+    EDFLIB_FILE_ERRORS_TRANSDUCER : "the file is not EDF(+) or BDF(+) compliant (Transducer)",
+    EDFLIB_FILE_ERRORS_PHYS_DIMENSION : "the file is not EDF(+) or BDF(+) compliant (Physical Dimension)",
+    EDFLIB_FILE_ERRORS_PHYS_MAX : "the file is not EDF(+) or BDF(+) compliant (Physical Maximum)",
+    EDFLIB_FILE_ERRORS_PHYS_MIN : "the file is not EDF(+) or BDF(+) compliant (Physical Minimum)",
+    EDFLIB_FILE_ERRORS_DIG_MAX : "the file is not EDF(+) or BDF(+) compliant (Digital Maximum)",
+    EDFLIB_FILE_ERRORS_DIG_MIN : "the file is not EDF(+) or BDF(+) compliant (Digital Minimum)",
+    EDFLIB_FILE_ERRORS_PREFILTER : "the file is not EDF(+) or BDF(+) compliant (Prefilter)",
+    EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD : "the file is not EDF(+) or BDF(+) compliant (Sample in Datarecord)",
+    EDFLIB_FILE_ERRORS_FILESIZE : "the file is not EDF(+) or BDF(+) compliant (Filesize)",
+    EDFLIB_FILE_ERRORS_RECORDINGFIELD : "the file is not EDF(+) or BDF(+) compliant (EDF+ Recordingfield)",
+    EDFLIB_FILE_ERRORS_PATIENTNAME : "the file is not EDF(+) or BDF(+) compliant (EDF+ Patientname)",
     'default' : "unknown error"
     }
 
@@ -111,11 +111,13 @@ cdef class CyEdfReader:
         """
         EdfReader(file_name, annotations_mode, check_file_size)
         """
+        self.hdr.handle = -1
         self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
 
     def __dealloc__(self):
-        if self.hdr.handle:
+        if self.hdr.handle >= 0:
             c_edf.edfclose_file(self.hdr.handle)
+            self.hdr.handle = -1
             
     def check_open_ok(self,result):
         if result == 0:
@@ -307,16 +309,20 @@ cdef class CyEdfReader:
         
 
     def _close(self):   # should not be closed from python
-        c_edf.edfclose_file(self.hdr.handle)
+        if self.hdr.handle >= 0:
+            c_edf.edfclose_file(self.hdr.handle)
+        self.hdr.handle = -1
     
     def read_digital_signal(self, signalnum, start, n, np.ndarray[np.int32_t, ndim=1] sigbuf):
-       """read @n number of samples from signal number @signum starting at @start
-          into numpy int32 array @sigbuf sigbuf must be at least n long
-       """
-       c_edf.edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
-       readn = read_int_samples(self.hdr.handle, signalnum, n, sigbuf)
-       if readn != n:
-           print "read %d, less than %d requested!!!" % (readn, n)    
+        """
+        read_digital_signal(self, signalnum, start, n, np.ndarray[np.int32_t, ndim=1] sigbuf
+        read @n number of samples from signal number @signum starting at @start
+        into numpy int32 array @sigbuf sigbuf must be at least n long
+        """
+        c_edf.edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
+        readn = read_int_samples(self.hdr.handle, signalnum, n, sigbuf)
+        if readn != n:
+            print("read %d, less than %d requested!!!" % (readn, n))
 
     def readsignal(self, signalnum, start, n, np.ndarray[np.float64_t, ndim=1] sigbuf):
 
@@ -395,12 +401,12 @@ cpdef int get_annotation(int handle, int n, EdfAnnotation edf_annotation):
 cpdef read_int_samples(int handle, int edfsignal, int n,
                          np.ndarray[np.int32_t,ndim=1] buf):
     """
-/* reads n samples from edfsignal, starting from the current sample position indicator, into buf (edfsignal starts at 0) */
-/* the values are the "raw" digital values */
-/* bufsize should be equal to or bigger than sizeof(int[n]) */
-/* the sample position indicator will be increased with the amount of samples read */
-/* returns the amount of samples read (this can be less than n or zero!) */
-/* or -1 in case of an error */
+    reads n samples from edfsignal, starting from the current sample position indicator, into buf (edfsignal starts at 0)
+    the values are the "raw" digital values
+    bufsize should be equal to or bigger than sizeof(int[n])
+    the sample position indicator will be increased with the amount of samples read
+    returns the amount of samples read (this can be less than n or zero!)
+    or -1 in case of an error
 
 
     ToDO!!!

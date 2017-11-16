@@ -333,7 +333,7 @@ class EdfReader(CyEdfReader):
         return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
                                  self.starttime_hour, self.starttime_minute, self.starttime_second)
 
-    def getBirthdate(self):
+    def getBirthdate(self, string=True):
         """
         Returns the birthdate as string object
 
@@ -351,7 +351,11 @@ class EdfReader(CyEdfReader):
         >>> del f
 
         """
-        return self._convert_string(self.birthdate.rstrip())
+        
+        if string:
+            return self._convert_string(self.birthdate.rstrip())
+        else:
+            return datetime.strptime(self._convert_string(self.birthdate.rstrip()), "%d %b %Y")
 
     def getSampleFrequencies(self):
         """
