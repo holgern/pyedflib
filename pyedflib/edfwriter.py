@@ -74,6 +74,12 @@ class EdfWriter(object):
     def __exit__(self, exc_type, exc_val, ex_tb):
         self.close()  # cleanup the file
 
+    def __enter__(self):
+        return self
+
+    def __del__(self):
+        self.close()
+
     def __init__(self, file_name, n_channels,
                  file_type=FILETYPE_EDFPLUS):
         """Initialises an EDF file at file_name.
