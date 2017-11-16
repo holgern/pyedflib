@@ -351,7 +351,7 @@ class EdfReader(CyEdfReader):
         >>> del f
 
         """
-        
+
         if string:
             return self._convert_string(self.birthdate.rstrip())
         else:

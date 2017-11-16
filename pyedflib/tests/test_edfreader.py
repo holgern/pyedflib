@@ -74,7 +74,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
         np.testing.assert_equal(f.getLabel(0), 'squarewave')
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
-        np.testing.assert_equal(f.getTransducer(0), 'trans1')        
+        np.testing.assert_equal(f.getTransducer(0), 'trans1')
         for i in np.arange(1,11):
             np.testing.assert_equal(f.getPhysicalDimension(i), 'uV')
             np.testing.assert_equal(f.getSampleFrequency(i), 200)
