@@ -3,16 +3,23 @@ PyEDFlib 0.1.11 Release Notes
 ==============================
 
 .. contents::
-
+- Bug fixes
 
 Authors
 =======
 
 * Holger Nahrstaedt
+* Steffen Heimes +
+
+A total of 2 people contributed to this release.
+People with a "+" by their names contributed a patch for the first time.
+This list of names is automatically generated, and may not be fully complete.
 
 
 Issues closed for v0.1.11
 ------------------------
+- #21 : Cannot open file containing accented character on Windows
 
 Pull requests for v0.1.11
 ------------------------
+- `#23 <github.com/holgern/pyedflib/pull/23>`__: Fixed Typo edfreader and improve edfwriter 
