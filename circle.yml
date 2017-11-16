@@ -6,9 +6,10 @@ dependencies:
     - pip install -q nose mpmath argparse Pillow codecov matplotlib Sphinx==1.5.5
     - git submodule init
     - git submodule update
-    - pip install -I .
+    - python setup.py build
+    - python setup.py build_ext
 
 
 test:
   override:
-    - nosetests build/lib/ --tests pyedflib/tests
+    - python setup.py test
