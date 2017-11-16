@@ -18,6 +18,7 @@ class TestEdfReader(unittest.TestCase):
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         self.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
+        self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_á.bdf')
 
     def test_EdfReader(self):
         try:
@@ -94,7 +95,6 @@ class TestEdfReader(unittest.TestCase):
         ann_index, ann_duration, ann_text = f.readAnnotations()
         np.testing.assert_equal(ann_index.size, 0)
 
-        f._close()
         del f
 
         try:
@@ -114,7 +114,6 @@ class TestEdfReader(unittest.TestCase):
             np.testing.assert_almost_equal(f.getSampleFrequencies()[i], 200)
             np.testing.assert_equal(f.getNSamples()[i], 120000)
 
-        f._close()
         del f
 
     def test_EdfReader_Check_Size(self):
@@ -128,7 +127,6 @@ class TestEdfReader(unittest.TestCase):
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.close()
         del f
 
         f = pyedflib.EdfReader(self.bdf_broken_file, pyedflib.READ_ALL_ANNOTATIONS, pyedflib.DO_NOT_CHECK_FILE_SIZE)
@@ -141,7 +139,6 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
         np.testing.assert_equal(f.getSignalHeader(0), channel_info)
         np.testing.assert_equal(f.getSignalHeaders(), [channel_info])
-        f._close()
         del f
 
     def test_EdfReader_Close_file(self):
@@ -162,7 +159,7 @@ class TestEdfReader(unittest.TestCase):
             np.testing.assert_raises(IOError,'cannot open file')
             return
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
-        f._close()
+        del f
 
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
@@ -171,7 +168,41 @@ class TestEdfReader(unittest.TestCase):
             np.testing.assert_raises(IOError,'cannot open file')
             return
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
-        f._close()
+        del f
+
+    def test_BdfReader_Read_accented_file(self):
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+        try:
+            f = pyedflib.EdfWriter(self.bdf_accented_file, 1,file_type=pyedflib.FILETYPE_BDFPLUS)
+        except IOError:
+            print('cannot write', self.bdf_accented_file)
+            np.testing.assert_raises(IOError,'cannot write file')
+            return
+        f.setSignalHeader(0,channel_info)
+        f.setTechnician('tec1')
+        data = np.ones(100) * 0.1
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        del f
+
+        try:
+            f = pyedflib.EdfReader(self.bdf_accented_file, pyedflib.READ_ALL_ANNOTATIONS, pyedflib.DO_NOT_CHECK_FILE_SIZE)
+        except IOError:
+            print('cannot open', self.bdf_accented_file)
+            np.testing.assert_raises(IOError,'cannot open file')
+            return
+        np.testing.assert_equal(f.getTechnician(), 'tec1')
+
+        np.testing.assert_equal(f.getLabel(0), 'test_label')
+        np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
+        np.testing.assert_equal(f.getPrefilter(0), 'pre1')
+        np.testing.assert_equal(f.getTransducer(0), 'trans1')
+        np.testing.assert_equal(f.getSampleFrequency(0), 100)
+        np.testing.assert_equal(f.getSignalHeader(0), channel_info)
+        np.testing.assert_equal(f.getSignalHeaders(), [channel_info])
         del f
 
 if __name__ == '__main__':
