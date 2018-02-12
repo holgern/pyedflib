@@ -12,14 +12,9 @@ Contents:
 
 .. toctree::
    :maxdepth: 1
+
    ref/index
    dev/index
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+   resources
+   contents
 
