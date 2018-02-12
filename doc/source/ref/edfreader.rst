@@ -2,7 +2,11 @@
 
 .. currentmodule:: pyedflib
 
-EDF/BDF file reader ``edfreader``
-~~~~~~~~~~~~~~~~~~~~~~
+========
+pyEDFlib
+========
 
-.. autofunction:: edfreader
+EDF/BDF file reader ``edfreader``
+---------------------------------
+
+.. autofunction:: EdfReader
