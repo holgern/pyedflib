@@ -201,9 +201,7 @@ if __name__ == '__main__':
         url="https://github.com/holgern/pyedflib",
         license="BSD",
         description="library to read/write EDF+/BDF+ files",
-        long_description="""\
-       pyedflib is a python library to read/write EDF+/BDF+ files based on EDFlib. 
-        """,
+        long_description=open('README.rst').read(),
         keywords=["EDFlib", "European data format", "EDF", "BDF", "EDF+", "BDF+"],
         classifiers=[
             "Development Status :: 4 - Beta",

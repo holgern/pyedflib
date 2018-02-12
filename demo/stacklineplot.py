@@ -3,7 +3,7 @@
 # clm
 
 import numpy as np
-from matplotlib.pyplot import plt
+import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
 
@@ -14,6 +14,7 @@ def stackplot(marray, seconds=None, start_time=None, ylabels=None):
     """
     tarray = np.transpose(marray)
     stackplot_t(tarray, seconds=seconds, start_time=start_time, ylabels=ylabels)
+    plt.show()
 
 
 def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
@@ -68,8 +69,8 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
     # set the yticks to use axes coords on the y axis
     ax.set_yticks(ticklocs)
     # ax.set_yticklabels(['PG3', 'PG5', 'PG7', 'PG9'])
-    if not plt.ylabels:
-        plt.ylabels = ["%d" % ii for ii in range(numRows)]
+    #if not plt.ylabels:
+    plt.ylabels = ["%d" % ii for ii in range(numRows)]
     ax.set_yticklabels(ylabels)
 
     plt.xlabel('time (s)')
