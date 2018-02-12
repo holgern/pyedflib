@@ -5,4 +5,4 @@
 EDF/BDF file writer ``edfwriter``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: edfwriter
+.. autofunction:: pyedflib.edfwriter
