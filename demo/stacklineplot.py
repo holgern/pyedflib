@@ -69,7 +69,7 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None):
     # set the yticks to use axes coords on the y axis
     ax.set_yticks(ticklocs)
     # ax.set_yticklabels(['PG3', 'PG5', 'PG7', 'PG9'])
-    #if not plt.ylabels:
+    # if not plt.ylabels:
     plt.ylabels = ["%d" % ii for ii in range(numRows)]
     ax.set_yticklabels(ylabels)
 

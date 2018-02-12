@@ -16,12 +16,12 @@ if __name__ == '__main__':
     n_min = f.getNSamples()[0]
     sigbufs = [np.zeros(f.getNSamples()[i]) for i in np.arange(n)]
     for i in np.arange(n):
-        sigbufs[i] = f.readSignal(i)  
+        sigbufs[i] = f.readSignal(i)
         if n_min < len(sigbufs[i]):
             n_min = len(sigbufs[i])
     f._close()
     del f
-    
+
     n_plot = np.min((n_min, 2000))
     sigbufs_plot = np.zeros((n, n_plot))
     for i in np.arange(n):
