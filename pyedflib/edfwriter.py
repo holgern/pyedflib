@@ -113,7 +113,7 @@ class EdfWriter(object):
         self.recording_start_time = datetime.now()
         self.birthdate = date(1900, 1, 1)
         self.duration = 1
-        self.number_of_annotations = 1
+        self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
         self.channels = []
         self.sample_buffer = []
