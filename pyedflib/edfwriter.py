@@ -12,7 +12,7 @@ from datetime import datetime, date
 from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_BDF, FILETYPE_EDF
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
-from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration
+from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration, set_number_of_annotation_signals
 from ._extensions._pyedflib import set_startdatetime, set_samplefrequency, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
@@ -113,6 +113,7 @@ class EdfWriter(object):
         self.recording_start_time = datetime.now()
         self.birthdate = date(1900, 1, 1)
         self.duration = 1
+        self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
         self.channels = []
         self.sample_buffer = []
@@ -152,6 +153,7 @@ class EdfWriter(object):
             set_gender(self.handle, 1)
 
         set_datarecord_duration(self.handle, self.duration)
+        set_number_of_annotation_signals(self.handle, self.number_of_annotations)
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
@@ -359,6 +361,25 @@ class EdfWriter(object):
         except when absolutely necessary!
         """
         self.duration = duration
+        self.update_header()
+
+    def set_number_of_annotation_signals(self, number_of_annotations):
+        """
+        Sets the number of annotation signals. The default value is 1
+        This function is optional and can be called only after opening a file in writemode
+        and before the first sample write action
+        Normally you don't need to change the default value. Only when the number of annotations
+        you want to write is more than the number of seconds of the duration of the recording, you can use
+        this function to increase the storage space for annotations
+        Minimum is 1, maximum is 64
+
+        Parameters
+        ----------
+        number_of_annotations : integer
+            Sets the number of annotation signals
+        """
+        number_of_annotations = max((min((int(number_of_annotations), 64)), 1))
+        self.number_of_annotations = number_of_annotations
         self.update_header()
 
     def setStartdatetime(self, recording_start_time):

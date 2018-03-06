@@ -87,6 +87,7 @@ cdef extern from "c/edflib.h":
     long long int edfseek(int, int, long long int, int)
     int edf_set_startdatetime(int, int, int, int, int, int, int)
     int edf_set_datarecord_duration(int, int)
+    int edf_set_number_of_annotation_signals(int, int)
 
     # new functions in 1.10
     int edflib_is_file_used(const char *)
