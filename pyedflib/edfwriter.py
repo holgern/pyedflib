@@ -109,9 +109,9 @@ class EdfWriter(object):
         self.recording_additional = ''
         self.patient_additional = ''
         self.admincode = ''
-        self.gender = 0
+        self.gender = None
         self.recording_start_time = datetime.now()
-        self.birthdate = date(1900, 1, 1)
+        self.birthdate = ''
         self.duration = 1
         self.n_channels = n_channels
         self.channels = []
@@ -156,11 +156,9 @@ class EdfWriter(object):
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
         if isstr(self.birthdate):
-            if self.birthdate == '':
-                birthday = date(1900, 1, 1)
-            else:
+            if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
-            set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
+                set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
