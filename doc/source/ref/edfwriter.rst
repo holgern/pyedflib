@@ -2,7 +2,11 @@
 
 .. currentmodule:: pyedflib
 
-EDF/BDF file writer ``edfwriter``
-~~~~~~~~~~~~~~~~~~~~~~
+========
+pyEDFlib
+========
 
-.. autofunction:: edfwriter
+EDF/BDF file writer ``edfwriter``
+---------------------------------
+
+.. autofunction:: EdfWriter

@@ -687,8 +687,11 @@ class EdfReader(CyEdfReader):
         print("signals in file:", self.signals_in_file)
 
     def file_info_long(self):
+        """
+        Returns information about the opened EDF/BDF file
+        """
         self.file_info()
         for ii in np.arange(self.signals_in_file):
-            print("label:", self.getSignalLabel(ii), "fs:",
-                  self.getSignalFreqs()[ii], "nsamples",
+            print("label:", self.getSignalLabels()[ii], "fs:",
+                  self.getSampleFrequencies()[ii], "nsamples",
                   self.getNSamples()[ii])

@@ -90,6 +90,9 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getSignalLabels()[8], 'sine 15 Hz')
         np.testing.assert_equal(f.getSignalLabels()[9], 'sine 17 Hz')
         np.testing.assert_equal(f.getSignalLabels()[10], 'sine 50 Hz')
+        # testing file info and file_info_log
+        f.file_info()
+        f.file_info_long()
         f._close()
         del f
 

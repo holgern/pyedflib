@@ -12,7 +12,8 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode',
            'set_patient_additional', 'set_digital_maximum', 'set_birthdate', 'set_digital_minimum',
            'write_digital_samples', 'set_equipment', 'set_samplefrequency','set_admincode', 'set_label',
            'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
-           'seek', 'set_startdatetime' ,'set_datarecord_duration', 'open_errors', 'FILETYPE_EDFPLUS',
+           'seek', 'set_startdatetime' ,'set_datarecord_duration', 'set_number_of_annotation_signals',
+           'open_errors', 'FILETYPE_EDFPLUS',
            'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors', 'get_number_of_open_files',
            'get_handle', 'is_file_used', 'blockwrite_digital_short_samples', 'write_digital_short_samples']
 
@@ -543,8 +544,10 @@ def set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
     return c_edf.edf_set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
                                  starttime_hour, starttime_minute, starttime_second)
 
-
 def set_datarecord_duration(handle, duration):
     """int edf_set_datarecord_duration(int handle, int duration)"""
     return c_edf.edf_set_datarecord_duration(handle, duration)
 
+def set_number_of_annotation_signals(handle, annot_signals):
+    """int edf_set_number_of_annotation_signals(int handle, int annot_signals)"""
+    return c_edf.edf_set_number_of_annotation_signals(handle, annot_signals)
