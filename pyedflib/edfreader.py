@@ -83,7 +83,7 @@ class EdfReader(CyEdfReader):
             # unicode = lambda s: str(s)
             UNICODE_EXISTS = False
         if UNICODE_EXISTS:
-            return unicode(s)
+            return unicode(s, "utf-8")
         else:
             return s.decode("utf-8", "strict")
 
