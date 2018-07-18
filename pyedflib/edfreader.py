@@ -84,6 +84,8 @@ class EdfReader(CyEdfReader):
             UNICODE_EXISTS = False
         if UNICODE_EXISTS:
             return unicode(s, "utf-8")
+        elif isinstance(s, bytes):
+            return s.decode("latin")
         else:
             return s.decode("utf-8", "strict")
 
