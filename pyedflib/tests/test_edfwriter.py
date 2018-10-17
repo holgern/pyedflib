@@ -297,6 +297,57 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(len(data2), len(data2_read))
         np.testing.assert_almost_equal(data1, data1_read)
         np.testing.assert_almost_equal(data2, data2_read)
+        
+    def test_SampleWriting_digital(self):
+
+        dmin, dmax = [0, 1024]
+        pmin, pmax = [0, 1.0]
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+                         'physical_max':pmax,'physical_min':pmin,
+                         'digital_max':dmax,'digital_min':dmin,
+                         'prefilter':'pre1','transducer':'trans1'}
+        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_rate':100,
+                         'physical_max':pmax,'physical_min':pmin,
+                         'digital_max':dmax,'digital_min':dmin,
+                         'prefilter':'pre2','transducer':'trans2'}
+
+
+        f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
+                              file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeader(0,channel_info1)
+        f.setSignalHeader(1,channel_info2)
+
+        data1 = np.arange(500, dtype=np.float)
+        data2 = np.arange(500, dtype=np.float)
+        data_list = []
+        data_list.append(data1)
+        data_list.append(data2)
+        with  np.testing.assert_raises(TypeError):
+            f.writeSamples(data_list, digital=True)
+        del f    
+
+        f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
+                              file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeader(0,channel_info1)
+        f.setSignalHeader(1,channel_info2)
+
+        data1 = np.arange(500, dtype=np.int)
+        data2 = np.arange(500, dtype=np.int)
+        data_list = []
+        data_list.append(data1)
+        data_list.append(data2)
+        f.writeSamples(data_list, digital=True)
+        del f
+
+        f = pyedflib.EdfReader(self.bdfplus_data_file)
+        data1_read = (f.readSignal(0) - pmin)/((pmax-pmin)/(dmax-dmin)) # converting back to digital
+        data2_read = (f.readSignal(1) - pmin)/((pmax-pmin)/(dmax-dmin)) # converting back to digital
+        del f
+    
+        np.testing.assert_equal(len(data1), len(data1_read))
+        np.testing.assert_equal(len(data2), len(data2_read))
+        np.testing.assert_almost_equal(data1, data1_read)
+        np.testing.assert_almost_equal(data2, data2_read)
 
     def test_TestRoundingEDF(self):
         channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
