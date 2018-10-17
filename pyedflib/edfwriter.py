@@ -636,7 +636,7 @@ class EdfWriter(object):
     def blockWriteDigitalShortSamples(self, data):
         return blockwrite_digital_short_samples(self.handle, data)
 
-    def writeSamples(self, data_list):
+    def writeSamples(self, data_list, digital = False):
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
         The physical samples will be converted to digital samples using the values
@@ -646,12 +646,21 @@ class EdfWriter(object):
         is different, then sample_freq is a vector containing all the different
         samplefrequencys. The data is saved as list. Each list entry contains
         a vector with the data of one signal.
+        
+        If digital is True, digital signals (as directly from the ADC) will be expected.
+        (e.g. int16 from 0 to 2048)
 
         All parameters must be already written into the bdf/edf-file.
         """
 
+
         if (len(data_list) != len(self.channels)):
             raise WrongInputSize(len(data_list))
+            
+        if digital:
+            if any([a.dtype!=np.int for a in data_list]):
+                raise TypeError('Digital = True requires all signals in int')
+
 
         ind = []
         notAtEnd = True
@@ -659,40 +668,47 @@ class EdfWriter(object):
             ind.append(0)
 
         sampleLength = 0
-        sampleRates = np.zeros(len(data_list), dtype=int)
+        sampleRates = np.zeros(len(data_list), dtype=np.int)
         for i in np.arange(len(data_list)):
             sampleRates[i] = self.channels[i]['sample_rate']
             if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                 notAtEnd = False
             sampleLength += self.channels[i]['sample_rate']
 
-        dataOfOneSecond = np.array([])
+        dataOfOneSecond = np.array([], dtype=np.int if digital else None)
 
         while notAtEnd:
             # dataOfOneSecondInd = 0
             del dataOfOneSecond
-            dataOfOneSecond = np.array([])
+            dataOfOneSecond = np.array([], dtype=np.int if digital else None)
             for i in np.arange(len(data_list)):
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
                 dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
                 # self.writePhysicalSamples(data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
                 ind[i] += sampleRates[i]
                 # dataOfOneSecondInd += sampleRates[i]
-            self.blockWritePhysicalSamples(dataOfOneSecond)
+            if digital:
+                self.blockWriteDigitalSamples(dataOfOneSecond)   
+            else:
+                self.blockWritePhysicalSamples(dataOfOneSecond)
+                
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
                     notAtEnd = False
 
         # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(sampleRates[i])
+            lastSamples = np.zeros(sampleRates[i], dtype=np.int if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd,sampleRates[i])))
             if lastSampleInd > 0:
                 lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
                 # dataOfOneSecondInd += self.channels[i]['sample_rate']
-                self.writePhysicalSamples(lastSamples)
+                if digital:
+                    self.writeDigitalSamples(lastSamples)   
+                else:
+                    self.writePhysicalSamples(lastSamples)
         # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
