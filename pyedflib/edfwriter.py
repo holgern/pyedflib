@@ -658,7 +658,7 @@ class EdfWriter(object):
             raise WrongInputSize(len(data_list))
             
         if digital:
-            if any([a.dtype!=np.int for a in data_list]):
+            if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
                 raise TypeError('Digital = True requires all signals in int')
 
 
