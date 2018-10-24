@@ -1,0 +1,6 @@
+flake8
+nose
+coverage
+cython
+numpy
+matplotlib
