@@ -641,7 +641,7 @@ class EdfReader(CyEdfReader):
         else:
             return self._convert_string('')
 
-    def readSignal(self, chn, start=0, n=None):
+    def readSignal(self, chn, start=0, n=None, digital=False):
         """
         Returns the physical data of signal chn. When start and n is set, a subset is returned
 
@@ -653,7 +653,8 @@ class EdfReader(CyEdfReader):
             start pointer (default is 0)
         n : int
             length of data to read (default is None, by which the complete data of the channel are returned)
-
+        digital: bool
+            will return the signal in original digital values instead of physical values
         Examples
         --------
         >>> import pyedflib
@@ -678,8 +679,12 @@ class EdfReader(CyEdfReader):
                 n = nsamples[chn]
             elif n > nsamples[chn]:
                 return np.array([])
-            x = np.zeros(n, dtype=np.float64)
-            self.readsignal(chn, start, n, x)
+            dtype = np.int32 if digital else np.float63
+            x = np.zeros(n, dtype=dtype)
+            if digital:
+                self.read_digital_signal(chn, start, n, x)
+            else:  
+                self.readsignal(chn, start, n, x)
             return x
         else:
             return np.array([])
