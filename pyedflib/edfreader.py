@@ -679,7 +679,7 @@ class EdfReader(CyEdfReader):
                 n = nsamples[chn]
             elif n > nsamples[chn]:
                 return np.array([])
-            dtype = np.int32 if digital else np.float63
+            dtype = np.int32 if digital else np.float64
             x = np.zeros(n, dtype=dtype)
             if digital:
                 self.read_digital_signal(chn, start, n, x)
