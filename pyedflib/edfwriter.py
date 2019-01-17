@@ -147,10 +147,10 @@ class EdfWriter(object):
         set_admincode(self.handle, du(self.admincode))
         if isinstance(self.gender, int):
             set_gender(self.handle, self.gender)
-        elif self.gender == "Male":
-            set_gender(self.handle, 0)
-        elif self.gender == "Female":
+        elif self.gender.upper() in ["MALE", "M"]:
             set_gender(self.handle, 1)
+        elif self.gender.upper() in ["FEMALE", 'F']:
+            set_gender(self.handle, 0)
 
         set_datarecord_duration(self.handle, self.duration)
         set_number_of_annotation_signals(self.handle, self.number_of_annotations)
