@@ -683,7 +683,7 @@ class EdfReader(CyEdfReader):
             x = np.zeros(n, dtype=dtype)
             if digital:
                 self.read_digital_signal(chn, start, n, x)
-            else:  
+            else:
                 self.readsignal(chn, start, n, x)
             return x
         else:
