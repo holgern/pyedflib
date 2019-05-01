@@ -172,12 +172,7 @@ class TestEdfReader(unittest.TestCase):
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        try:
-            f = pyedflib.EdfWriter(self.bdf_accented_file, 1,file_type=pyedflib.FILETYPE_BDFPLUS)
-        except IOError:
-            print('cannot write', self.bdf_accented_file)
-            np.testing.assert_raises(IOError,'cannot write file')
-            return
+        f = pyedflib.EdfWriter(self.bdf_accented_file, 1,file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         f.setTechnician('tec1')
         data = np.ones(100) * 0.1
@@ -185,12 +180,7 @@ class TestEdfReader(unittest.TestCase):
         f.writePhysicalSamples(data)
         del f
 
-        try:
-            f = pyedflib.EdfReader(self.bdf_accented_file, pyedflib.READ_ALL_ANNOTATIONS, pyedflib.DO_NOT_CHECK_FILE_SIZE)
-        except IOError:
-            print('cannot open', self.bdf_accented_file)
-            np.testing.assert_raises(IOError,'cannot open file')
-            return
+        f = pyedflib.EdfReader(self.bdf_accented_file, pyedflib.READ_ALL_ANNOTATIONS, pyedflib.DO_NOT_CHECK_FILE_SIZE)
         np.testing.assert_equal(f.getTechnician(), 'tec1')
 
         np.testing.assert_equal(f.getLabel(0), 'test_label')
