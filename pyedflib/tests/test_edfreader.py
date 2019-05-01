@@ -153,33 +153,19 @@ class TestEdfReader(unittest.TestCase):
         del f
 
     def test_EdfReader_Close_file(self):
-        try:
-            f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
-            print('cannot open', self.edf_data_file)
-            np.testing.assert_raises(IOError,'cannot open file')
-            return
+        f = pyedflib.EdfReader(self.edf_data_file)
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
-        f._close()
-        f._close()
-        del f
-        try:
-            f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
-            print('cannot open', self.edf_data_file)
-            np.testing.assert_raises(IOError,'cannot open file')
-            return
-        np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
-        del f
 
-        try:
-            f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
-            print('cannot open', self.edf_data_file)
-            np.testing.assert_raises(IOError,'cannot open file')
-            return
-        np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
-        del f
+        # Don't close the file but try to reopen it and verify that it fails.
+        with np.testing.assert_raises(IOError):
+            ff = pyedflib.EdfReader(self.edf_data_file)
+        
+        # Now close and verify it can be re-opened/read.
+        f._close()
+
+        ff = pyedflib.EdfReader(self.edf_data_file)
+        np.testing.assert_equal(ff.getSignalLabels()[0], 'squarewave')
+        del f, ff
 
     def test_BdfReader_Read_accented_file(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
