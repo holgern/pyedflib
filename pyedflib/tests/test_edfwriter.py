@@ -324,6 +324,7 @@ class TestEdfWriter(unittest.TestCase):
         data_list.append(data2)
         with  np.testing.assert_raises(TypeError):
             f.writeSamples(data_list, digital=True)
+        f.close()
         del f    
 
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
