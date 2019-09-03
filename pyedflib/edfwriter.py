@@ -668,19 +668,19 @@ class EdfWriter(object):
             ind.append(0)
 
         sampleLength = 0
-        sampleRates = np.zeros(len(data_list), dtype=np.int)
+        sampleRates = np.zeros(len(data_list), dtype=np.int32)
         for i in np.arange(len(data_list)):
             sampleRates[i] = self.channels[i]['sample_rate']
             if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
                 notAtEnd = False
             sampleLength += self.channels[i]['sample_rate']
 
-        dataOfOneSecond = np.array([], dtype=np.int if digital else None)
+        dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
 
         while notAtEnd:
             # dataOfOneSecondInd = 0
             del dataOfOneSecond
-            dataOfOneSecond = np.array([], dtype=np.int if digital else None)
+            dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
             for i in np.arange(len(data_list)):
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
                 dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
@@ -698,7 +698,7 @@ class EdfWriter(object):
 
         # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(sampleRates[i], dtype=np.int if digital else None)
+            lastSamples = np.zeros(sampleRates[i], dtype=np.int32 if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd,sampleRates[i])))
             if lastSampleInd > 0:
