@@ -9,7 +9,7 @@ pyEDFlib
 EDF/BDF file writer ``edfwriter``
 ---------------------------------
 
-.. automodule:: pyedflib.edfreader
+.. autoclass:: EdfWriter
     :members:
     :undoc-members:
     :show-inheritance:
