@@ -54,7 +54,7 @@ before_install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
   # Set numpy version first, other packages link against it
-  - pip install numpy
+  - pip install numpy tox
   - pip install Cython matplotlib nose pytest coverage codecov futures
   - set -o pipefail 
   - |
