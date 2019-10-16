@@ -7,7 +7,6 @@ PyEDFlib
    :maxdepth: 2
 
    ref/index
-   regression/index
    dev/index
    resources
    releasenotes

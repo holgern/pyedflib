@@ -1,0 +1,20 @@
+==============================
+PyEDFlib 0.1.15 Release Notes
+==============================
+
+.. contents::
+
+- Fix Documentation (Add class functions)
+- Add build for python 3.7
+
+Authors
+=======
+
+* Holger Nahrstaedt
+
+
+Issues closed for v0.1.15
+------------------------
+
+Pull requests for v0.1.15
+------------------------

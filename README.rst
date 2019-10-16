@@ -10,7 +10,7 @@ pyEDFlib
     :target: https://travis-ci.org/holgern/pyedflib
     
 .. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
-  :target: https://ci.appveyor.com/project/HolgerNahrstaedt/pyedflib
+  :target: https://ci.appveyor.com/project/holger80/pyedflib
   
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
