@@ -57,10 +57,12 @@ def isbytestr(s):
 def gender2int(gender):
     if isinstance(gender, int):
         return gender
-    if gender.lower() in ["male", "m"]:
+    if gender in ["Male", "MALE", "male", "m"]:
         return 0
-    elif gender.lower() in ["female", "f"]:
+    elif gender in ["Female", "FEMALE", "female", "f"]:
         return 1
+    else:
+        return 0
 
 
 class ChannelDoesNotExist(Exception):
