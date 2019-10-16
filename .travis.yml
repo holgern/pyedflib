@@ -29,16 +29,10 @@ matrix:
     #    - TOXENV=readme
     - os: linux
       python: 3.5
-      env:
-        - TOXENV=testenv
     - os: linux
       python: 3.6
-      env:
-        - TOXENV=testenv
     - os: linux
       python: 3.7
-      env:
-        - TOXENV=testenv
 
 cache: pip
 
