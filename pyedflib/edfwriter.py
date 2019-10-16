@@ -54,6 +54,15 @@ def isbytestr(s):
     return isinstance(s, bytes)
 
 
+def gender2int(gender):
+    if isinstance(gender, int):
+        return gender
+    if gender.lower() in ["male", "m"]:
+        return 0
+    elif gender.lower() in ["female", "f"]:
+        return 1
+
+
 class ChannelDoesNotExist(Exception):
     def __init__(self, value):
         self.parameter = value
@@ -147,10 +156,8 @@ class EdfWriter(object):
         set_admincode(self.handle, du(self.admincode))
         if isinstance(self.gender, int):
             set_gender(self.handle, self.gender)
-        elif self.gender == "Male":
-            set_gender(self.handle, 0)
-        elif self.gender == "Female":
-            set_gender(self.handle, 1)
+        else:
+            set_gender(self.handle, gender2int(self.gender))
 
         set_datarecord_duration(self.handle, self.duration)
         set_number_of_annotation_signals(self.handle, self.number_of_annotations)
@@ -331,7 +338,11 @@ class EdfWriter(object):
         gender : int
             1 is male, 0 is female
         """
-        self.gender = gender
+        if isinstance(gender, int):
+            self.gender = gender
+        else:
+            self.gender = gender2int(gender)
+
         self.update_header()
 
     def setDatarecordDuration(self, duration):

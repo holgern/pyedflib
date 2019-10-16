@@ -15,6 +15,10 @@ Authors
 
 Issues closed for v0.1.15
 ------------------------
+* Fix issue #48 - DOC
+* Fix issue #60 - No Windows binaries for python 3.7 on PyPI
+* Fix issue #62 - Install via pip fails on Windows (no file stdio.h)
+* Fix issue #42 - Problem with setGender
 
 Pull requests for v0.1.15
 ------------------------

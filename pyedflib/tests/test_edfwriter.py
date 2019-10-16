@@ -105,7 +105,7 @@ class TestEdfWriter(unittest.TestCase):
         f.setPatientAdditional('patAdd1')
         f.setAdmincode('admin1')
         f.setEquipment('eq1')
-        f.setGender(1)
+        f.setGender("Male")
         f.setBirthdate(date(1951, 8, 2))
         f.setStartdatetime(datetime(2017, 1, 1, 1, 1, 1))
         f.setSamplefrequency(1,100)
