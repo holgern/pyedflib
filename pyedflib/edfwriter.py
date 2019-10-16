@@ -57,10 +57,10 @@ def isbytestr(s):
 def gender2int(gender):
     if isinstance(gender, int):
         return gender
-    if gender in ["Male", "MALE", "male", "m"]:
+    if gender in ["Female", "FEMALE", "female", "f"]:
         return 0
-    elif gender in ["Female", "FEMALE", "female", "f"]:
-        return 1
+    elif gender in ["Male", "MALE", "male", "m"]:
+        return 1    
     else:
         return 0
 
