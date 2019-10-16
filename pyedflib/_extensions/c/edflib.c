@@ -1,8 +1,8 @@
 /*
 *****************************************************************************
 *
-* Copyright (c) 2009, 2010, 2011, 2012, 2013, 2014, 2015 Teunis van Beelen
-*               2017 Holger Nahrstaedt
+* Copyright (c) 2009 - 2015 Teunis van Beelen
+*               2017 - 2019 Holger Nahrstaedt
 * All rights reserved.
 *
 * email: teuniz@gmail.com
@@ -15,10 +15,10 @@
 *       notice, this list of conditions and the following disclaimer in the
 *       documentation and/or other materials provided with the distribution.
 *
-* THIS SOFTWARE IS PROVIDED BY Teunis van Beelen ''AS IS'' AND ANY
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ''AS IS'' AND ANY
 * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL Teunis van Beelen BE LIABLE FOR ANY
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE LIABLE FOR ANY
 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -36,7 +36,7 @@
 #include "edflib.h"
 
 
-#define EDFLIB_VERSION 111
+#define EDFLIB_VERSION 112
 #define EDFLIB_MAXFILES 64
 
 

@@ -63,7 +63,6 @@ Contents
    :maxdepth: 1
 
    ref/index
-   regression/index
    dev/index
    resources
    contents
