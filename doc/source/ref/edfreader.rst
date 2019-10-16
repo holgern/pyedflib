@@ -11,7 +11,7 @@ This section describes functions used to perform reading of a EDF/BDF file.
 EDF/BDF file reader ``edfreader``
 ----------------------
 
-.. automodule:: pyedflib.EdfReader
+.. automodule:: pyedflib.edfreader
     :members:
     :undoc-members:
     :show-inheritance:
