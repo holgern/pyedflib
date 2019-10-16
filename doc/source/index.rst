@@ -6,18 +6,18 @@ PyEDFlib is a free Open Source wavelet toolbox for reading / writing EDF/BDF fil
 
   .. sourcecode:: python
 
-    >>> import pyedflib
-    >>> import numpy as np
-    >>> import os
-    >>>
-    >>> file_name = os.path.join(pyedflib.util.test_data_path(),
-                                 'test_generator.edf')
-    >>> f = pyedflib.EdfReader(file_name)
-    >>> n = f.signals_in_file
-    >>> signal_labels = f.getSignalLabels()
-    >>> sigbufs = np.zeros((n, f.getNSamples()[0]))
-    >>> for i in np.arange(n):
-    >>>     sigbufs[i, :] = f.readSignal(i)
+    import pyedflib
+    import numpy as np
+    import os
+    
+    file_name = os.path.join(pyedflib.util.test_data_path(),
+                             'test_generator.edf')
+    f = pyedflib.EdfReader(file_name)
+    n = f.signals_in_file
+    signal_labels = f.getSignalLabels()
+    sigbufs = np.zeros((n, f.getNSamples()[0]))
+    for i in np.arange(n):
+        sigbufs[i, :] = f.readSignal(i)
 
 
 Description
