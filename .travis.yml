@@ -61,6 +61,7 @@ before_install:
     fi
 
 script:
+  - python setup.py install
   - tox
 
 after_success:
