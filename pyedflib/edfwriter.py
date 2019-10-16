@@ -57,10 +57,10 @@ def isbytestr(s):
 def gender2int(gender):
     if isinstance(gender, int):
         return gender
-    if gender in ["Female", "FEMALE", "female", "f"]:
+    if gender in ["Female", "FEMALE", "female", "f", "F"]:
         return 0
-    elif gender in ["Male", "MALE", "male", "m"]:
-        return 1    
+    elif gender in ["Male", "MALE", "male", "m", "M"]:
+        return 1
     else:
         return 0
 
@@ -83,10 +83,11 @@ class WrongInputSize(Exception):
 
 class EdfWriter(object):
     def __exit__(self, exc_type, exc_val, ex_tb):
-        self.close()  # cleanup the file
+        self.close()
 
     def __enter__(self):
         return self
+        # return self
 
     def __del__(self):
         self.close()

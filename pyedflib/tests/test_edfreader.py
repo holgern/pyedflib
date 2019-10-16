@@ -38,9 +38,8 @@ class TestEdfReader(unittest.TestCase):
             np.testing.assert_almost_equal(f.getSampleFrequencies()[i], 200)
             np.testing.assert_equal(f.getNSamples()[i], 120000)
         np.testing.assert_equal(f.handle, 0)
-        f._close()
+        f.close()
         np.testing.assert_equal(f.handle, -1)
-        del f
 
     def test_EdfReader_headerInfos(self):
         try:
@@ -62,8 +61,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getFileDuration(), 600)
         fileHeader = f.getHeader()
         np.testing.assert_equal(fileHeader["patientname"], 'Hans Muller')
-        f._close()
-        del f
+        f.close()
 
     def test_EdfReader_signalInfos(self):
         try:
@@ -93,8 +91,7 @@ class TestEdfReader(unittest.TestCase):
         # testing file info and file_info_log
         f.file_info()
         f.file_info_long()
-        f._close()
-        del f
+        f.close()
 
     def test_EdfReader_ReadAnnotations(self):
         try:
@@ -161,7 +158,7 @@ class TestEdfReader(unittest.TestCase):
             ff = pyedflib.EdfReader(self.edf_data_file)
         
         # Now close and verify it can be re-opened/read.
-        f._close()
+        f.close()
 
         ff = pyedflib.EdfReader(self.edf_data_file)
         np.testing.assert_equal(ff.getSignalLabels()[0], 'squarewave')

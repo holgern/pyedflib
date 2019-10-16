@@ -6,6 +6,7 @@ PyEDFlib 0.1.15 Release Notes
 
 - Fix Documentation (Add class functions)
 - Add build for python 3.7
+- add close() on EdfReader
 
 Authors
 =======
@@ -19,6 +20,7 @@ Issues closed for v0.1.15
 * Fix issue #60 - No Windows binaries for python 3.7 on PyPI
 * Fix issue #62 - Install via pip fails on Windows (no file stdio.h)
 * Fix issue #42 - Problem with setGender
+* Fix issue #43 - Writer as context manager
 
 Pull requests for v0.1.15
 ------------------------
