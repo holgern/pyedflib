@@ -15,6 +15,8 @@ import os
 import numpy as np
 import warnings
 import pyedflib
+import dateparser
+from datetime import datetime
 from tqdm import tqdm
 # from . import EdfWriter
 # from . import EdfReader
@@ -30,7 +32,7 @@ def make_header(technician='', recording_additional='', patientname='',
         warnings.warn('must be datetime or None, is {}: {},attempting convert'\
                       .format(type(startdate), startdate))
         startdate = dateparser.parse(startdate)
-    if not (birthdate is '' or isinstance(birthdate, (datetime,str))):
+    if not (birthdate == '' or isinstance(birthdate, (datetime,str))):
         warnings.warn('must be datetime or empty, is {}, {}'\
                       .format(type(birthdate), birthdate))
         birthdate = dateparser.parse(birthdate)
@@ -336,7 +338,7 @@ def rename_channels(edf_file, mapping, new_file=None):
     :param mapping:  a dictionary with channel mappings as key:value
     :param new_file: the new filename
     """
-    header = sleep_utils.read_edf_header(edf_file)
+    header = read_edf_header(edf_file)
     channels = header['channels']
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
@@ -348,9 +350,9 @@ def rename_channels(edf_file, mapping, new_file=None):
         signal, signal_header, _ = read_edf(file, digital=True, 
                                             ch_nrs=ch_nr, verbose=False)
         ch = signal_header[0]['label']
-        if ch in ch_mapping :
-            print('{} to {}'.format(ch, ch_mapping[ch]))
-            ch = ch_mapping[ch]
+        if ch in mapping :
+            print('{} to {}'.format(ch, mapping[ch]))
+            ch = mapping[ch]
             signal_header[0]['label']=ch
         else:
             print('no mapping for {}, leave as it is'.format(ch))
