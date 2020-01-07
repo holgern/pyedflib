@@ -205,7 +205,7 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     """
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
     signal_headers = make_signal_headers(labels, sample_rate = sfreq)
-    return write_pyedf(edf_file, signals, signal_headers, digital=digital)
+    return write_edf(edf_file, signals, signal_headers, digital=digital)
 
 
 def read_edf_header(edf_file):
@@ -326,3 +326,36 @@ def anonymize_edf(edf_file, new_file=None,
         signals.append(signal.squeeze())
 
     return write_edf(new_file, signals, signal_headers, header,digital=True)
+
+
+def rename_channels(edf_file, mapping, new_file=None):
+    """
+    A convenience function to rename channels in an EDF file.
+    
+    :param edf_file: an string pointing to an edf file
+    :param mapping:  a dictionary with channel mappings as key:value
+    :param new_file: the new filename
+    """
+    header = sleep_utils.read_edf_header(edf_file)
+    channels = header['channels']
+    if new_file is None:
+        file, ext = os.path.splitext(edf_file)
+        new_file = file + '_renamed' + ext
+
+    signal_headers = []
+    signals = []
+    for ch_nr in tqdm(range(len(channels))):
+        signal, signal_header, _ = read_edf(file, digital=True, 
+                                            ch_nrs=ch_nr, verbose=False)
+        ch = signal_header[0]['label']
+        if ch in ch_mapping :
+            print('{} to {}'.format(ch, ch_mapping[ch]))
+            ch = ch_mapping[ch]
+            signal_header[0]['label']=ch
+        else:
+            print('no mapping for {}, leave as it is'.format(ch))
+        signal_headers.append(signal_header[0])
+        signals.append(signal.squeeze())
+
+    write_edf(new_file, signals, signal_headers, header,digital=True)
+    
