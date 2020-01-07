@@ -10,7 +10,7 @@ pyEDFlib
     :target: https://travis-ci.org/holgern/pyedflib
     
 .. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
-  :target: https://ci.appveyor.com/project/HolgerNahrstaedt/pyedflib
+  :target: https://ci.appveyor.com/project/holger80/pyedflib
   
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
@@ -82,6 +82,10 @@ License
 pyEDFlib is a free Open Source software released under the BSD 2-clause license.
 
   
+Releases can be cited via Zenodo.
+
+.. image:: https://zenodo.org/badge/42585968.svg
+   :target: https://zenodo.org/badge/latestdoi/42585968
   
 .. _Cython: http://cython.org/
 .. _Anaconda: https://www.continuum.io

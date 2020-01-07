@@ -37,6 +37,12 @@ class EdfReader(CyEdfReader):
     def __exit__(self, exc_type, exc_val, ex_tb):
         self._close()  # cleanup the file
 
+    def close(self):
+        """
+        Closes the file handler
+        """
+        self._close()
+
     def getNSamples(self):
         return np.array([self.samples_in_file(chn)
                          for chn in np.arange(self.signals_in_file)])
@@ -142,14 +148,13 @@ class EdfReader(CyEdfReader):
         ----------
         None
 
-        Examples
-        --------
-        >>> import pyedflib
-        >>> f = pyedflib.data.test_generator()
-        >>> f.getTechnician()==''
-        True
-        >>> f._close()
-        >>> del f
+        .. code-block:: python
+
+            >>> import pyedflib
+            >>> f = pyedflib.data.test_generator()
+            >>> f.getTechnician()==''
+            True
+            >>> f.close()
 
         """
         return self._convert_string(self.technician.rstrip())
@@ -168,8 +173,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getRecordingAdditional()==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.recording_additional.rstrip())
@@ -188,8 +192,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientName()=='X'
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.patientname.rstrip())
@@ -208,8 +211,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientCode()==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.patientcode.rstrip())
@@ -228,8 +230,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPatientAdditional()==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.patient_additional.rstrip())
@@ -248,8 +249,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getEquipment()=='test generator'
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.equipment.rstrip())
@@ -268,8 +268,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getAdmincode()==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.admincode.rstrip())
@@ -288,8 +287,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getGender()==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self._convert_string(self.gender.rstrip())
@@ -308,8 +306,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getFileDuration()==600
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return self.file_duration
@@ -328,8 +325,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getStartdatetime()
         datetime.datetime(2011, 4, 4, 12, 57, 2)
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
@@ -349,8 +345,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getBirthdate()=='30 jun 1969'
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
 
@@ -373,8 +368,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> all(f.getSampleFrequencies()==200.0)
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return np.array([round(self.samplefrequency(chn))
@@ -395,8 +389,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getSampleFrequency(0)==200.0
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -418,8 +411,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getSignalLabels()==['squarewave', 'ramp', 'pulse', 'noise', 'sine 1 Hz', 'sine 8 Hz', 'sine 8.1777 Hz', 'sine 8.5 Hz', 'sine 15 Hz', 'sine 17 Hz', 'sine 50 Hz']
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         return [self._convert_string(self.signal_label(chn).strip())
@@ -440,8 +432,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getLabel(0)=='squarewave'
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -464,8 +455,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPrefilter(0)==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -488,8 +478,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMaximum(0)==1000.0
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if chn is not None:
@@ -518,8 +507,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalMinimum(0)==-1000.0
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if chn is not None:
@@ -548,8 +536,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getDigitalMaximum(0)
         32767
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if chn is not None:
@@ -578,8 +565,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getDigitalMinimum(0)
         -32768
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if chn is not None:
@@ -608,8 +594,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getTransducer(0)==''
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -632,8 +617,7 @@ class EdfReader(CyEdfReader):
         >>> f = pyedflib.data.test_generator()
         >>> f.getPhysicalDimension(0)=='uV'
         True
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if 0 <= chn < self.signals_in_file:
@@ -641,7 +625,7 @@ class EdfReader(CyEdfReader):
         else:
             return self._convert_string('')
 
-    def readSignal(self, chn, start=0, n=None):
+    def readSignal(self, chn, start=0, n=None, digital=False):
         """
         Returns the physical data of signal chn. When start and n is set, a subset is returned
 
@@ -653,7 +637,8 @@ class EdfReader(CyEdfReader):
             start pointer (default is 0)
         n : int
             length of data to read (default is None, by which the complete data of the channel are returned)
-
+        digital: bool
+            will return the signal in original digital values instead of physical values
         Examples
         --------
         >>> import pyedflib
@@ -664,8 +649,7 @@ class EdfReader(CyEdfReader):
         >>> x2 = f.readSignal(0)
         >>> int(x2.shape[0])
         120000
-        >>> f._close()
-        >>> del f
+        >>> f.close()
 
         """
         if start < 0:
@@ -678,8 +662,12 @@ class EdfReader(CyEdfReader):
                 n = nsamples[chn]
             elif n > nsamples[chn]:
                 return np.array([])
-            x = np.zeros(n, dtype=np.float64)
-            self.readsignal(chn, start, n, x)
+            dtype = np.int32 if digital else np.float64
+            x = np.zeros(n, dtype=dtype)
+            if digital:
+                self.read_digital_signal(chn, start, n, x)
+            else:
+                self.readsignal(chn, start, n, x)
             return x
         else:
             return np.array([])
