@@ -283,6 +283,6 @@ if __name__ == '__main__':
         libraries=[c_lib],
         cmdclass={'develop': develop_build_clib},
         test_suite='nose.collector',
-        install_requires=["numpy>=1.9.1"],
+        install_requires=["numpy>=1.9.1", "dateparser", "tqdm"],
     )
 
