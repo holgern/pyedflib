@@ -3,7 +3,7 @@ dependencies:
     - sudo apt-get install texlive-fonts-recommended
     - pip install -q --install-option="--no-cython-compile" Cython==0.23.4
     - pip install -q numpy
-    - pip install -q nose mpmath argparse Pillow codecov matplotlib Sphinx==1.5.5 dateparser tqdm
+    - pip install -q nose mpmath argparse Pillow codecov matplotlib Sphinx==1.5.5 tqdm
     - git submodule init
     - git submodule update
     - python setup.py build

@@ -15,12 +15,37 @@ import os
 import numpy as np
 import warnings
 import pyedflib
-import dateparser
 from datetime import datetime
-from tqdm import tqdm
 # from . import EdfWriter
 # from . import EdfReader
 
+def tqdm(*args, **kwargs):
+    """
+    These are optional dependecies that show a progress bar
+    for some of the functions, e.g. loading.
+    
+    if not installed this is just a pass through iterator
+    """
+    try:
+        from tqd2m import tqdm as iterator
+        return iterator(*args, **kwargs)
+    except:
+        return list(args[0])
+     
+def _parse_date(string):
+    # some common formats.
+    formats = ['%Y-%m-%d', '%d-%m-%Y', '%d.%m.%Y', '%Y.%m.%d', '%d %b %Y',
+               '%Y/%m/%d', '%d/%m/%Y']
+    for f in formats:
+        try:
+            return datetime.strptime(string, f)
+        except:
+            pass
+    print('dateparser is not installed. to convert strings to dates'\
+          'install via `pip install dateparser`.')
+    raise ValueError('birthdate must be datetime object or of format'\
+                     ' `%d-%m-%Y`, eg. `24-01-2020`')
+            
 def make_header(technician='', recording_additional='', patientname='',
                 patient_additional='', patientcode= '', equipment= '',
                 admincode= '', gender= '', startdate=None, birthdate= ''):
@@ -28,14 +53,8 @@ def make_header(technician='', recording_additional='', patientname='',
     A convenience function to create an EDF header (a dictionary) that
     can be used by pyedflib to update the main header of the EDF
     """
-    if not( startdate is None or isinstance(startdate, datetime)):
-        warnings.warn('must be datetime or None, is {}: {},attempting convert'\
-                      .format(type(startdate), startdate))
-        startdate = dateparser.parse(startdate)
-    if not (birthdate == '' or isinstance(birthdate, (datetime,str))):
-        warnings.warn('must be datetime or empty, is {}, {}'\
-                      .format(type(birthdate), birthdate))
-        birthdate = dateparser.parse(birthdate)
+    if not birthdate=='' and isinstance(birthdate, str):
+        birthdate = _parse_date(birthdate)
     if startdate is None: 
         now = datetime.now()
         startdate = datetime(now.year, now.month, now.day, 
@@ -51,6 +70,7 @@ def make_header(technician='', recording_additional='', patientname='',
         else:
             header[var] = str(local[var])
     return header
+
 
 def make_signal_header(label, dimension='uV', sample_rate=256, 
                        physical_min=-200, physical_max=200, digital_min=-32768,
