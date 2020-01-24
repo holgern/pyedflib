@@ -45,7 +45,39 @@ def _parse_date(string):
           'install via `pip install dateparser`.')
     raise ValueError('birthdate must be datetime object or of format'\
                      ' `%d-%m-%Y`, eg. `24-01-2020`')
-            
+        
+def dig2phys(signal, dmin, dmax, pmin, pmax):
+    """
+    converts digital edf values to analogue values 
+    
+    :param signal: A numpy array with int values (digital values)  or an int
+    :param dmin: digital minimum value of the edf file (eg -2048)
+    :param dmax: digital maximum value of the edf file (eg 2048)
+    :param pmin: physical maximum value of the edf file (eg -200.0)
+    :param pmax: physical maximum value of the edf file (eg 200.0)
+    :returns: converted physical values
+    """
+    m = (pmax-pmin) / (dmax-dmin)
+    physical = m * signal
+    return physical
+
+def phys2dig(signal, dmin, dmax, pmin, pmax):
+    """
+    converts physical edf values to digital values 
+    
+    :param signal: A numpy array with int values (digital values)  or an int
+    :param dmin: digital minimum value of the edf file (eg -2048)
+    :param dmax: digital maximum value of the edf file (eg 2048)
+    :param pmin: physical maximum value of the edf file (eg -200.0)
+    :param pmax: physical maximum value of the edf file (eg 200.0)
+    :returns: converted digital values
+    """
+    m = (dmax-dmin)/(pmax-pmin) 
+    digital = (m * signal)
+    return digital
+
+
+    
 def make_header(technician='', recording_additional='', patientname='',
                 patient_additional='', patientcode= '', equipment= '',
                 admincode= '', gender= '', startdate=None, birthdate= ''):
@@ -245,6 +277,51 @@ def read_edf_header(edf_file):
     del f
     return summary
 
+def compare_edf(edf_file1, edf_file2, verbose=True):
+    """
+    Loads two edf files and checks whether the values contained in 
+    them are the same. Does not check the header data.
+    
+    :param edf_file1: First edf file to check
+    :param edf_file2: second edf file to compare against
+    :param verbose: print update messages or not.
+    """
+    if verbose: print('verifying data')
+    files = [(edf_file1, True), (edf_file2, True), 
+             (edf_file1, False), (edf_file2, False)]
+    results = Parallel(n_jobs=4, backend='loky')(delayed(read_edf)\
+             (file, digital=digital, verbose=False) for file, \
+             digital in tqdm(files, disable=not verbose))  
+
+    signals1, signal_headers1, _ =  results[0]
+    signals2, signal_headers2, _ =  results[1]
+    signals3, signal_headers3, _ =  results[0]
+    signals4, signal_headers4, _ =  results[1]
+
+    for i, sigs in enumerate(zip(signals1, signals2)):
+        s1, s2 = sigs
+        s1 = np.abs(s1)
+        s2 = np.abs(s2)
+        assert np.allclose(s1, s2), 'Error, digital values of {}'\
+            ' and {} for ch {}: {} are not the same'.format(
+                edf_file1, edf_file2, signal_headers1[i]['label'], 
+                signal_headers2[i]['label'])
+
+    for i, sigs in enumerate(zip(signals3, signals4)):
+        s1, s2 = sigs
+        # compare absolutes in case of inverted signals
+        s1 = np.abs(s1)
+        s2 = np.abs(s2)
+        dmin, dmax = signal_headers3[i]['digital_min'], signal_headers3[i]['digital_max']
+        pmin, pmax = signal_headers3[i]['physical_min'], signal_headers3[i]['physical_max']
+        min_dist = np.abs(dig2phys(1, dmin, dmax, pmin, pmax))
+        close =  np.mean(np.isclose(s1, s2, atol=min_dist))
+        assert close>0.99, 'Error, physical values of {}'\
+            ' and {} for ch {}: {} are not the same: {:.3f}'.format(
+                edf_file1, edf_file2, signal_headers1[i]['label'], 
+                signal_headers2[i]['label'], close)
+    gc.collect()
+    return True
 
 
 def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
