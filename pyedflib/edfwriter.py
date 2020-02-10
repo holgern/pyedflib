@@ -487,7 +487,7 @@ class EdfWriter(object):
 
     def setDigitalMaximum(self, edfsignal, digital_maximum):
         """
-        Sets the samplefrequency of signal edfsignal.
+        Sets the maximum digital value of signal edfsignal.
         Usually, the value 32767 is used for EDF+ and 8388607 for BDF+.
 
         Parameters
