@@ -370,6 +370,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
                           .format(sfreqs))    
     assert len(signals)==len(signal_headers), 'Something went wrong, lengths'\
                                          ' of headers is not length of signals'
+    del f
     return  signals, signal_headers, header
 
 
@@ -420,7 +421,7 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
         for annotation in annotations:
             f.writeAnnotation(*annotation)
         f.writeSamples(signals, digital=digital)
-
+    del f
     return os.path.isfile(edf_file) 
 
 
@@ -728,3 +729,43 @@ def rename_channels(edf_file, mapping, new_file=None):
 
     return write_edf(new_file, signals, signal_headers, header, digital=True)
     
+
+def change_polarity(edf_file, channels, new_file=None, verify=True, verbose=True):
+    """
+    Change polarity of certain channels
+
+    Parameters
+    ----------
+    edf_file : str
+        from which file to change polarity.
+    channels : list of int
+        the indices of the channels.
+    new_file : str, optional
+        where to save the edf with inverted channels. The default is None.
+    verify : bool, optional
+        whether to verify the two edfs for similarity. The default is True.
+    verbose : str, optional
+        print progress or not. The default is True.
+
+    Returns
+    -------
+    bool
+        True if success.
+
+    """
+    
+    if new_file is None: 
+        new_file = os.path.splitext(edf_file)[0] + '.edf'
+    
+    if isinstance(channels, str): channels=[channels]
+    channels = [c.lower() for c in channels]
+
+    signals, signal_headers, header = read_edf(edf_file, digital=True, verbose=verbose)
+    for i,sig in enumerate(signals):
+        label = signal_headers[i]['label'].lower()
+        if label in channels:
+            if verbose: print('inverting {}'.format(label))
+            signals[i] = -sig
+    write_edf(new_file, signals, signal_headers, header, digital=True, correct=False)
+    if verify: compare_edf(edf_file, new_file)
+    return True
