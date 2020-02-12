@@ -43,7 +43,7 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(header, header2)
         np.testing.assert_allclose(signals, signals2, atol=0.01)
     
-        signals = (signals*100).astype(int)
+        signals = (signals*100).astype(np.long)
         success = highlevel.write_edf(self.edfplus_data_file, signals,  signal_headers1, header, digital=True)
         self.assertTrue(os.path.isfile(self.edfplus_data_file))
         self.assertGreater(os.path.getsize(self.edfplus_data_file), 0)
