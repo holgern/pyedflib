@@ -10,6 +10,7 @@ from __future__ import division, print_function, absolute_import
 from ._extensions._pyedflib import *
 from .edfwriter import *
 from .edfreader import *
+from . import highlevel
 
 from . import data
 

@@ -177,7 +177,7 @@ def make_header(technician='', recording_additional='', patientname='',
                              now.hour, now.minute, now.second)
         del now
     if isinstance(birthdate, datetime): 
-        birthdate = birthdate.strftime('%d %b %Y')
+        birthdate = birthdate.strftime('%d %b %Y').lower()
     local = locals()
     header = {}
     for var in local:
