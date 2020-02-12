@@ -350,9 +350,8 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         
         # add annotations to header
         annotations = f.read_annotation()
-        annotations = [[t/10000000, d if d else -1, x.decode()] for t,d,x in annotations]    
+        annotations = [[t//10000000, d if d else -1, x.decode()] for t,d,x in annotations]    
         header['annotations'] = annotations
-
         signals = []
         for i,c in enumerate(tqdm(ch_nrs, desc='Reading Channels', 
                                   disable=not verbose)):
@@ -360,7 +359,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
             signals.append(signal)
  
         # we can only return a np.array if all signals have the same samplefreq           
-        sfreqs = [header['sample_rate'] for header in signal_headers]
+        sfreqs = [shead['sample_rate'] for shead in signal_headers]
         all_sfreq_same = sfreqs[1:]==sfreqs[:-1]
         if all_sfreq_same:
             dtype = np.int if digital else np.float
@@ -471,7 +470,7 @@ def read_edf_header(edf_file):
     assert os.path.isfile(edf_file), 'file {} does not exist'.format(edf_file)
     with pyedflib.EdfReader(edf_file) as f:
         annotations = f.read_annotation()
-        annotations = [[t/10000, d if d else -1, x] for t,d,x in annotations]
+        annotations = [[t//10000000, d if d else -1, x] for t,d,x in annotations]
         summary = f.getHeader()
         summary['Duration'] = f.getFileDuration
         summary['SignalHeaders'] = f.getSignalHeaders()

@@ -18,6 +18,9 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_read_write_edf(self):
         startdate = datetime.now()
+        t = startdate
+        startdate = datetime(t.year,t.month,t.day,t.hour, t.minute,t.second)
+        
         header = highlevel.make_header(technician='tech', recording_additional='radd',
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
@@ -33,14 +36,12 @@ class TestEdfWriter(unittest.TestCase):
         self.assertTrue(success)
         
         signals2, signal_headers2, header2 = highlevel.read_edf(self.edfplus_data_file)
-        t = header['startdate']
-        header['startdate'] = datetime(t.year,t.month,t.day,t.hour, t.minute,t.second)
-        
+
         self.assertEqual(len(signals2), 5)
         self.assertEqual(len(signals2), len(signal_headers2))
         for shead1, shead2 in zip(signal_headers1, signal_headers2):
             self.assertDictEqual(shead1, shead2)
-        self.assertEqual(header, header2)
+        self.assertDictEqual(header, header2)
         np.testing.assert_allclose(signals, signals2, atol=0.01)
     
         signals = (signals*100).astype(np.int8)
@@ -50,9 +51,7 @@ class TestEdfWriter(unittest.TestCase):
         self.assertTrue(success)
         
         signals2, signal_headers2, header2 = highlevel.read_edf(self.edfplus_data_file, digital=True)
-        t = header['startdate']
-        header['startdate'] = datetime(t.year, t.month, t.day, t.hour, t.minute, t.second)
-        
+
         self.assertEqual(len(signals2), 5)
         self.assertEqual(len(signals2), len(signal_headers2))
         for shead1, shead2 in zip(signal_headers1, signal_headers2):
