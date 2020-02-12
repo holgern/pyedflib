@@ -8,6 +8,15 @@
 """
 Created on Tue Jan  7 12:13:47 2020
 
+This file contains high-level functions to work with pyedflib.
+
+Includes
+    - Reading and writing EDFs
+    - Anonymizing EDFs
+    - Comparing EDFs
+    - Renaming Channels from EDF files
+    - Dropping Channels from EDF files
+
 @author: skjerns
 """
 
@@ -19,20 +28,37 @@ from datetime import datetime
 # from . import EdfWriter
 # from . import EdfReader
 
-def tqdm(*args, **kwargs):
+def tqdm(iteratable, *args, **kwargs):
     """
-    These are optional dependecies that show a progress bar
-    for some of the functions, e.g. loading.
+    These is an optional dependecies that shows a progress bar for some
+    of the functions, e.g. loading.
+    
+    install this dependency with `pip install tqdm`
     
     if not installed this is just a pass through iterator
     """
     try:
-        from tqd2m import tqdm as iterator
-        return iterator(*args, **kwargs)
+        from tqd3m import tqdm as iterator
+        return iterator(iteratable, *args, **kwargs)
     except:
-        return list(args[0])
+        return iteratable
+    
      
 def _parse_date(string):
+    """
+    A simple dateparser that detects common  date formats
+
+    Parameters
+    ----------
+    string : str
+        a date string in format as denoted below.
+
+    Returns
+    -------
+    datetime.datetime
+        datetime object of a time.
+
+    """
     # some common formats.
     formats = ['%Y-%m-%d', '%d-%m-%Y', '%d.%m.%Y', '%Y.%m.%d', '%d %b %Y',
                '%Y/%m/%d', '%d/%m/%Y']
@@ -41,21 +67,37 @@ def _parse_date(string):
             return datetime.strptime(string, f)
         except:
             pass
-    print('dateparser is not installed. to convert strings to dates'\
-          'install via `pip install dateparser`.')
-    raise ValueError('birthdate must be datetime object or of format'\
-                     ' `%d-%m-%Y`, eg. `24-01-2020`')
+    try:
+        import dateparser
+        return dateparser.parse(string)
+    except:
+        print('dateparser is not installed. to convert strings to dates'\
+              'install via `pip install dateparser`.')
+        raise ValueError('birthdate must be datetime object or of format'\
+                         ' `%d-%m-%Y`, eg. `24-01-2020`')
         
 def dig2phys(signal, dmin, dmax, pmin, pmax):
     """
-    converts digital edf values to analogue values 
-    
-    :param signal: A numpy array with int values (digital values)  or an int
-    :param dmin: digital minimum value of the edf file (eg -2048)
-    :param dmax: digital maximum value of the edf file (eg 2048)
-    :param pmin: physical maximum value of the edf file (eg -200.0)
-    :param pmax: physical maximum value of the edf file (eg 200.0)
-    :returns: converted physical values
+    converts digital edf values to physical values 
+
+    Parameters
+    ----------
+    signal : np.ndarray or int
+        A numpy array with int values (digital values) or an int.
+    dmin : int
+        digital minimum value of the edf file (eg -2048).
+    dmax : int
+        digital maximum value of the edf file (eg 2048).
+    pmin : float
+        physical maximum value of the edf file (eg -200.0).
+    pmax : float
+        physical maximum value of the edf file (eg 200.0).
+
+    Returns
+    -------
+    physical : np.ndarray or float
+        converted physical values
+
     """
     m = (pmax-pmin) / (dmax-dmin)
     physical = m * signal
@@ -63,14 +105,26 @@ def dig2phys(signal, dmin, dmax, pmin, pmax):
 
 def phys2dig(signal, dmin, dmax, pmin, pmax):
     """
-    converts physical edf values to digital values 
-    
-    :param signal: A numpy array with int values (digital values)  or an int
-    :param dmin: digital minimum value of the edf file (eg -2048)
-    :param dmax: digital maximum value of the edf file (eg 2048)
-    :param pmin: physical maximum value of the edf file (eg -200.0)
-    :param pmax: physical maximum value of the edf file (eg 200.0)
-    :returns: converted digital values
+    converts physical values to digital values
+
+    Parameters
+    ----------
+    signal : np.ndarray or int
+        A numpy array with int values (digital values) or an int.
+    dmin : int
+        digital minimum value of the edf file (eg -2048).
+    dmax : int
+        digital maximum value of the edf file (eg 2048).
+    pmin : float
+        physical maximum value of the edf file (eg -200.0).
+    pmax : float
+        physical maximum value of the edf file (eg 200.0).
+
+    Returns
+    -------
+    digital : np.ndarray or int
+        converted digital values
+
     """
     m = (dmax-dmin)/(pmax-pmin) 
     digital = (m * signal)
@@ -84,7 +138,37 @@ def make_header(technician='', recording_additional='', patientname='',
     """
     A convenience function to create an EDF header (a dictionary) that
     can be used by pyedflib to update the main header of the EDF
+
+    Parameters
+    ----------
+    technician : str, optional
+        name of the technician. The default is ''.
+    recording_additional : str, optional
+        comments etc. The default is ''.
+    patientname : str, optional
+        the name of the patient. The default is ''.
+    patient_additional : TYPE, optional
+        more info about the patient. The default is ''.
+    patientcode : str, optional
+        alphanumeric code. The default is ''.
+    equipment : str, optional
+        which system was used. The default is ''.
+    admincode : str, optional
+        code of the admin. The default is ''.
+    gender : str, optional
+        gender of patient. The default is ''.
+    startdate : datetime.datetime, optional
+        startdate of recording. The default is None.
+    birthdate : str/datetime.datetime, optional
+        date of birth of the patient. The default is ''.
+
+    Returns
+    -------
+    header : dict
+        a dictionary with the values given filled in.
+
     """
+
     if not birthdate=='' and isinstance(birthdate, str):
         birthdate = _parse_date(birthdate)
     if startdate is None: 
@@ -112,9 +196,35 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
     This can be used to create a list of signal headers that is used by 
     pyedflib to create an edf. With this, different sampling frequencies 
     can be indicated.
-    
-    :param label: the name of the channel
+
+    Parameters
+    ----------
+    label : str
+        the name of the channel.
+    dimension : str, optional
+        dimension, eg mV. The default is 'uV'.
+    sample_rate : int, optional
+        sampling frequency. The default is 256.
+    physical_min : float, optional
+        minimum value in dimension. The default is -200.
+    physical_max : float, optional
+        maximum value in dimension. The default is 200.
+    digital_min : int, optional
+        digital minimum of the ADC. The default is -32768.
+    digital_max : int, optional
+        digital maximum of the ADC. The default is 32767.
+    transducer : str, optional
+        electrode type that was used. The default is ''.
+    prefiler : str, optional
+        filtering and sampling method. The default is ''.
+
+    Returns
+    -------
+    signal_header : dict
+        a signal header that can be used to save a channel to an EDF.
+
     """
+
     signal_header = {'label': label, 
                'dimension': dimension, 
                'sample_rate': sample_rate, 
@@ -133,9 +243,33 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
     """
     A function that creates signal headers for a given list of channel labels.
     This can only be used if each channel has the same sampling frequency
-    
-    :param list_of_labels: A list with labels for each channel.
-    :returns: A dictionary that can be used by pyedflib to update the header
+
+    Parameters
+    ----------
+    list_of_labels : list of str
+        A list with labels for each channel.
+    dimension : str, optional
+        dimension, eg mV. The default is 'uV'.
+    sample_rate : int, optional
+        sampling frequency. The default is 256.
+    physical_min : float, optional
+        minimum value in dimension. The default is -200.
+    physical_max : float, optional
+        maximum value in dimension. The default is 200.
+    digital_min : int, optional
+        digital minimum of the ADC. The default is -32768.
+    digital_max : int, optional
+        digital maximum of the ADC. The default is 32767.
+    transducer : str, optional
+        electrode type that was used. The default is ''.
+    prefiler : str, optional
+        filtering and sampling method. The default is ''.
+
+    Returns
+    -------
+    signal_headers : list of dict
+        returns n signal headers as a list to save several signal headers.
+
     """
     signal_headers = []
     for label in list_of_labels:
@@ -149,17 +283,36 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
 
 def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
     """
-    Reading EDF+/BDF data with pyedflib.
+    Convenience function for reading EDF+/BDF data with pyedflib.
 
     Will load the edf and return the signals, the headers of the signals 
     and the header of the EDF. If all signals have the same sample frequency
     will return a numpy array, else a list with the individual signals
         
-    :param edf_file: link to an edf file
-    :param ch_nrs: The numbers of channels to read (optional)
-    :param ch_names: The names of channels to read (optional)
-    :returns: signals, signal_headers, header
-    """      
+
+    Parameters
+    ----------
+    edf_file : str
+        link to an edf file.
+    ch_nrs : list of int, optional
+        The indices of the channels to read. The default is None.
+    ch_names : list of str, optional
+        The names of channels to read. The default is None.
+    digital : bool, optional
+        will return the signals as digital values (ADC). The default is False.
+    verbose : bool, optional
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    signals : np.ndarray or list
+        the signals of the chosen channels contained in the EDF.
+    signal_headers : list
+        one signal header for each channel in the EDF.
+    header : dict
+        the main header of the EDF file containing meta information.
+
+    """
     assert os.path.exists(edf_file), 'file {} does not exist'.format(edf_file)
     assert (ch_nrs is  None) or (ch_names is None), \
            'names xor numbers should be supplied'
@@ -192,8 +345,13 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         ch_nrs = [n_chrs+ch if ch<0 else ch for ch in ch_nrs]
         
         # load headers, signal information and 
-        header = f.getHeader()
+        header = f.getHeader()    
         signal_headers = [f.getSignalHeaders()[c] for c in ch_nrs]
+        
+        # add annotations to header
+        annotations = f.read_annotation()
+        annotations = [[t/10000000, d if d else -1, x.decode()] for t,d,x in annotations]    
+        header['annotations'] = annotations
 
         signals = []
         for i,c in enumerate(tqdm(ch_nrs, desc='Reading Channels', 
@@ -217,17 +375,29 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
 
 def write_edf(edf_file, signals, signal_headers, header, digital=False):
     """
-    Write signals to an edf_file. Header can be generated on the fly.
-    
-    :param signals: The signals as a list of arrays or a ndarray
-    :param signal_headers: a list with one signal header(dict) for each signal.
-                           See pyedflib.EdfWriter.setSignalHeader
-    :param header: a main header (dict) for the EDF file, see 
-                   pyedflib.EdfWriter.setHeader for details
-    :param digital: whether signals are presented digitally 
-                    or in physical values
-    
-    :returns: True if successful, False if failed
+    Write signals to an edf_file. Header can be generated on the fly with
+    generic values. 
+
+    Parameters
+    ----------
+    edf_file : np.ndarray or list
+        where to save the EDF file
+    signals : list
+        The signals as a list of arrays or a ndarray.
+
+    signal_headers : list of dict
+        a list with one signal header(dict) for each signal.
+        See pyedflib.EdfWriter.setSignalHeader..
+    header : dict
+        a main header (dict) for the EDF file, see 
+        pyedflib.EdfWriter.setHeader for details.
+    digital : bool, optional
+        whether the signals are in digital format (ADC). The default is False.
+
+    Returns
+    -------
+    bool
+         True if successful, False if failed.
     """
     assert header is None or isinstance(header, dict), \
         'header must be dictioniary'
@@ -238,11 +408,19 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
         
     n_channels = len(signals)
     
+    default_header = make_header() 
+    default_header.update(header)
+    header = default_header
+    
+    annotations = header.get('annotations', '')
+    
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels) as f:  
         f.setSignalHeaders(signal_headers)
-        f.setHeader(header)
+        f.setHeader(header)      
+        for annotation in annotations:
+            f.writeAnnotation(*annotation)
         f.writeSamples(signals, digital=digital)
-        
+
     return os.path.isfile(edf_file) 
 
 
@@ -251,11 +429,23 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     wrapper for write_pyedf without creating headers.
     Use this if you don't care about headers or channel names and just
     want to dump some signals with the same sampling freq. to an edf
-    
-    :param edf_file: where to store the data/edf
-    :param signals: The signals you want to store as numpy array
-    :param sfreq: the sampling frequency of the signals
-    :param digital: if the data is present digitally (int) or as mV/uV
+
+    Parameters
+    ----------
+    edf_file : str
+        where to store the data/edf.
+    signals : np.ndarray
+        The signals you want to store as numpy array.
+    sfreq : int
+        the sampling frequency of the signals.
+    digital : bool, optional
+        if the data is present digitally (int) or as mV/uV.The default is False.
+
+    Returns
+    -------
+    bool
+        True if successful, else False or raise Error.
+
     """
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
     signal_headers = make_signal_headers(labels, sample_rate = sfreq)
@@ -264,82 +454,131 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
 
 def read_edf_header(edf_file):
     """
-    Reads the header and signal headers of an EDF file
-    
-    :returns: header of the edf file (dict)
+    Reads the header and signal headers of an EDF file and it's annotations
+
+    Parameters
+    ----------
+    edf_file : str
+        EDF/BDF file to read.
+
+    Returns
+    -------
+    summary : dict
+        header of the edf file as dictionary.
+
     """
     assert os.path.isfile(edf_file), 'file {} does not exist'.format(edf_file)
     with pyedflib.EdfReader(edf_file) as f:
+        annotations = f.read_annotation()
+        annotations = [[t/10000, d if d else -1, x] for t,d,x in annotations]
         summary = f.getHeader()
         summary['Duration'] = f.getFileDuration
         summary['SignalHeaders'] = f.getSignalHeaders()
         summary['channels'] = f.getSignalLabels()
+        summary['annotations'] = annotations
     del f
     return summary
+
 
 def compare_edf(edf_file1, edf_file2, verbose=True):
     """
     Loads two edf files and checks whether the values contained in 
-    them are the same. Does not check the header data.
+    them are the same. Does not check the header or annotations data.
     
-    :param edf_file1: First edf file to check
-    :param edf_file2: second edf file to compare against
-    :param verbose: print update messages or not.
+    Mainly to verify that other options (eg anonymization) produce the 
+    same EDF file.
+
+    Parameters
+    ----------
+    edf_file1 : str
+        edf file 1 to compare.
+    edf_file2 : str
+        edf file 2 to compare.
+    verbose : bool, optional
+        print progress or not. The default is True.
+
+    Returns
+    -------
+    bool
+        True if signals are equal, else raises error.
     """
     if verbose: print('verifying data')
-    files = [(edf_file1, True), (edf_file2, True), 
-             (edf_file1, False), (edf_file2, False)]
-    results = Parallel(n_jobs=4, backend='loky')(delayed(read_edf)\
-             (file, digital=digital, verbose=False) for file, \
-             digital in tqdm(files, disable=not verbose))  
 
-    signals1, signal_headers1, _ =  results[0]
-    signals2, signal_headers2, _ =  results[1]
-    signals3, signal_headers3, _ =  results[0]
-    signals4, signal_headers4, _ =  results[1]
+    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose,
+                                    return_list=True)
+    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose,
+                                    return_list=True)
+    
+    for i, sigs in enumerate(zip(signals1, signals2)):
+        s1, s2 = sigs
+        if np.array_equal(s1, s2): continue # early stopping
+        s1 = np.abs(s1)
+        s2 = np.abs(s2)
+        if np.array_equal(s1, s2): continue # early stopping
+        close =  np.mean(np.isclose(s1, s2))
+        assert close>0.99, 'Error, digital values of {}'\
+              ' and {} for ch {}: {} are not the same: {:.3f}'.format(
+                edf_file1, edf_file2, shead1[i]['label'], 
+                shead2[i]['label'], close)
+    
+    dmin1, dmax1 = shead1[i]['digital_min'], shead1[i]['digital_max']
+    pmin1, pmax1 = shead1[i]['physical_min'], shead1[i]['physical_max']
+    dmin2, dmax2 = shead2[i]['digital_min'], shead2[i]['digital_max']
+    pmin2, pmax2 = shead2[i]['physical_min'], shead2[i]['physical_max']
 
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
-        s1 = np.abs(s1)
-        s2 = np.abs(s2)
-        assert np.allclose(s1, s2), 'Error, digital values of {}'\
-            ' and {} for ch {}: {} are not the same'.format(
-                edf_file1, edf_file2, signal_headers1[i]['label'], 
-                signal_headers2[i]['label'])
-
-    for i, sigs in enumerate(zip(signals3, signals4)):
-        s1, s2 = sigs
+     
+        # convert to physical values, no need to load all data again
+        s1 = dig2phys(s1, dmin1, dmax1, pmin1, pmax1)
+        s2 = dig2phys(s2, dmin2, dmax2, pmin2, pmax2)
+        
+        # now we can remove the signals from the list to save memory
+        signals1[i] = None
+        signals2[i] = None
+        
         # compare absolutes in case of inverted signals
+        if np.array_equal(s1, s2): continue # early stopping
         s1 = np.abs(s1)
         s2 = np.abs(s2)
-        dmin, dmax = signal_headers3[i]['digital_min'], signal_headers3[i]['digital_max']
-        pmin, pmax = signal_headers3[i]['physical_min'], signal_headers3[i]['physical_max']
-        min_dist = np.abs(dig2phys(1, dmin, dmax, pmin, pmax))
+        if np.array_equal(s1, s2): continue # early stopping
+        min_dist = np.abs(dig2phys(1, dmin1, dmax1, pmin1, pmax1))
         close =  np.mean(np.isclose(s1, s2, atol=min_dist))
         assert close>0.99, 'Error, physical values of {}'\
             ' and {} for ch {}: {} are not the same: {:.3f}'.format(
-                edf_file1, edf_file2, signal_headers1[i]['label'], 
-                signal_headers2[i]['label'], close)
-    gc.collect()
+                edf_file1, edf_file2, shead1[i]['label'], 
+                shead2[i]['label'], close)
     return True
 
 
 def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
     """
-    Remove channels from an edf file using pyedflib.
-    Save the file as edf_target. 
+    Remove channels from an edf file. Save the file. 
     For safety reasons, no source files can be overwritten.
-    
-    :param edf_source: The source edf file
-    :param edf_target: Where to save the file. 
-                       If None, will be edf_source+'dropped.edf'
-    :param to_keep: A list of channel names or indices that will be kept.
-                    Strings will always be interpreted as channel names.
-                    'to_keep' will overwrite any droppings proposed by to_drop
-    :param to_drop: A list of channel names/indices that should be dropped.
-                    Strings will be interpreted as channel names.
-    :returns: the target filename with the dropped channels
+
+    Parameters
+    ----------
+    edf_source : str
+        The source edf file from which to drop channels.
+    edf_target : str, optional
+        Where to save the file.If None, will be edf_source+'dropped.edf'.
+        The default is None.
+    to_keep : list, optional
+         A list of channel names or indices that will be kept.
+         Strings will always be interpreted as channel names.
+         'to_keep' will overwrite any droppings proposed by to_drop.
+         The default is None.
+    to_drop : list, optional
+        A list of channel names/indices that should be dropped.
+        Strings will be interpreted as channel names. The default is None.
+
+    Returns
+    -------
+    edf_target : str
+         the target filename with the dropped channels.
+
     """
+    
     # convert to list if necessary
     if isinstance(to_keep, (int, str)): to_keep = [to_keep]
     if isinstance(to_drop, (int, str)): to_drop = [to_drop]
@@ -394,17 +633,33 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
 
 def anonymize_edf(edf_file, new_file=None, 
                   to_remove   = ['patientname', 'birthdate'],
-                  new_values  = ['xxx', '']):
+                  new_values  = ['xxx', ''], verify=False):
     """
     Anonymizes an EDF file, that means it strips all header information
     that is patient specific, ie. birthdate and patientname as well as XXX
-    
-    :param edf_file: a string with a filename of an EDF/BDF
-    :param new_file: where to save the anonymized edf file
-    :param to_remove: a list of attributes to remove from the file
-    :param new_values: a list of values that should be given instead to the edf
-    :returns: True if successful, False if failed
+
+    Parameters
+    ----------
+    edf_file : str
+         a string with a filename of an EDF/BDF.
+    new_file : str, optional
+         a string with the new filename of an EDF/BDF. The default is None.
+    to_remove : list of str, optional
+        a list of attributes to remove from the file. 
+        The default is ['patientname', 'birthdate'].
+    new_values : list of str, optional
+        a list of values that should be given instead to the edf. 
+        Each to_remove value must have one new_value.
+        The default is ['xxx', ''].
+    verify : bool
+        compare the two edf files for equality (double check values are same)
+
+    Returns
+    -------
+    bool
+        True if successful, False if failed.
     """
+
     assert len(to_remove)==len(new_values), \
            'Each to_remove must have one new_value'
     header = read_edf_header(edf_file)
@@ -423,17 +678,32 @@ def anonymize_edf(edf_file, new_file=None,
                                             ch_nrs=ch_nr, verbose=False)
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
+    if verify:
+        compare_edf(edf_file, new_file)
+    return write_edf(new_file, signals, signal_headers, header, digital=True)
 
-    return write_edf(new_file, signals, signal_headers, header,digital=True)
 
 
 def rename_channels(edf_file, mapping, new_file=None):
     """
     A convenience function to rename channels in an EDF file.
-    
-    :param edf_file: an string pointing to an edf file
-    :param mapping:  a dictionary with channel mappings as key:value
-    :param new_file: the new filename
+
+    Parameters
+    ----------
+    edf_file : str
+        an string pointing to an edf file.
+    mapping : dict
+         a dictionary with channel mappings as key:value.
+         eg: {'M1-O2':'A1-O2'}
+    new_file : str, optional
+        the new filename. If None will be edf_file + '_renamed'
+        The default is None.
+
+    Returns
+    -------
+    bool
+        True if successful, False if failed.
+
     """
     header = read_edf_header(edf_file)
     channels = header['channels']
@@ -456,5 +726,5 @@ def rename_channels(edf_file, mapping, new_file=None):
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
 
-    write_edf(new_file, signals, signal_headers, header,digital=True)
+    return write_edf(new_file, signals, signal_headers, header, digital=True)
     
