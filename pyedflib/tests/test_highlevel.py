@@ -57,7 +57,7 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(len(signals2), len(signal_headers2))
         for shead1, shead2 in zip(signal_headers1, signal_headers2):
             self.assertDictEqual(shead1, shead2)
-        self.assertEqual(header, header2)
+        self.assertDictEqual(header, header2)
         np.testing.assert_array_equal(signals, signals2)
 
 if __name__ == '__main__':
