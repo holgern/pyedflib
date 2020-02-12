@@ -83,6 +83,8 @@ Highlevel interface
 pyEDFlib includes an highlevel interface for easy access to read and write edf files.
 Additionally functionality as anonymizing, dropping or renaming channels can be found there.
 
+.. code-block:: Python
+
     from pyedflib import highlevel
     # write an edf file
 	signals = np.random.rand(5, 256*300)*200 # 5 minutes of random signal
@@ -98,8 +100,8 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
 	# drop a channel from the file and anonymize
 	highlevel.drop_channels('edf_file.edf', to_drop=['ch2', 'ch4'])
 	highlevel.anonymize('edf_file.edf')
-    
-    	
+
+
 License
 -------
 
