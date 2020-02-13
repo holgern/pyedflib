@@ -2,7 +2,7 @@
 # Copyright (c) 2015 Holger Nahrstaedt
 from __future__ import division, print_function, absolute_import
 
-import os
+import os, sys
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
@@ -25,7 +25,7 @@ class TestEdfWriter(unittest.TestCase):
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
                                                 gender='Male', startdate=startdate,birthdate='05.09.1980')
-        annotations = [[50, -1, 'begin'],[150, -1, 'end']]
+        annotations = [[0.01, -1, u'begin'],[0.5, -1, u'middle'],[10, -1, u'end']]
         header['annotations'] = annotations
         signal_headers1 = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
         signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
@@ -41,6 +41,7 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(len(signals2), len(signal_headers2))
         for shead1, shead2 in zip(signal_headers1, signal_headers2):
             self.assertDictEqual(shead1, shead2)
+            
         self.assertDictEqual(header, header2)
         np.testing.assert_allclose(signals, signals2, atol=0.01)
     
@@ -56,8 +57,14 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(len(signals2), len(signal_headers2))
         for shead1, shead2 in zip(signal_headers1, signal_headers2):
             self.assertDictEqual(shead1, shead2)
+            
         self.assertDictEqual(header, header2)
         np.testing.assert_array_equal(signals, signals2)
+
+
+    # def test_annotations_accuracy(self):
+        
+        
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
