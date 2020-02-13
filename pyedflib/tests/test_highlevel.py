@@ -25,7 +25,7 @@ class TestEdfWriter(unittest.TestCase):
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
                                                 gender='Male', startdate=startdate,birthdate='05.09.1980')
-        annotations = [[0.01, -1, u'begin'],[0.5, -1, u'middle'],[10, -1, u'end']]
+        annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
         header['annotations'] = annotations
         signal_headers1 = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
         signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg

@@ -413,14 +413,16 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
     header = default_header
     
     annotations = header.get('annotations', '')
+    print(annotations)
     
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels) as f:  
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)      
+        f.writeSamples(signals, digital=digital)
         for annotation in annotations:
             f.writeAnnotation(*annotation)
-        f.writeSamples(signals, digital=digital)
     del f
+    
     return os.path.isfile(edf_file) 
 
 
