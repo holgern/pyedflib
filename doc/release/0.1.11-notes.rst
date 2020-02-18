@@ -17,9 +17,9 @@ This list of names is automatically generated, and may not be fully complete.
 
 
 Issues closed for v0.1.11
-------------------------
+-------------------------
 - #21 : Cannot open file containing accented character on Windows
 
 Pull requests for v0.1.11
-------------------------
-- `#23 <github.com/holgern/pyedflib/pull/23>`__: Fixed Typo edfreader and improve edfwriter 
+-------------------------
+- `#23 <github.com/holgern/pyedflib/pull/23>`__: Fixed Typo edfreader and improve edfwriter

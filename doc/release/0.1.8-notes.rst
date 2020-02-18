@@ -1,6 +1,6 @@
-==============================
+============================
 PyEDFlib 0.1.8 Release Notes
-==============================
+============================
 
 .. contents::
 - Fix proper reading of EDF/BDF files
@@ -15,7 +15,3 @@ Issues closed for v0.1.8
 ------------------------
 - `#11 <github.com/holgern/pyedflib/issues/11>`__: IOError: malloc error
 - `#14 <github.com/holgern/pyedflib/issues/14>`__:CHB-MIT (Physionet) error - regular EDF not supported anymore
-
-
-Pull requests for v0.1.8
-------------------------

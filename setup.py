@@ -23,7 +23,7 @@ except ImportError:
 
 MAJOR = 0
 MINOR = 1
-MICRO = 16
+MICRO = 17
 ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -273,6 +273,7 @@ if __name__ == '__main__':
             "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],

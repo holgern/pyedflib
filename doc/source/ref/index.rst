@@ -8,5 +8,6 @@ API Reference
    
    edfwriter
    edfreader
+   highlevel
 
 

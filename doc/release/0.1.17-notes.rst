@@ -1,0 +1,15 @@
+=============================
+PyEDFlib 0.1.17 Release Notes
+=============================
+
+.. contents::
+
+- Fix readme
+- Fix docs
+- Add python 3.8 to CI
+
+Authors
+=======
+
+* Holger Nahrstaedt
+

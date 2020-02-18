@@ -1,7 +1,7 @@
 .. _dev-building-extension:
 
 Building and installing PyEDFlib
-==================================
+================================
 
 Installing from source code
 ---------------------------

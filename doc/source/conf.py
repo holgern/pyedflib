@@ -59,7 +59,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyEDFlib'
-copyright = u'2015 - 2019, Holger Nahrstaedt'
+copyright = u'2015 - 2020, Holger Nahrstaedt'
 author = u'Holger Nahrstaedt'
 
 # The version info for the project you're documenting, acts as replacement for

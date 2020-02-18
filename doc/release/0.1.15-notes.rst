@@ -1,6 +1,6 @@
-==============================
+=============================
 PyEDFlib 0.1.15 Release Notes
-==============================
+=============================
 
 .. contents::
 
@@ -16,7 +16,7 @@ Authors
 
 
 Issues closed for v0.1.15
-------------------------
+-------------------------
 * Fix issue #48 - DOC
 * Fix issue #60 - No Windows binaries for python 3.7 on PyPI
 * Fix issue #62 - Install via pip fails on Windows (no file stdio.h)
@@ -24,5 +24,5 @@ Issues closed for v0.1.15
 * Fix issue #43 - Writer as context manager
 
 Pull requests for v0.1.15
-------------------------
+-------------------------
 * PR #49 - Added option to get digital samples
