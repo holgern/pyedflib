@@ -1,0 +1,24 @@
+=============================
+PyEDFlib 0.1.16 Release Notes
+=============================
+
+.. contents::
+
+- Add high-level functions
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+
+
+Issues closed for v0.1.16
+-------------------------
+* Fix issue #64 - request to provide a sample script to de-identify edf
+
+Pull requests for v0.1.16
+-------------------------
+* PR #69 - Fix docstring of method setDigitalMaximum
+* PR #66 - Add support for PEP 517 & 518
+* PR #65 - Added high-level functions
