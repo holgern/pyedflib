@@ -43,8 +43,8 @@ Requirements
 
  It requires:
 
- - Python_ 2.7 or >=3.3
- - Numpy_ >= 1.6.2
+ - Python_ >=3.5
+ - Numpy_ >= 1.9.1
 
 Download
 --------

@@ -3,6 +3,7 @@ include README.rst
 include LICENSE
 include *.txt
 include MANIFEST.in
+include pyproject.toml
 
 # All source files
 recursive-include pyedflib *

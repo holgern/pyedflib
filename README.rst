@@ -51,7 +51,7 @@ Documentation is available online at http://pyedflib.readthedocs.org.
 Installation
 ------------
 
-pyEDFlib can be used with `Python`_ 2.7.x or >=3.4. It depends on the `Numpy`_ package.
+pyEDFlib can be used with `Python`_ >=3.5. It depends on the `Numpy`_ package.
 To use the newest source code from git, you have to download the source code.
 You need a C compiler and a recent version of `Cython`_. Go then to the source directory and type::
 
