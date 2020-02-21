@@ -31,9 +31,9 @@ matrix:
     - os: linux
       python: 3.8
       env:
-        - NUMPYSPEC="numpy==1.13.3"
+        - NUMPYSPEC="numpy==1.14.1"
         - MATPLOTLIBSPEC=matplotlib
-        - CYTHONSPEC="cython==0.23.5"
+        - CYTHONSPEC="cython==0.29.15"
         - REFGUIDE_CHECK=1  # run doctests only
     - os: osx
       osx_image: xcode7.3
