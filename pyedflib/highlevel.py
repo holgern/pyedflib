@@ -406,7 +406,7 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
                
-    if fname[-4] == '.edf':
+    if edf_file[-4] == '.edf':
         file_type = pyedflib.FILETYPE_EDFPLUS 
     else:
         file_type = pyedflib.FILETYPE_BDFPLUS 
