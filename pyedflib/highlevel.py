@@ -376,7 +376,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
 def write_edf(edf_file, signals, signal_headers, header, digital=False):
     """
     Write signals to an edf_file. Header can be generated on the fly with
-    generic values. 
+    generic values. EDF+/BDF+ is selected based on the filename extension
 
     Parameters
     ----------
@@ -405,6 +405,11 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
         'signal headers must be list'
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
+               
+    if fname[-4] == '.edf':
+        file_type = pyedflib.FILETYPE_EDFPLUS 
+    else:
+        file_type = pyedflib.FILETYPE_BDFPLUS 
         
     n_channels = len(signals)
     
@@ -413,9 +418,8 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
     header = default_header
     
     annotations = header.get('annotations', '')
-    print(annotations)
     
-    with pyedflib.EdfWriter(edf_file, n_channels=n_channels) as f:  
+    with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:  
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)      
         f.writeSamples(signals, digital=digital)
