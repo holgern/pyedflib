@@ -92,7 +92,7 @@ class TestHighLevel(unittest.TestCase):
         
     def test_quick_write(self):
         signals = np.random.randint(-2048, 2048, [3, 256*60])
-        highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256, digital=True)
+        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
         np.testing.assert_allclose(signals, signals2)
         signals = np.random.rand(3, 256*60)
