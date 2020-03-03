@@ -10,11 +10,29 @@ import unittest
 from pyedflib import highlevel
 from datetime import datetime, date
 
-
-class TestEdfWriter(unittest.TestCase):
+class TestHighLevel(unittest.TestCase):
+    
     def setUp(self):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
+        self.test_generator = os.path.join(data_dir, 'test_generator.edf')
+
+
+    def test_dig2phys_calc(self):
+        signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
+        signals_dig, _, _ = highlevel.read_edf(self.test_generator, digital=True)
+                
+        dmin, dmax = shead[0]['digital_min'],  shead[0]['digital_max']
+        pmin, pmax = shead[0]['physical_min'],  shead[0]['physical_max']
+        
+        # convert to physical
+        signal_phys2 = highlevel.dig2phys(signals_dig, dmin, dmax, pmin, pmax)        
+        np.testing.assert_allclose(signals_phys, signal_phys2)
+        
+        # convert to digital
+        signals_dig2 = highlevel.phys2dig(signals_phys, dmin, dmax, pmin, pmax)
+        signals_dig2 = np.rint(signals_dig2)
+        np.testing.assert_allclose(signals_dig, signals_dig2)
 
     def test_read_write_edf(self):
         startdate = datetime.now()
@@ -60,11 +78,27 @@ class TestEdfWriter(unittest.TestCase):
             
         self.assertDictEqual(header, header2)
         np.testing.assert_array_equal(signals, signals2)
-
-
-    # def test_annotations_accuracy(self):
         
         
+    def test_read_write_with_annotations(self):
+        signals, signal_headers, header = highlevel.read_edf(self.test_generator)
+        expected = [[0.0, -1, 'Recording starts'], [600.0, -1, 'Recording ends']]
+        self.assertEqual(header['annotations'], expected)
+        
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
+        signals2, signal_header2s, header2 = highlevel.read_edf(self.edfplus_data_file)
+        self.assertEqual(header['annotations'], header2['annotations'])
+
+        
+    def test_quick_write(self):
+        signals = np.random.randint(-2048, 2048, [3, 256*60])
+        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True)
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
+        np.testing.assert_allclose(signals, signals2)
+        signals = np.random.rand(3, 256*60)
+        highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
+        np.testing.assert_allclose(signals, signals2, atol=0.00002)
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

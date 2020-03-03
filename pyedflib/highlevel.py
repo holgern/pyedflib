@@ -100,8 +100,10 @@ def dig2phys(signal, dmin, dmax, pmin, pmax):
 
     """
     m = (pmax-pmin) / (dmax-dmin)
-    physical = m * signal
+    b = pmax / m - dmax
+    physical = m * (signal + b)
     return physical
+
 
 def phys2dig(signal, dmin, dmax, pmin, pmax):
     """
@@ -126,8 +128,9 @@ def phys2dig(signal, dmin, dmax, pmin, pmax):
         converted digital values
 
     """
-    m = (dmax-dmin)/(pmax-pmin) 
-    digital = (m * signal)
+    m = (pmax-pmin) / (dmax-dmin)
+    b = pmax / m - dmax
+    digital = signal/m - b
     return digital
 
 
@@ -373,7 +376,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
     return  signals, signal_headers, header
 
 
-def write_edf(edf_file, signals, signal_headers, header, digital=False):
+def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. EDF+/BDF+ is selected based on the filename extension
@@ -391,6 +394,7 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
     header : dict
         a main header (dict) for the EDF file, see 
         pyedflib.EdfWriter.setHeader for details.
+        If no header present, will create an empty header
     digital : bool, optional
         whether the signals are in digital format (ADC). The default is False.
 
@@ -400,7 +404,7 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
          True if successful, False if failed.
     """
     assert header is None or isinstance(header, dict), \
-        'header must be dictioniary'
+        'header must be dictioniary or None'
     assert isinstance(signal_headers, list), \
         'signal headers must be list'
     assert len(signal_headers)==len(signals), \
@@ -412,7 +416,8 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
         file_type = pyedflib.FILETYPE_BDFPLUS 
         
     n_channels = len(signals)
-    
+
+    if header is None: header = {}
     default_header = make_header() 
     default_header.update(header)
     header = default_header
@@ -453,9 +458,13 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
         True if successful, else False or raise Error.
 
     """
+    signals = np.atleast_2d(signals)
+    header = make_signal_header('ch_1', sample_rate=sfreq)
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
-    signal_headers = make_signal_headers(labels, sample_rate = sfreq)
-    return write_edf(edf_file, signals, signal_headers, digital=digital)
+    pmin, pmax = signals.min(), signals.max()
+    signal_headers = make_signal_headers(labels, sample_rate = sfreq,
+                                         physical_min=pmin, physical_max=pmax)
+    return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 
 
 def read_edf_header(edf_file):
