@@ -453,9 +453,12 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
         True if successful, else False or raise Error.
 
     """
+    signals = np.atleast_2d(signals)
     header = make_signal_header('ch_1', sample_rate=sfreq)
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
-    signal_headers = make_signal_headers(labels, sample_rate = sfreq)
+    pmin, pmax = signals.min(), signals.max()
+    signal_headers = make_signal_headers(labels, sample_rate = sfreq,
+                                         physical_min=pmin, physical_max=pmax)
     return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 
 
