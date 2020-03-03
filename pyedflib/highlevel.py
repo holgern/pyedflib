@@ -100,8 +100,10 @@ def dig2phys(signal, dmin, dmax, pmin, pmax):
 
     """
     m = (pmax-pmin) / (dmax-dmin)
-    physical = m * signal
+    b = pmax / m - dmax
+    physical = m * (signal + b)
     return physical
+
 
 def phys2dig(signal, dmin, dmax, pmin, pmax):
     """
@@ -127,7 +129,8 @@ def phys2dig(signal, dmin, dmax, pmin, pmax):
 
     """
     m = (dmax-dmin)/(pmax-pmin) 
-    digital = (m * signal)
+    b = dmax / m - pmin
+    digital = m * (signal+b)
     return digital
 
 
@@ -373,7 +376,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
     return  signals, signal_headers, header
 
 
-def write_edf(edf_file, signals, signal_headers, header, digital=False):
+def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. 
@@ -391,6 +394,7 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
     header : dict
         a main header (dict) for the EDF file, see 
         pyedflib.EdfWriter.setHeader for details.
+        If no header present, will create an empty header
     digital : bool, optional
         whether the signals are in digital format (ADC). The default is False.
 
@@ -400,20 +404,20 @@ def write_edf(edf_file, signals, signal_headers, header, digital=False):
          True if successful, False if failed.
     """
     assert header is None or isinstance(header, dict), \
-        'header must be dictioniary'
+        'header must be dictioniary or None'
     assert isinstance(signal_headers, list), \
         'signal headers must be list'
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
         
     n_channels = len(signals)
-    
+
+    if header is None: header = {}
     default_header = make_header() 
     default_header.update(header)
     header = default_header
     
     annotations = header.get('annotations', '')
-    print(annotations)
     
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels) as f:  
         f.setSignalHeaders(signal_headers)
@@ -449,9 +453,10 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
         True if successful, else False or raise Error.
 
     """
+    header = make_signal_header('ch_1', sample_rate=sfreq)
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
     signal_headers = make_signal_headers(labels, sample_rate = sfreq)
-    return write_edf(edf_file, signals, signal_headers, digital=digital)
+    return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 
 
 def read_edf_header(edf_file):
