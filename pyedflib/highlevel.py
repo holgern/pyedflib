@@ -128,9 +128,9 @@ def phys2dig(signal, dmin, dmax, pmin, pmax):
         converted digital values
 
     """
-    m = (dmax-dmin)/(pmax-pmin) 
-    b = dmax / m - pmin
-    digital = m * (signal+b)
+    m = (pmax-pmin) / (dmax-dmin)
+    b = pmax / m - dmax
+    digital = signal/m - b
     return digital
 
 
