@@ -25,8 +25,6 @@ install:
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install --upgrade pip"
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install --upgrade wheel"
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install
-     numpy --cache-dir c:\\tmp\\pip-cache"
-  - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install
      Cython nose coverage matplotlib dateparser tqdm --cache-dir c:\\tmp\\pip-cache"
 
 test_script:

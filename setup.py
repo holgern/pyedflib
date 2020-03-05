@@ -27,6 +27,9 @@ MICRO = 18
 ISRELEASED = False
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
+# Version of Numpy required for setup
+REQUIRED_NUMPY = 'numpy>=1.9.1'
+
 
 # from MDAnalysis setup.py (http://www.mdanalysis.org/)
 class NumpyExtension(Extension, object):
@@ -72,12 +75,18 @@ def get_numpy_include():
             builtins.__NUMPY_SETUP__ = False
         import numpy as np
     except ImportError as e:
-        print(e)
-        print('*** package "numpy" not found ***')
-        print('pyEDFlib requires a version of NumPy, even for setup.')
-        print('Please get it from http://numpy.scipy.org/ or install it through '
-              'your package manager.')
-        sys.exit(-1)
+        try:
+            # Try to install numpy
+            from setuptools import dist
+            dist.Distribution().fetch_build_eggs([REQUIRED_NUMPY])
+            import numpy as np
+        except Exception as e:
+            print(e)
+            print('*** package "numpy" not found ***')
+            print('pyEDFlib requires a version of NumPy, even for setup.')
+            print('Please get it from http://numpy.scipy.org/ or install it through '
+                  'your package manager.')
+            sys.exit(-1)
     try:
         numpy_include = np.get_include()
     except AttributeError:
@@ -284,6 +293,6 @@ if __name__ == '__main__':
         libraries=[c_lib],
         cmdclass={'develop': develop_build_clib},
         test_suite='nose.collector',
-        install_requires=["numpy>=1.9.1"],
+        install_requires=[REQUIRED_NUMPY],
     )
 
