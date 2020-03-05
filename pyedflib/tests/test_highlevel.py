@@ -99,7 +99,22 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
-
+        
+    def test_read_write_diff_sfreq(self):
+        
+        signals = []
+        sfreqs = [1, 64, 128, 200]
+        sheaders = []
+        for sfreq in sfreqs:
+            signals.append(np.random.randint(-2048, 2048, sfreq*60))
+            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_rate=sfreq)
+            sheaders.append(shead)
+        highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
+        signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
+        for s1, s2 in zip(signals, signals2):
+            np.testing.assert_allclose(s1, s2)
+        
+            
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()
