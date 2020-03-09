@@ -106,7 +106,7 @@ class TestHighLevel(unittest.TestCase):
         sfreqs = [1, 64, 128, 200]
         sheaders = []
         for sfreq in sfreqs:
-            signals.append(np.random.randint(-2048, 2048, sfreq*60))
+            signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
             shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_rate=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
