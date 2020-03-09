@@ -367,9 +367,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         if all_sfreq_same:
             dtype = np.int if digital else np.float
             signals = np.array(signals, dtype=dtype)
-        elif verbose:
-            warnings.warn('Not all sampling frequencies are the same ({}). '\
-                          .format(sfreqs))    
+ 
     assert len(signals)==len(signal_headers), 'Something went wrong, lengths'\
                                          ' of headers is not length of signals'
     del f
@@ -424,6 +422,26 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
     
     annotations = header.get('annotations', '')
     
+    # check dmin, dmax and pmin, pmax dont exceed signal min/max
+    for s, sh in zip(signals, signal_headers):
+        dmin, dmax = sh['digital_min'], sh['digital_max']
+        pmin, pmax = sh['physical_min'], sh['physical_max']
+        label = sh['label']
+        if digital: # exception as it will lead to clipping
+            assert dmin<=s.min(), \
+            'digital_min is {}, but signal_min is {}' \
+            'for channel {}'.format(dmin, s.min(), label)
+            assert dmax>=s.max(), \
+            'digital_min is {}, but signal_min is {}' \
+            'for channel {}'.format(dmax, s.max(), label)
+        else: # only warning, as this will not lead to clipping
+            assert pmin<=s.min(), \
+            'phys_min is {}, but signal_min is {} ' \
+            'for channel {}'.format(pmin, s.min(), label)
+            assert pmax>=s.max(), \
+            'phys_max is {}, but signal_max is {} ' \
+            'for channel {}'.format(pmax, s.max(), label)
+            
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:  
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)      

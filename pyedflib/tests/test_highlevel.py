@@ -114,6 +114,25 @@ class TestHighLevel(unittest.TestCase):
         for s1, s2 in zip(signals, signals2):
             np.testing.assert_allclose(s1, s2)
         
+    def test_assertion_dmindmax(self):
+        
+        # test digital and dmin wrong
+        signals =[ np.random.randint(-2048, 2048, 256*60)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders[0]['digital_min'] = -128
+        sheaders[0]['digital_max'] = 128
+        with self.assertRaises(AssertionError):
+            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
+        
+        # test pmin wrong
+        signals = [np.random.randint(-2048, 2048, 256*60)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders[0]['physical_min'] = -200
+        sheaders[0]['physical_max'] = 200
+        with self.assertRaises(AssertionError):
+            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+            
+
             
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
