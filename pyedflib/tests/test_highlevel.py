@@ -117,7 +117,7 @@ class TestHighLevel(unittest.TestCase):
     def test_assertion_dmindmax(self):
         
         # test digital and dmin wrong
-        signals =[ np.random.randint(-2048, 2048, 256*60)]
+        signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int32)]
         sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
         sheaders[0]['digital_min'] = -128
         sheaders[0]['digital_max'] = 128
