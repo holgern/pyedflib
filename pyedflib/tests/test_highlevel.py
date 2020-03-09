@@ -99,7 +99,41 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
+        
+    def test_read_write_diff_sfreq(self):
+        
+        signals = []
+        sfreqs = [1, 64, 128, 200]
+        sheaders = []
+        for sfreq in sfreqs:
+            signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
+            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_rate=sfreq)
+            sheaders.append(shead)
+        highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
+        signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
+        for s1, s2 in zip(signals, signals2):
+            np.testing.assert_allclose(s1, s2)
+        
+    def test_assertion_dmindmax(self):
+        
+        # test digital and dmin wrong
+        signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int32)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders[0]['digital_min'] = -128
+        sheaders[0]['digital_max'] = 128
+        with self.assertRaises(AssertionError):
+            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
+        
+        # test pmin wrong
+        signals = [np.random.randint(-2048, 2048, 256*60)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders[0]['physical_min'] = -200
+        sheaders[0]['physical_max'] = 200
+        with self.assertRaises(AssertionError):
+            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+            
 
+            
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()
