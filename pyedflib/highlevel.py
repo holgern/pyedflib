@@ -374,10 +374,12 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
     return  signals, signal_headers, header
 
 
-def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
+def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
+              file_type=-1):
     """
     Write signals to an edf_file. Header can be generated on the fly with
-    generic values. EDF+/BDF+ is selected based on the filename extension
+    generic values. EDF+/BDF+ is selected based on the filename extension,
+    but can be overwritten by setting filetype to pyedflib.FILETYPE_XXX
 
     Parameters
     ----------
@@ -395,6 +397,9 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
         If no header present, will create an empty header
     digital : bool, optional
         whether the signals are in digital format (ADC). The default is False.
+    filetype: int, optional
+        choose filetype for saving. 
+        EDF = 0, EDF+ = 1, BDF = 2, BDF+ = 3, automatic from extension = -1
 
     Returns
     -------
@@ -407,11 +412,13 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
         'signal headers must be list'
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
+    assert file_type in [-1, 0, 1, 2, 3], 'filetype must be in range -1, 3'
                
-    if edf_file[-4] == '.edf':
-        file_type = pyedflib.FILETYPE_EDFPLUS 
-    else:
-        file_type = pyedflib.FILETYPE_BDFPLUS 
+    if file_type==-1:
+        if edf_file[-4] == '.edf':
+            file_type = pyedflib.FILETYPE_EDFPLUS 
+        else:
+            file_type = pyedflib.FILETYPE_BDFPLUS 
         
     n_channels = len(signals)
 
