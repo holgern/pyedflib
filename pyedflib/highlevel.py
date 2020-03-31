@@ -365,7 +365,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         sfreqs = [shead['sample_rate'] for shead in signal_headers]
         all_sfreq_same = sfreqs[1:]==sfreqs[:-1]
         if all_sfreq_same:
-            dtype = np.int if digital else np.float
+            dtype = np.int32 if digital else np.float
             signals = np.array(signals, dtype=dtype)
  
     assert len(signals)==len(signal_headers), 'Something went wrong, lengths'\
