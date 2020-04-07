@@ -16,7 +16,7 @@ class TestHighLevel(unittest.TestCase):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
         self.test_generator = os.path.join(data_dir, 'test_generator.edf')
-        self.test_accented = os.path.join(data_dir, "test_áä'üöß.edf")
+        self.test_accented = os.path.join(data_dir, u"test_áä'üöß.edf")
 
     def test_dig2phys_calc(self):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
