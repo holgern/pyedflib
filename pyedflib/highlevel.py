@@ -365,21 +365,21 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         sfreqs = [shead['sample_rate'] for shead in signal_headers]
         all_sfreq_same = sfreqs[1:]==sfreqs[:-1]
         if all_sfreq_same:
-            dtype = np.int if digital else np.float
+            dtype = np.int32 if digital else np.float
             signals = np.array(signals, dtype=dtype)
-        elif verbose:
-            warnings.warn('Not all sampling frequencies are the same ({}). '\
-                          .format(sfreqs))    
+ 
     assert len(signals)==len(signal_headers), 'Something went wrong, lengths'\
                                          ' of headers is not length of signals'
     del f
     return  signals, signal_headers, header
 
 
-def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
+def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
+              file_type=-1):
     """
     Write signals to an edf_file. Header can be generated on the fly with
-    generic values. EDF+/BDF+ is selected based on the filename extension
+    generic values. EDF+/BDF+ is selected based on the filename extension,
+    but can be overwritten by setting filetype to pyedflib.FILETYPE_XXX
 
     Parameters
     ----------
@@ -397,6 +397,9 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
         If no header present, will create an empty header
     digital : bool, optional
         whether the signals are in digital format (ADC). The default is False.
+    filetype: int, optional
+        choose filetype for saving. 
+        EDF = 0, EDF+ = 1, BDF = 2, BDF+ = 3, automatic from extension = -1
 
     Returns
     -------
@@ -409,11 +412,13 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
         'signal headers must be list'
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
+    assert file_type in [-1, 0, 1, 2, 3], 'filetype must be in range -1, 3'
                
-    if edf_file[-4] == '.edf':
-        file_type = pyedflib.FILETYPE_EDFPLUS 
-    else:
-        file_type = pyedflib.FILETYPE_BDFPLUS 
+    if file_type==-1:
+        if edf_file[-4] == '.edf':
+            file_type = pyedflib.FILETYPE_EDFPLUS 
+        else:
+            file_type = pyedflib.FILETYPE_BDFPLUS 
         
     n_channels = len(signals)
 
@@ -424,6 +429,26 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False):
     
     annotations = header.get('annotations', '')
     
+    # check dmin, dmax and pmin, pmax dont exceed signal min/max
+    for s, sh in zip(signals, signal_headers):
+        dmin, dmax = sh['digital_min'], sh['digital_max']
+        pmin, pmax = sh['physical_min'], sh['physical_max']
+        label = sh['label']
+        if digital: # exception as it will lead to clipping
+            assert dmin<=s.min(), \
+            'digital_min is {}, but signal_min is {}' \
+            'for channel {}'.format(dmin, s.min(), label)
+            assert dmax>=s.max(), \
+            'digital_min is {}, but signal_min is {}' \
+            'for channel {}'.format(dmax, s.max(), label)
+        else: # only warning, as this will not lead to clipping
+            assert pmin<=s.min(), \
+            'phys_min is {}, but signal_min is {} ' \
+            'for channel {}'.format(pmin, s.min(), label)
+            assert pmax>=s.max(), \
+            'phys_max is {}, but signal_max is {} ' \
+            'for channel {}'.format(pmax, s.max(), label)
+            
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:  
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)      
