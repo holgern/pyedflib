@@ -316,8 +316,6 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         the main header of the EDF file containing meta information.
 
     """
-    assert os.path.exists(edf_file.encode('utf8')), \
-            'file {} does not exist'.format(edf_file)
     assert (ch_nrs is  None) or (ch_names is None), \
            'names xor numbers should be supplied'
     if ch_nrs is not None and not isinstance(ch_nrs, list): ch_nrs = [ch_nrs]
@@ -632,7 +630,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
     if to_drop is not None:
         assert all([isinstance(ch, (str, int)) for ch in to_drop]),\
             'channels must be int or string'
-    assert os.path.exists(edf_source.encode('utf8')), \
+    assert os.path.exists(edf_source), \
             'source file {} does not exist'.format(edf_source)
     assert edf_source!=edf_target, 'For safet, target must not be source file.'
         
