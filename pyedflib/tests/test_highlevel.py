@@ -16,7 +16,7 @@ class TestHighLevel(unittest.TestCase):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
         self.test_generator = os.path.join(data_dir, 'test_generator.edf')
-
+        self.test_accented = os.path.join(data_dir, "test_áä'üöß.edf")
 
     def test_dig2phys_calc(self):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
@@ -133,6 +133,12 @@ class TestHighLevel(unittest.TestCase):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
             
 
+    def test_read_write_accented(self):
+        signals = np.random.rand(3, 256*60)
+        highlevel.write_edf_quick(self.test_accented, signals, sfreq=256)
+        signals2, _, _ = highlevel.read_edf(self.test_accented)
+        
+        np.testing.assert_allclose(signals, signals2, atol=0.00002)
             
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
