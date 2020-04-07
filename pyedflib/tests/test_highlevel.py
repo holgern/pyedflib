@@ -17,7 +17,8 @@ class TestHighLevel(unittest.TestCase):
         self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
         self.test_generator = os.path.join(data_dir, 'test_generator.edf')
         self.test_accented = os.path.join(data_dir, u"test_áä'üöß.edf")
-
+        self.anonymized = os.path.join(data_dir, u"anonymized.edf")
+        
     def test_dig2phys_calc(self):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
         signals_dig, _, _ = highlevel.read_edf(self.test_generator, digital=True)
@@ -140,6 +141,49 @@ class TestHighLevel(unittest.TestCase):
         
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
             
+        
+    def test_read_header(self):
+        
+        header = highlevel.read_edf_header(self.test_generator)
+        self.assertEqual(len(header), 14)
+        self.assertEqual(len(header['channels']), 11)
+        self.assertEqual(len(header['SignalHeaders']), 11)
+        self.assertEqual(header['Duration'], 600)
+        self.assertEqual(header['admincode'], 'Dr. X')
+        self.assertEqual(header['birthdate'], '30 jun 1969')
+        self.assertEqual(header['equipment'], 'test generator')
+        self.assertEqual(header['gender'], 'Male')
+        self.assertEqual(header['patient_additional'], 'patient')
+        self.assertEqual(header['patientcode'], 'abcxyz99')
+        self.assertEqual(header['patientname'], 'Hans Muller')
+        self.assertEqual(header['technician'], 'Mr. Spotty')
+        
+        
+    def test_anonymize(self):
+        
+        highlevel.anonymize_edf(self.test_generator, new_file=self.anonymized,
+                                        to_remove=['patientname', 'birthdate',
+                                                   'admincode', 'patientcode',
+                                                   'technician'],
+                                        new_values=['x', '', 'xx', 'xxx',
+                                                    'xxxx'])
+        new_header = highlevel.read_edf_header(self.anonymized)
+        self.assertEqual(new_header['birthdate'], '')
+        self.assertEqual(new_header['patientname'], 'x')
+        self.assertEqual(new_header['admincode'], 'xx')
+        self.assertEqual(new_header['patientcode'], 'xxx')
+        self.assertEqual(new_header['technician'], 'xxxx')
+
+        with self.assertRaises(AssertionError):
+            highlevel.anonymize_edf(self.test_generator, 
+                                    new_file=self.anonymized,
+                                    to_remove=['patientname', 'birthdate',
+                                               'admincode', 'patientcode',
+                                               'technician'],
+                                    new_values=['x', '', 'xx', 'xxx'])
+
+
+
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()

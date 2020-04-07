@@ -511,7 +511,7 @@ def read_edf_header(edf_file):
         annotations = f.read_annotation()
         annotations = [[t//10000000, d if d else -1, x] for t,d,x in annotations]
         summary = f.getHeader()
-        summary['Duration'] = f.getFileDuration
+        summary['Duration'] = f.getFileDuration()
         summary['SignalHeaders'] = f.getSignalHeaders()
         summary['channels'] = f.getSignalLabels()
         summary['annotations'] = annotations
@@ -543,10 +543,8 @@ def compare_edf(edf_file1, edf_file2, verbose=True):
     """
     if verbose: print('verifying data')
 
-    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose,
-                                    return_list=True)
-    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose,
-                                    return_list=True)
+    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose)
+    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose)
     
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
