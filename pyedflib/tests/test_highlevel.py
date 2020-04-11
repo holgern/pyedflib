@@ -166,7 +166,7 @@ class TestHighLevel(unittest.TestCase):
                                                    'admincode', 'patientcode',
                                                    'technician'],
                                         new_values=['x', '', 'xx', 'xxx',
-                                                    'xxxx'])
+                                                    'xxxx'], verify=True)
         new_header = highlevel.read_edf_header(self.anonymized)
         self.assertEqual(new_header['birthdate'], '')
         self.assertEqual(new_header['patientname'], 'x')
@@ -180,7 +180,8 @@ class TestHighLevel(unittest.TestCase):
                                     to_remove=['patientname', 'birthdate',
                                                'admincode', 'patientcode',
                                                'technician'],
-                                    new_values=['x', '', 'xx', 'xxx'])
+                                    new_values=['x', '', 'xx', 'xxx'],
+                                    verify=True)
 
 
 

@@ -38,7 +38,7 @@ def tqdm(iteratable, *args, **kwargs):
     if not installed this is just a pass through iterator
     """
     try:
-        from tqd3m import tqdm as iterator
+        from tqdm import tqdm as iterator
         return iterator(iteratable, *args, **kwargs)
     except:
         return iteratable
@@ -519,7 +519,7 @@ def read_edf_header(edf_file):
     return summary
 
 
-def compare_edf(edf_file1, edf_file2, verbose=True):
+def compare_edf(edf_file1, edf_file2):
     """
     Loads two edf files and checks whether the values contained in 
     them are the same. Does not check the header or annotations data.
@@ -541,10 +541,8 @@ def compare_edf(edf_file1, edf_file2, verbose=True):
     bool
         True if signals are equal, else raises error.
     """
-    if verbose: print('verifying data')
-
-    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose)
-    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose)
+    signals1, shead1, _ =  read_edf(edf_file1, digital=True)
+    signals2, shead2, _ =  read_edf(edf_file2, digital=True)
     
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
