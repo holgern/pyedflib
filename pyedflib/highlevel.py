@@ -568,10 +568,6 @@ def compare_edf(edf_file1, edf_file2):
         s1 = dig2phys(s1, dmin1, dmax1, pmin1, pmax1)
         s2 = dig2phys(s2, dmin2, dmax2, pmin2, pmax2)
         
-        # now we can remove the signals from the list to save memory
-        signals1[i] = None
-        signals2[i] = None
-        
         # compare absolutes in case of inverted signals
         if np.array_equal(s1, s2): continue # early stopping
         s1 = np.abs(s1)
