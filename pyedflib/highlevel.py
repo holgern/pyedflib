@@ -693,26 +693,20 @@ def anonymize_edf(edf_file, new_file=None,
 
     assert len(to_remove)==len(new_values), \
            'Each to_remove must have one new_value'
-    header = read_edf_header(edf_file)
-    
-    for new_val, attr in zip(new_values, to_remove):
-        header[attr] = new_val
         
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
         new_file = file + '_anonymized' + ext
-    n_chs = len(header['channels'])
-    signal_headers = []
-    signals = []
-    for ch_nr in tqdm(range(n_chs)):
-        signal, signal_header, _ = read_edf(edf_file, digital=True, 
-                                            ch_nrs=ch_nr, verbose=False)
-        signal_headers.append(signal_header[0])
-        signals.append(signal.squeeze())
+        
+    signals, signal_headers, header = read_edf(edf_file, digital=True)
+        
+    for new_val, attr in zip(new_values, to_remove):
+        header[attr] = new_val
+    
+    write_edf(new_file, signals, signal_headers, header, digital=True)
     if verify:
         compare_edf(edf_file, new_file)
-    return write_edf(new_file, signals, signal_headers, header, digital=True)
-
+    return True
 
 
 def rename_channels(edf_file, mapping, new_file=None):
