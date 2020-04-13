@@ -18,7 +18,7 @@ class TestEdfReader(unittest.TestCase):
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         self.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
-        self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_á.bdf')
+        self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
 
     def test_EdfReader(self):
         try:

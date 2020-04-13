@@ -38,7 +38,7 @@ def tqdm(iteratable, *args, **kwargs):
     if not installed this is just a pass through iterator
     """
     try:
-        from tqd3m import tqdm as iterator
+        from tqdm import tqdm as iterator
         return iterator(iteratable, *args, **kwargs)
     except:
         return iteratable
@@ -316,7 +316,6 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
         the main header of the EDF file containing meta information.
 
     """
-    assert os.path.exists(edf_file), 'file {} does not exist'.format(edf_file)
     assert (ch_nrs is  None) or (ch_names is None), \
            'names xor numbers should be supplied'
     if ch_nrs is not None and not isinstance(ch_nrs, list): ch_nrs = [ch_nrs]
@@ -512,7 +511,7 @@ def read_edf_header(edf_file):
         annotations = f.read_annotation()
         annotations = [[t//10000000, d if d else -1, x] for t,d,x in annotations]
         summary = f.getHeader()
-        summary['Duration'] = f.getFileDuration
+        summary['Duration'] = f.getFileDuration()
         summary['SignalHeaders'] = f.getSignalHeaders()
         summary['channels'] = f.getSignalLabels()
         summary['annotations'] = annotations
@@ -520,7 +519,7 @@ def read_edf_header(edf_file):
     return summary
 
 
-def compare_edf(edf_file1, edf_file2, verbose=True):
+def compare_edf(edf_file1, edf_file2):
     """
     Loads two edf files and checks whether the values contained in 
     them are the same. Does not check the header or annotations data.
@@ -542,12 +541,8 @@ def compare_edf(edf_file1, edf_file2, verbose=True):
     bool
         True if signals are equal, else raises error.
     """
-    if verbose: print('verifying data')
-
-    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose,
-                                    return_list=True)
-    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose,
-                                    return_list=True)
+    signals1, shead1, _ =  read_edf(edf_file1, digital=True)
+    signals2, shead2, _ =  read_edf(edf_file2, digital=True)
     
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
@@ -572,10 +567,6 @@ def compare_edf(edf_file1, edf_file2, verbose=True):
         # convert to physical values, no need to load all data again
         s1 = dig2phys(s1, dmin1, dmax1, pmin1, pmax1)
         s2 = dig2phys(s2, dmin2, dmax2, pmin2, pmax2)
-        
-        # now we can remove the signals from the list to save memory
-        signals1[i] = None
-        signals2[i] = None
         
         # compare absolutes in case of inverted signals
         if np.array_equal(s1, s2): continue # early stopping
@@ -631,8 +622,8 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
     if to_drop is not None:
         assert all([isinstance(ch, (str, int)) for ch in to_drop]),\
             'channels must be int or string'
-    assert os.path.exists(edf_source), 'source file {} does not exist'\
-                                       .format(edf_source)
+    assert os.path.exists(edf_source), \
+            'source file {} does not exist'.format(edf_source)
     assert edf_source!=edf_target, 'For safet, target must not be source file.'
         
     if edf_target is None: 
@@ -702,26 +693,20 @@ def anonymize_edf(edf_file, new_file=None,
 
     assert len(to_remove)==len(new_values), \
            'Each to_remove must have one new_value'
-    header = read_edf_header(edf_file)
-    
-    for new_val, attr in zip(new_values, to_remove):
-        header[attr] = new_val
         
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
         new_file = file + '_anonymized' + ext
-    n_chs = len(header['channels'])
-    signal_headers = []
-    signals = []
-    for ch_nr in tqdm(range(n_chs)):
-        signal, signal_header, _ = read_edf(edf_file, digital=True, 
-                                            ch_nrs=ch_nr, verbose=False)
-        signal_headers.append(signal_header[0])
-        signals.append(signal.squeeze())
+        
+    signals, signal_headers, header = read_edf(edf_file, digital=True)
+        
+    for new_val, attr in zip(new_values, to_remove):
+        header[attr] = new_val
+    
+    write_edf(new_file, signals, signal_headers, header, digital=True)
     if verify:
         compare_edf(edf_file, new_file)
-    return write_edf(new_file, signals, signal_headers, header, digital=True)
-
+    return True
 
 
 def rename_channels(edf_file, mapping, new_file=None):
