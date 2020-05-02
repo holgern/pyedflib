@@ -414,10 +414,13 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     assert file_type in [-1, 0, 1, 2, 3], 'filetype must be in range -1, 3'
                
     if file_type==-1:
-        if edf_file[-4] == '.edf':
+        ext = os.path.splitext(edf_file)[-1]
+        if ext == '.edf':
             file_type = pyedflib.FILETYPE_EDFPLUS 
-        else:
+        elif ext == '.bdf':
             file_type = pyedflib.FILETYPE_BDFPLUS 
+        else:
+            raise ValueError('Unknown extension {}'.format(ext))
         
     n_channels = len(signals)
 
