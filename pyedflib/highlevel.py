@@ -653,7 +653,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
         to_drop = [len(ch_nrs)+ch if ch<0 else ch for ch in to_drop]
 
         [ch_nrs.remove(ch) for ch in to_drop]
-        load_channels = ch_nrs.copy()
+        load_channels = list(ch_nrs)
     else:
         raise ValueError
         
