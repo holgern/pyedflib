@@ -414,10 +414,13 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     assert file_type in [-1, 0, 1, 2, 3], 'filetype must be in range -1, 3'
                
     if file_type==-1:
-        if edf_file[-4] == '.edf':
+        ext = os.path.splitext(edf_file)[-1]
+        if ext == '.edf':
             file_type = pyedflib.FILETYPE_EDFPLUS 
-        else:
+        elif ext == '.bdf':
             file_type = pyedflib.FILETYPE_BDFPLUS 
+        else:
+            raise ValueError('Unknown extension {}'.format(ext))
         
     n_channels = len(signals)
 
@@ -519,7 +522,7 @@ def read_edf_header(edf_file):
     return summary
 
 
-def compare_edf(edf_file1, edf_file2):
+def compare_edf(edf_file1, edf_file2, verbose=True):
     """
     Loads two edf files and checks whether the values contained in 
     them are the same. Does not check the header or annotations data.
@@ -541,8 +544,8 @@ def compare_edf(edf_file1, edf_file2):
     bool
         True if signals are equal, else raises error.
     """
-    signals1, shead1, _ =  read_edf(edf_file1, digital=True)
-    signals2, shead2, _ =  read_edf(edf_file2, digital=True)
+    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose)
+    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose)
     
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs

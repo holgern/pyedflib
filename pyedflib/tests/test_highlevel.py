@@ -19,6 +19,7 @@ class TestHighLevel(unittest.TestCase):
         self.test_accented = os.path.join(data_dir, u"test_áä'üöß.edf")
         self.anonymized = os.path.join(data_dir, u"anonymized.edf")
         self.personalized = os.path.join(data_dir, u"personalized.edf")
+        self.drop_from = os.path.join(data_dir, 'drop_from.edf')
         
     def test_dig2phys_calc(self):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
@@ -208,7 +209,30 @@ class TestHighLevel(unittest.TestCase):
                                                'technician'],
                                     new_values=['x', '', 'xx', 'xxx'],
                                     verify=True)
+            
+    def test_drop_channel(self):
+        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
+        signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
+        highlevel.write_edf(self.drop_from, signals, signal_headers)
+        
+        dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'])
+        
+        signals2, signal_headers, header = highlevel.read_edf(dropped)
+        
+        np.testing.assert_allclose(signals[1:3,:], signals2, atol=0.01)
+        
+        highlevel.drop_channels(self.drop_from, self.drop_from[:-4]+'2.edf',
+                                to_drop=['ch0', 'ch1', 'ch2'])
+        signals2, signal_headers, header = highlevel.read_edf(self.drop_from[:-4]+'2.edf')
 
+        np.testing.assert_allclose(signals[3:,:], signals2, atol=0.01)
+        
+        with self.assertRaises(AssertionError):
+            highlevel.drop_channels(self.drop_from, to_keep=['ch1'], to_drop=['ch3'])
+
+
+    def test_rename_channels(self):
+        raise NotImplementedError
 
 
 if __name__ == '__main__':
