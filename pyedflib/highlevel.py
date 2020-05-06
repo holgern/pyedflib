@@ -522,7 +522,7 @@ def read_edf_header(edf_file):
     return summary
 
 
-def compare_edf(edf_file1, edf_file2):
+def compare_edf(edf_file1, edf_file2, verbose=True):
     """
     Loads two edf files and checks whether the values contained in 
     them are the same. Does not check the header or annotations data.
@@ -544,8 +544,8 @@ def compare_edf(edf_file1, edf_file2):
     bool
         True if signals are equal, else raises error.
     """
-    signals1, shead1, _ =  read_edf(edf_file1, digital=True)
-    signals2, shead2, _ =  read_edf(edf_file2, digital=True)
+    signals1, shead1, _ =  read_edf(edf_file1, digital=True, verbose=verbose)
+    signals2, shead2, _ =  read_edf(edf_file2, digital=True, verbose=verbose)
     
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
