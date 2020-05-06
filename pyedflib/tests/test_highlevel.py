@@ -231,8 +231,8 @@ class TestHighLevel(unittest.TestCase):
             highlevel.drop_channels(self.drop_from, to_keep=['ch1'], to_drop=['ch3'])
 
 
-    def test_rename_channels(self):
-        raise NotImplementedError
+    # def test_rename_channels(self):
+        # raise NotImplementedError
 
 
 if __name__ == '__main__':
