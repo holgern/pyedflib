@@ -98,9 +98,13 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     signals, signal_headers, header = highlevel.read_edf('edf_file.edf')
     print(signal_headers[0]['sample_rate']) # prints 256
 
-    # drop a channel from the file and anonymize
+    # drop a channel from the file or anonymize edf
     highlevel.drop_channels('edf_file.edf', to_drop=['ch2', 'ch4'])
-    highlevel.anonymize('edf_file.edf')
+    highlevel.anonymize_edf('edf_file.edf', new_file='anonymized.edf'
+	                         to_remove=['patientname', 'birthdate'],
+	                         new_values=['anonymized', ''])
+	# check if the two files have the same content
+	highlevel.compare_edf('edf_file.edf', 'anonymized.edf')
 
 
 License
