@@ -1,11 +1,10 @@
 /*
 *****************************************************************************
 *
-* Copyright (c) 2009 - 2015 Teunis van Beelen
-*               2017 - 2019 Holger Nahrstaedt
+* Copyright (c) 2009 - 2020 Teunis van Beelen
 * All rights reserved.
 *
-* email: teuniz@gmail.com
+* Email: teuniz@protonmail.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -14,11 +13,14 @@
 *     * Redistributions in binary form must reproduce the above copyright
 *       notice, this list of conditions and the following disclaimer in the
 *       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the copyright holder nor the names of its
+*       contributors may be used to endorse or promote products derived from
+*       this software without specific prior written permission.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ''AS IS'' AND ANY
 * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -46,73 +48,55 @@
 
 
 
-#define EDFLIB_TIME_DIMENSION (10000000LL)
-#define EDFLIB_MAXSIGNALS 640
-#define EDFLIB_MAX_ANNOTATION_LEN 512
+#define EDFLIB_TIME_DIMENSION     (10000000LL)
+#define EDFLIB_MAXSIGNALS                (640)
+#define EDFLIB_MAX_ANNOTATION_LEN        (512)
 
-#define EDFSEEK_SET 0
-#define EDFSEEK_CUR 1
-#define EDFSEEK_END 2
+#define EDFSEEK_SET  (0)
+#define EDFSEEK_CUR  (1)
+#define EDFSEEK_END  (2)
 
 
 
 /* the following defines are used in the member "filetype" of the edf_hdr_struct */
 /* and as return value for the function edfopen_file_readonly() */
-#define EDFLIB_FILETYPE_EDF                  0
-#define EDFLIB_FILETYPE_EDFPLUS              1
-#define EDFLIB_FILETYPE_BDF                  2
-#define EDFLIB_FILETYPE_BDFPLUS              3
-#define EDFLIB_MALLOC_ERROR                 -1
-#define EDFLIB_NO_SUCH_FILE_OR_DIRECTORY    -2
+#define EDFLIB_FILETYPE_EDF                  (0)
+#define EDFLIB_FILETYPE_EDFPLUS              (1)
+#define EDFLIB_FILETYPE_BDF                  (2)
+#define EDFLIB_FILETYPE_BDFPLUS              (3)
+#define EDFLIB_MALLOC_ERROR                 (-1)
+#define EDFLIB_NO_SUCH_FILE_OR_DIRECTORY    (-2)
+
+/* when this error occurs, try to open the file with EDFbrowser,
+   it will give you full details about the cause of the error. */
 #define EDFLIB_FILE_CONTAINS_FORMAT_ERRORS  -3
-#define EDFLIB_MAXFILES_REACHED             -4
-#define EDFLIB_FILE_READ_ERROR              -5
-#define EDFLIB_FILE_ALREADY_OPENED          -6
-#define EDFLIB_FILETYPE_ERROR               -7
-#define EDFLIB_FILE_WRITE_ERROR             -8
-#define EDFLIB_NUMBER_OF_SIGNALS_INVALID    -9
-#define EDFLIB_FILE_IS_DISCONTINUOUS       -10
-#define EDFLIB_INVALID_READ_ANNOTS_VALUE   -11
-#define EDFLIB_INVALID_CHECK_SIZE_VALUE    -12
+
+#define EDFLIB_MAXFILES_REACHED             (-4)
+#define EDFLIB_FILE_READ_ERROR              (-5)
+#define EDFLIB_FILE_ALREADY_OPENED          (-6)
+#define EDFLIB_FILETYPE_ERROR               (-7)
+#define EDFLIB_FILE_WRITE_ERROR             (-8)
+#define EDFLIB_NUMBER_OF_SIGNALS_INVALID    (-9)
+#define EDFLIB_FILE_IS_DISCONTINUOUS       (-10)
+#define EDFLIB_INVALID_READ_ANNOTS_VALUE   (-11)
 
 /* values for annotations */
-#define EDFLIB_DO_NOT_READ_ANNOTATIONS 0
-#define EDFLIB_READ_ANNOTATIONS        1
-#define EDFLIB_READ_ALL_ANNOTATIONS    2
+#define EDFLIB_DO_NOT_READ_ANNOTATIONS  (0)
+#define EDFLIB_READ_ANNOTATIONS         (1)
+#define EDFLIB_READ_ALL_ANNOTATIONS     (2)
 
-/* values for size check on edfopen_file_readonly */
-#define EDFLIB_CHECK_FILE_SIZE              0
-#define EDFLIB_DO_NOT_CHECK_FILE_SIZE       1
-#define EDFLIB_REPAIR_FILE_SIZE_IF_WRONG    2
+/* the following defines are possible errors returned by the first sample write action */
+#define EDFLIB_NO_SIGNALS                  (-20)
+#define EDFLIB_TOO_MANY_SIGNALS            (-21)
+#define EDFLIB_NO_SAMPLES_IN_RECORD        (-22)
+#define EDFLIB_DIGMIN_IS_DIGMAX            (-23)
+#define EDFLIB_DIGMAX_LOWER_THAN_DIGMIN    (-24)
+#define EDFLIB_PHYSMIN_IS_PHYSMAX          (-25)
+#define EDFLIB_DATARECORD_SIZE_TOO_BIG     (-26)
 
-/* the following defines are possible errors returned by edfopen_file_writeonly() */
-/* Errors only for EDF+/BDF+*/
-#define EDFLIB_NO_SIGNALS                  -20
-#define EDFLIB_TOO_MANY_SIGNALS            -21
-#define EDFLIB_NO_SAMPLES_IN_RECORD        -22
-#define EDFLIB_DIGMIN_IS_DIGMAX            -23
-#define EDFLIB_DIGMAX_LOWER_THAN_DIGMIN    -24
-#define EDFLIB_PHYSMIN_IS_PHYSMAX          -25
 
-#define EDFLIB_FILE_ERRORS_STARTDATE      -30
-#define EDFLIB_FILE_ERRORS_STARTTIME      -31
-#define EDFLIB_FILE_ERRORS_NUMBER_SIGNALS -32
-#define EDFLIB_FILE_ERRORS_BYTES_HEADER   -33
-#define EDFLIB_FILE_ERRORS_RESERVED_FIELD -34
-#define EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS -35
-#define EDFLIB_FILE_ERRORS_DURATION -36
-#define EDFLIB_FILE_ERRORS_LABEL -37
-#define EDFLIB_FILE_ERRORS_TRANSDUCER -38
-#define EDFLIB_FILE_ERRORS_PHYS_DIMENSION -39
-#define EDFLIB_FILE_ERRORS_PHYS_MAX -40
-#define EDFLIB_FILE_ERRORS_PHYS_MIN -41
-#define EDFLIB_FILE_ERRORS_DIG_MAX -42
-#define EDFLIB_FILE_ERRORS_DIG_MIN -43
-#define EDFLIB_FILE_ERRORS_PREFILTER -44
-#define EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD -45
-#define EDFLIB_FILE_ERRORS_FILESIZE -46
-#define EDFLIB_FILE_ERRORS_RECORDINGFIELD -47
-#define EDFLIB_FILE_ERRORS_PATIENTNAME -48
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -120,7 +104,41 @@ extern "C" {
 
 
 /* For more info about the EDF and EDF+ format, visit: http://edfplus.info/specs/ */
+
 /* For more info about the BDF and BDF+ format, visit: http://www.teuniz.net/edfbrowser/bdfplus%20format%20description.html */
+
+/*
+ * note: In EDF, the sensitivity (e.g. uV/bit) and offset are stored using four parameters:
+ * digital maximum and minimum, and physical maximum and minimum.
+ * Here, digital means the raw data coming from a sensor or ADC. Physical means the units like uV.
+ * The sensitivity in units/bit is calculated as follows:
+ *
+ * units per bit = (physical max - physical min) / (digital max - digital min)
+ *
+ * The digital offset is calculated as follows:
+ *
+ * offset = (physical max / units per bit) - digital max
+ *
+ * For a better explanation about the relation between digital data and physical data,
+ * read the document "Coding Schemes Used with Data Converters" (PDF):
+ *
+ * http://www.ti.com/general/docs/lit/getliterature.tsp?baseLiteratureNumber=sbaa042
+ *
+ * note: An EDF file usually contains multiple so-called datarecords. One datarecord usually has a duration of one second (this is the default but it is not mandatory!).
+ * In that case a file with a duration of five minutes contains 300 datarecords. The duration of a datarecord can be freely choosen but, if possible, use values from
+ * 0.1 to 1 second for easier handling. Just make sure that the total size of one datarecord, expressed in bytes, does not exceed 10MByte (15MBytes for BDF(+)).
+ *
+ * The RECOMMENDATION of a maximum datarecordsize of 61440 bytes in the EDF and EDF+ specification was usefull in the time people were still using DOS as their main operating system.
+ * Using DOS and fast (near) pointers (16-bit pointers), the maximum allocatable block of memory was 64KByte.
+ * This is not a concern anymore so the maximum datarecord size now is limited to 10MByte for EDF(+) and 15MByte for BDF(+). This helps to accommodate for higher samplingrates
+ * used by modern Analog to Digital Converters.
+ *
+ * EDF header character encoding: The EDF specification says that only ASCII characters are allowed.
+ * EDFlib will automatically convert characters with accents, umlauts, tilde, etc. to their "normal" equivalent without the accent/umlaut/tilde/etc.
+ *
+ * The description/name of an EDF+ annotation on the other hand, is encoded in UTF-8.
+ *
+ */
 
 
 struct edf_param_struct{         /* this structure contains all the relevant EDF-signal parameters of one signal */
@@ -130,7 +148,7 @@ struct edf_param_struct{         /* this structure contains all the relevant EDF
   double phys_min;               /* physical minimum, usually the minimum input of the ADC */
   int    dig_max;                /* digital maximum, usually the maximum output of the ADC, can not not be higher than 32767 for EDF or 8388607 for BDF */
   int    dig_min;                /* digital minimum, usually the minimum output of the ADC, can not not be lower than -32768 for EDF or -8388608 for BDF */
-  int    smp_in_datarecord;      /* number of samples of this signal in a datarecord */
+  int    smp_in_datarecord;      /* number of samples of this signal in a datarecord, if the datarecord has a duration of one second (default), then it equals the samplerate */
   char   physdimension[9];       /* physical dimension (uV, bpm, mA, etc.), null-terminated string */
   char   prefilter[81];          /* null-terminated string */
   char   transducer[81];         /* null-terminated string */
@@ -138,7 +156,7 @@ struct edf_param_struct{         /* this structure contains all the relevant EDF
 
 
 struct edf_annotation_struct{                           /* this structure is used for annotations */
-        long long onset;                                /* onset time of the event, expressed in units of 100 nanoSeconds and relative to the starttime in the header */
+        long long onset;                                /* onset time of the event, expressed in units of 100 nanoSeconds and relative to the start of the file */
         char duration[16];                              /* duration time, this is a null-terminated ASCII text-string */
         char annotation[EDFLIB_MAX_ANNOTATION_LEN + 1]; /* description of the event in UTF-8, this is a null terminated string */
        };
@@ -178,7 +196,7 @@ struct edf_hdr_struct{                     /* this structure contains all the re
 
 /*****************  the following functions are used to read files **************************/
 
-int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations, int check_file_size);
+int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations);
 
 /* opens an existing file for reading */
 /* path is a null-terminated string containing the path to the file */
@@ -190,11 +208,6 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
 /*   EDFLIB_READ_ANNOTATIONS             annotations will be read immediately, stops when an annotation has */
 /*                                       been found which contains the description "Recording ends"         */
 /*   EDFLIB_READ_ALL_ANNOTATIONS         all annotations will be read immediately                           */
-
-/* check_file_size must have one of the following values:   */
-/* EDFLIB_CHECK_FILE_SIZE                file size is checked and if wrong, the file will not be opened*/
-/* EDFLIB_DO_NOT_CHECK_FILE_SIZE         the file will alsways be opened and the file size is not checked*/
-/* EDFLIB_REPAIR_FILE_SIZE_IF_WRONG      the file size is checked and if it is wrong it will be fixed*/
 
 /* returns 0 on success, in case of an error it returns -1 and an errorcode will be set in the member "filetype" of struct edf_hdr_struct */
 /* This function is required if you want to read a file */
@@ -250,11 +263,13 @@ int edf_get_annotation(int handle, int n, struct edf_annotation_struct *annot);
 /* Fills the edf_annotation_struct with the annotation n, returns 0 on success, otherwise -1 */
 /* The string that describes the annotation/event is encoded in UTF-8 */
 /* To obtain the number of annotations in a file, check edf_hdr_struct -> annotations_in_file. */
+/* returns 0 on success or -1 in case of an error */
 
 /*
 Notes:
 
 Annotationsignals
+=================
 
 EDFplus and BDFplus store the annotations in one or more signals (in order to be backwards compatibel with EDF and BDF).
 The counting of the signals in the file starts at 0. Signals used for annotations are skipped by EDFlib.
@@ -264,9 +279,10 @@ Use the function edf_get_annotation() to get the annotations.
 So, when a file contains 5 signals and the third signal is used to store the annotations, the library will
 report that there are only 4 signals in the file.
 The library will "map" the signalnumbers as follows: 0->0, 1->1, 2->3, 3->4.
-This way you don't need to worry about which signals are annotationsignals. The library will do it for you.
+This way you don't need to worry about which signals are annotationsignals, the library will take care of it.
 
 How the library stores time-values
+==================================
 
 To avoid rounding errors, the library stores some timevalues in variables of type long long int.
 In order not to loose the subsecond precision, all timevalues have been multiplied by 10000000.
@@ -329,7 +345,7 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
 
 int edf_set_samplefrequency(int handle, int edfsignal, int samplefrequency);
 
-/* Sets the samplefrequency of signal edfsignal. */
+/* Sets the samplefrequency of signal edfsignal. (In reallity, it sets the number of samples in a datarecord.) */
 /* Returns 0 on success, otherwise -1 */
 /* This function is required for every signal and can be called only after opening a */
 /* file in writemode and before the first sample write action */
@@ -400,10 +416,10 @@ int edf_set_transducer(int handle, int edfsignal, const char *transducer);
 
 int edf_set_physical_dimension(int handle, int edfsignal, const char *phys_dim);
 
-/* Sets the physical dimension of signal edfsignal. ("uV", "BPM", "mA", "Degr.", etc.) */
+/* Sets the physical dimension (unit) of signal edfsignal. ("uV", "BPM", "mA", "Degr.", etc.) */
 /* phys_dim is a pointer to a NULL-terminated ASCII-string containing the physical dimension of the signal edfsignal */
 /* Returns 0 on success, otherwise -1 */
-/* This function is recommanded for every signal when you want to write a file */
+/* This function is recommended for every signal when you want to write a file */
 /* and can be called only after opening a file in writemode and before the first sample write action */
 
 
@@ -593,7 +609,7 @@ int edf_blockwrite_digital_samples(int handle, int *buf);
 int edfwrite_annotation_utf8(int handle, long long onset, long long duration, const char *description);
 
 /* writes an annotation/event to the file */
-/* onset is relative to the starttime and startdate of the file */
+/* onset is relative to the start of the file */
 /* onset and duration are in units of 100 microSeconds!     resolution is 0.0001 second! */
 /* for example: 34.071 seconds must be written as 340710 */
 /* if duration is unknown or not applicable: set a negative number (-1) */
@@ -605,7 +621,7 @@ int edfwrite_annotation_utf8(int handle, long long onset, long long duration, co
 int edfwrite_annotation_latin1(int handle, long long onset, long long duration, const char *description);
 
 /* writes an annotation/event to the file */
-/* onset is relative to the starttime and startdate of the file */
+/* onset is relative to the start of the file */
 /* onset and duration are in units of 100 microSeconds!     resolution is 0.0001 second! */
 /* for example: 34.071 seconds must be written as 340710 */
 /* if duration is unknown or not applicable: set a negative number (-1) */
@@ -629,7 +645,24 @@ int edf_set_datarecord_duration(int handle, int duration);
 /* which is not an integer. For example, if you want to use a samplerate of 0.5 Hz, */
 /* set the samplefrequency to 5 Hz and the datarecord duration to 10 seconds, */
 /* or set the samplefrequency to 1 Hz and the datarecord duration to 2 seconds. */
-/* Do not use this function, except when absolutely necessary! */
+/* Do not use this function if not necessary. */
+
+
+int edf_set_micro_datarecord_duration(int handle, int duration);
+
+/* Sets the datarecord duration to a very small value. */
+/* ATTENTION: the argument "duration" is expressed in units of 1 microSecond! */
+/* This function is optional, normally you don't need to change the default value. */
+/* The datarecord duration must be in the range 1 to 9999 micro-seconds. */
+/* Returns 0 on success, otherwise -1 */
+/* This function is NOT REQUIRED but can be called after opening a */
+/* file in writemode and before the first sample write action. */
+/* This function can be used when you want to use a very high samplerate. */
+/* For example, if you want to use a samplerate of 5 GHz, */
+/* set the samplefrequency to 5000 Hz and the datarecord duration to 1 micro-second. */
+/* Do not use this function if not necessary. */
+/* This function was added to accommodate for high speed ADC's e.g. Digital Sampling Oscilloscopes */
+
 
 int edf_set_number_of_annotation_signals(int handle, int annot_signals);
 
@@ -637,10 +670,21 @@ int edf_set_number_of_annotation_signals(int handle, int annot_signals);
 /* This function is optional and can be called only after opening a file in writemode */
 /* and before the first sample write action */
 /* Normally you don't need to change the default value. Only when the number of annotations */
-/* you want to write is more than the number of seconds of the duration of the recording, you can use */
+/* you want to write is higher than the number of datarecords in the recording, you can use */
 /* this function to increase the storage space for annotations */
 /* Minimum is 1, maximum is 64 */
+/* Returns 0 on success, otherwise -1 */
 
+
+int edf_set_subsecond_starttime(int handle, int subsecond);
+/* Sets the subsecond starttime expressed in units of 100 nanoSeconds */
+/* Valid range is 0 to 9999999 inclusive. Default is 0 */
+/* This function is optional and can be called only after opening a file in writemode */
+/* and before the first sample write action */
+/* Returns 0 on success, otherwise -1 */
+/* It is strongly recommended to use a maximum resolution of no more than 100 mirco-Seconds. */
+/* e.g. use 1234000  to set a starttime offset of 0.1234 seconds (instead of 1234567) */
+/* in other words, leave the last 3 digits at zero */
 
 #ifdef __cplusplus
 } /* extern "C" */
