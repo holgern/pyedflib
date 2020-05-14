@@ -3645,11 +3645,11 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
 
   struct edfhdrblock *hdr;
 
-
+  /*
   if((filetype!=EDFLIB_FILETYPE_EDFPLUS)&&(filetype!=EDFLIB_FILETYPE_BDFPLUS))
   {
     return EDFLIB_FILETYPE_ERROR;
-  }
+  }*/
 
   if(edf_files_open>=EDFLIB_MAXFILES)
   {
