@@ -20,6 +20,13 @@ class TestEdfReader(unittest.TestCase):
         self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
         self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
 
+        tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
+        for file in tmpfiles:
+            try:
+                os.remove(os.path.join(data_dir, file))
+            except Exception as e:
+                print(e)
+
     def test_EdfReader(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)

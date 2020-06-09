@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015 Holger Nahrstaedt
 from __future__ import division, print_function, absolute_import
-
 import os, sys
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
@@ -11,16 +10,27 @@ from pyedflib import highlevel
 from datetime import datetime, date
 
 class TestHighLevel(unittest.TestCase):
-    
-    def setUp(self):
+
+    @classmethod
+    def setUpClass(cls):
+
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
-        self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
-        self.test_generator = os.path.join(data_dir, 'test_generator.edf')
-        self.test_accented = os.path.join(data_dir, u"test_áä'üöß.edf")
-        self.anonymized = os.path.join(data_dir, u"anonymized.edf")
-        self.personalized = os.path.join(data_dir, u"personalized.edf")
-        self.drop_from = os.path.join(data_dir, 'drop_from.edf')
-        
+
+        cls.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
+        cls.test_generator = os.path.join(data_dir, 'test_generator.edf')
+        cls.test_accented = os.path.join(data_dir, u"tmp_áä'üöß.edf")
+        cls.anonymized = os.path.join(data_dir, u"tmp_anonymized.edf")
+        cls.personalized = os.path.join(data_dir, u"tmp_personalized.edf")
+        cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
+
+        tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
+        for file in tmpfiles:
+            try:
+                os.remove(os.path.join(data_dir, file))
+            except Exception as e:
+                print(e)
+
+
     def test_dig2phys_calc(self):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
         signals_dig, _, _ = highlevel.read_edf(self.test_generator, digital=True)

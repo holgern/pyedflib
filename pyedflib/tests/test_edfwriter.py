@@ -19,6 +19,14 @@ class TestEdfWriter(unittest.TestCase):
         self.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')
         self.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
 
+        tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
+        for file in tmpfiles:
+            try:
+                os.remove(os.path.join(data_dir, file))
+            except Exception as e:
+                print(e)
+
+
     def test_EdfWriter_BDFplus(self):
         channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
