@@ -276,7 +276,7 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
     return -1;
   }
 
-  if(check_file_size<0)	
+    if(check_file_size<0)	
   {	
     edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;	
 
@@ -320,8 +320,7 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
     return -1;
   }
 
-  hdr = edflib_check_edf_file(file, &edf_error, check_file_size);
-  
+  hdr = edflib_check_edf_file(file, &edf_error,check_file_size);
   if (hdr==NULL && edf_error == EDFLIB_FILE_CONTAINS_FORMAT_ERRORS && check_file_size == EDFLIB_REPAIR_FILE_SIZE_IF_WRONG)		
   {		
     hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_DO_NOT_CHECK_FILE_SIZE);		

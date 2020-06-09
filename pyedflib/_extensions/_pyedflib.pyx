@@ -62,6 +62,7 @@ open_errors = {
     }
 
 write_errors = {
+    EDFLIB_DATARECORD_SIZE_TOO_BIG      : "datarecord size is too big"
     EDFLIB_MALLOC_ERROR                 : "malloc error",  
     EDFLIB_NO_SUCH_FILE_OR_DIRECTORY    : "can not open file, no such file or directory",
     EDFLIB_MAXFILES_REACHED             : "to many files opened",
@@ -176,8 +177,6 @@ cdef class CyEdfReader:
         "number of data records"
         def __get__(self):
             return self.hdr.datarecords_in_file
-            
-
 
     property signals_in_file:
         def __get__(self):
@@ -187,6 +186,10 @@ cdef class CyEdfReader:
         "file duration in seconds"
         def __get__(self):
             return self.hdr.file_duration/EDFLIB_TIME_DIMENSION
+
+    property filetype:
+        def __get__(self):
+            return self.hdr.filetype
 
     property patient:
         "patient name?"

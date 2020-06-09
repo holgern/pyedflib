@@ -69,7 +69,7 @@
 
 /* when this error occurs, try to open the file with EDFbrowser,
    it will give you full details about the cause of the error. */
-#define EDFLIB_FILE_CONTAINS_FORMAT_ERRORS  -3
+#define EDFLIB_FILE_CONTAINS_FORMAT_ERRORS  (-3)
 
 #define EDFLIB_MAXFILES_REACHED             (-4)
 #define EDFLIB_FILE_READ_ERROR              (-5)

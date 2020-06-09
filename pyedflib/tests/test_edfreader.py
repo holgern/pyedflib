@@ -12,7 +12,9 @@ import pyedflib
 
 
 class TestEdfReader(unittest.TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpClass(self):
         # data_dir = os.path.join(os.getcwd(), 'data')
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
