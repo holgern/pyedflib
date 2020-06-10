@@ -221,7 +221,7 @@ int edflib_is_file_used(const char *path)
     }
   }
 
-  return file_used;
+  return file_used ;
 }
 
 
@@ -275,9 +275,10 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
     return -1;
   }
 
-    if(check_file_size<0)	
+  if(check_file_size<0)	
   {	
     edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;	
+
 
     return -1;	
   }	
@@ -550,6 +551,7 @@ int edfclose_file(int handle)
         edf_files_open--;
 
         return err;
+
       }
 
       for(k=0; k<hdr->annots_in_file; k++)
@@ -2635,8 +2637,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   edfhdr->hdrsize = edfhdr->edfsignals * 256 + 256;
 
   if (check_file_size != EDFLIB_DO_NOT_CHECK_FILE_SIZE)
-  {
-	  
+  {  
 	  fseeko(inputfile, 0LL, SEEK_END);
 	   if(ftello(inputfile)<(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
 	  {
@@ -2647,6 +2648,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 		free(edfhdr);
 		return NULL;
 	  }
+
   }
   n = 0;
 
@@ -2673,7 +2675,6 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   free(edf_hdr);
 
   return edfhdr;
- 
 }
 
 
@@ -3708,6 +3709,7 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
     return EDFLIB_FILETYPE_ERROR;
   }*/
 
+
   if(edf_files_open>=EDFLIB_MAXFILES)
   {
     return EDFLIB_MAXFILES_REACHED;
@@ -4162,6 +4164,7 @@ int edfwrite_digital_short_samples(int handle, short *buf)
       }
 
       hdr->wrbufsize = sf * 3;
+
     }
 
     for(i=0; i<sf; i++)
@@ -4355,6 +4358,7 @@ int edfwrite_digital_samples(int handle, int *buf)
       hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
 
       hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+
     }
 
     if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
@@ -5839,7 +5843,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   {
     fputc(' ', file);
   }
-
+  
   return 0;
 }
 
@@ -7090,8 +7094,6 @@ static int edflib_snprint_ll_number_nonlocalized(char *dest, long long q, int mi
   }
 
   dest[j] = 0;
-
-  return j;
 }
 
 
@@ -7460,6 +7462,7 @@ static int edflib_strlcat(char *dst, const char *src, int sz)
 
   return (dstlen + srclen);
 }
+
 
 
 
