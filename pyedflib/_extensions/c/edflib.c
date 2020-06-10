@@ -7094,7 +7094,8 @@ static int edflib_snprint_ll_number_nonlocalized(char *dest, long long q, int mi
   }
 
   dest[j] = 0;
-}
+
+  return j;}
 
 
 static int edflib_snprint_number_nonlocalized(char *dest, double val, int sz)
