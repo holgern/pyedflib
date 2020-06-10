@@ -177,6 +177,7 @@ static struct edfhdrblock *hdrlist[EDFLIB_MAXFILES];
 
 
 static struct edfhdrblock * edflib_check_edf_file(FILE *, int *, int);
+static int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr);
 static int edflib_is_integer_number(char *);
 static int edflib_is_number(char *);
 static long long edflib_get_long_duration(char *);
@@ -214,8 +215,8 @@ int edflib_is_file_used(const char *path)
     {
       if(!(strcmp(path, hdrlist[i]->path)))
       {
-		file_used=1; 
-		 
+		file_used= 1;
+
         break;
       }
     }
@@ -321,17 +322,17 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
   }
 
   hdr = edflib_check_edf_file(file, &edf_error,check_file_size);
-  if (hdr==NULL && edf_error == EDFLIB_FILE_CONTAINS_FORMAT_ERRORS && check_file_size == EDFLIB_REPAIR_FILE_SIZE_IF_WRONG)		
-  {		
-    hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_DO_NOT_CHECK_FILE_SIZE);		
-    fclose(file);		
-    edflib_repair_file_size(path, hdr);		
-    free(hdr->edfparam);		
+  if (hdr==NULL && edf_error == EDFLIB_FILE_CONTAINS_FORMAT_ERRORS && check_file_size == EDFLIB_REPAIR_FILE_SIZE_IF_WRONG)
+  {
+    hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_DO_NOT_CHECK_FILE_SIZE);
+    fclose(file);
+    edflib_repair_file_size(path, hdr);
+    free(hdr->edfparam);
     free(hdr);		
-    file = fopeno(path, "rb");		
-    hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_CHECK_FILE_SIZE);		
+    file = fopeno(path, "rb");
+    hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_CHECK_FILE_SIZE);
   }
-  
+
   if(hdr==NULL)
   {
     edfhdr->filetype = edf_error;
@@ -1495,7 +1496,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     if((scratchpad[i]<32)||(scratchpad[i]>126))
     {
-      *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
+      *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
       free(edf_hdr);
       free(edfhdr);
       return NULL;
@@ -1518,7 +1519,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return NULL;
@@ -1532,7 +1533,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return NULL;
@@ -1542,7 +1543,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return NULL;
@@ -1552,7 +1553,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     strncpy(scratchpad, edf_hdr + 176, 8);
     scratchpad[8] = 0;
-    *edf_error = EDFLIB_FILE_ERRORS_STARTDATE;
+    *edf_error = EDFLIB_FILE_ERRORS_STARTTIME;
     free(edf_hdr);
     free(edfhdr);
     return NULL;
@@ -1843,7 +1844,8 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   }
   if((edfhdr->edfsignals!=edfhdr->nr_annot_chns)||((!edfhdr->edfplus)&&(!edfhdr->bdfplus)))
   {
-    if(edfhdr->data_record_duration<0.0000001)
+	//if(edfhdr->data_record_duration<0.0000001)
+    if(edfhdr->data_record_duration<0)
     {
       *edf_error = EDFLIB_FILE_ERRORS_LABEL;
       free(edf_hdr);
@@ -2143,7 +2145,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       }
     }
     edfhdr->edfparam[i].dig_max = n;
-    if(edfhdr->edfparam[i].dig_max<(edfhdr->edfparam[i].dig_min + 1))
+    if(edfhdr->edfparam[i].dig_max<(edfhdr->edfparam[i].dig_min + 1) && (edfhdr->bdfplus || edfhdr->edfplus))
     {
       *edf_error = EDFLIB_FILE_ERRORS_DIG_MAX;
       free(edf_hdr);
@@ -2839,7 +2841,6 @@ static int edflib_is_number(char *str)
 static long long edflib_get_long_duration(char *str)
 {
   int i, len=8, hasdot=0, dotposition=0;
-
   long long value=0, radix;
 
   if((str[0] == '+') || (str[0] == '-'))
@@ -2848,10 +2849,9 @@ static long long edflib_get_long_duration(char *str)
     {
       str[i] = str[i+1];
     }
-
     str[7] = ' ';
   }
-
+  
   for(i=0; i<8; i++)
   {
     if(str[i]==' ')
@@ -2909,23 +2909,23 @@ int edflib_version(void)
   return EDFLIB_VERSION;
 }
 
-int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr)		
-{		
-  int p;		
-  FILE *file;		
+int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr)
+{
+  int p;
+  FILE *file;
 
-  file = fopeno(path, "wb");  		
-  if(edfhdr->datarecords<100000000LL)		
-  {		
-    fseeko(file, 236LL, SEEK_SET);		
-    p = edflib_fprint_int_number_nonlocalized(file, (int)(edfhdr->datarecords), 0, 0);		
-    if(p < 2)		
-    {		
-      fputc(' ', file);		
-    }		
-  }		
-  fclose(file);		
-  return 0;		
+  file = fopeno(path, "wb");
+  if(edfhdr->datarecords<100000000LL)
+  {
+    fseeko(file, 236LL, SEEK_SET);
+    p = edflib_fprint_int_number_nonlocalized(file, (int)(edfhdr->datarecords), 0, 0);
+    if(p < 2)
+    {
+      fputc(' ', file);
+    }
+  }
+  fclose(file);
+  return 0;
 }
 
 static int edflib_get_annotations(struct edfhdrblock *edfhdr, int hdl, int read_annotations)
@@ -3707,7 +3707,8 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
   if((filetype!=EDFLIB_FILETYPE_EDFPLUS)&&(filetype!=EDFLIB_FILETYPE_BDFPLUS))
   {
     return EDFLIB_FILETYPE_ERROR;
-  }*/
+  }
+  */
 
 
   if(edf_files_open>=EDFLIB_MAXFILES)
@@ -3809,11 +3810,11 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
 	
   }
   
-  if(filetype==EDFLIB_FILETYPE_EDF)		
-  {		
-    hdr->edf = 1;		
-    hdr->edfplus = 0;		
-    hdr->nr_annot_chns = 0;		
+  if(filetype==EDFLIB_FILETYPE_EDF)
+  {
+    hdr->edf = 1;
+    hdr->edfplus = 0;
+    hdr->nr_annot_chns = 0;
   }
   
   if(filetype==EDFLIB_FILETYPE_BDFPLUS)
@@ -3823,11 +3824,11 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
 	hdr->nr_annot_chns = 1;	
   }
   
-  if(filetype==EDFLIB_FILETYPE_BDF)		
-  {		
-    hdr->bdf = 1;		
-    hdr->bdfplus = 0;		
-    hdr->nr_annot_chns = 0;		
+  if(filetype==EDFLIB_FILETYPE_BDF)
+  {
+    hdr->bdf = 1;
+    hdr->bdfplus = 0;
+    hdr->nr_annot_chns = 0;
   }
 
   hdr->long_data_record_duration = EDFLIB_TIME_DIMENSION;
@@ -4125,7 +4126,7 @@ int edfwrite_digital_short_samples(int handle, short *buf)
 
   digmin = hdr->edfparam[edfsignal].dig_min;
 
-  if(hdr->edf || hdr->edfplus)
+  if(hdr->edf)
   {
     if((digmax != 32767) || (digmin != -32768))
     {
@@ -4279,7 +4280,7 @@ int edfwrite_digital_samples(int handle, int *buf)
 
   digmin = hdr->edfparam[edfsignal].dig_min;
 
-  if(hdr->edf || hdr->edfplus)
+  if(hdr->edf)
   {
     if(hdr->wrbufsize < (sf * 2))
     {
@@ -4459,7 +4460,7 @@ int edf_blockwrite_digital_samples(int handle, int *buf)
 
     digmin = hdr->edfparam[j].dig_min;
 
-    if(hdr->edf || hdr->edfplus)
+    if(hdr->edf)
     {
       if(hdr->wrbufsize < (sf * 2))
       {
@@ -4639,7 +4640,7 @@ int edf_blockwrite_digital_short_samples(int handle, short *buf)
 
     digmin = hdr->edfparam[j].dig_min;
 
-    if(hdr->edf || hdr->edfplus)
+    if(hdr->edf)
     {
       if((digmax != 32767) || (digmin != -32768))
       {
@@ -4881,7 +4882,7 @@ int edfwrite_physical_samples(int handle, double *buf)
 
   phys_offset = hdr->edfparam[edfsignal].offset;
 
-  if(hdr->edf || hdr->edfplus)
+  if(hdr->edf)
   {
     if(hdr->wrbufsize < (sf * 2))
     {
@@ -5067,7 +5068,7 @@ int edf_blockwrite_physical_samples(int handle, double *buf)
 
     phys_offset = hdr->edfparam[j].offset;
 
-    if(hdr->edf || hdr->edfplus)
+    if(hdr->edf)
     {
       if(hdr->wrbufsize < (sf * 2))
       {
@@ -5243,7 +5244,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   }
 	  
 
-  if(hdr->edf || hdr->edfplus)
+  if(hdr->edf)
   {
     hdr->recordsize *= 2;
 
