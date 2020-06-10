@@ -22,6 +22,7 @@ class TestHighLevel(unittest.TestCase):
         cls.anonymized = os.path.join(data_dir, u"tmp_anonymized.edf")
         cls.personalized = os.path.join(data_dir, u"tmp_personalized.edf")
         cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
+        cls.tmp_testfile = os.path.join(data_dir, 'tmp')
 
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
         for file in tmpfiles:
@@ -52,46 +53,54 @@ class TestHighLevel(unittest.TestCase):
         t = startdate
         startdate = datetime(t.year,t.month,t.day,t.hour, t.minute,t.second)
         
-        header = highlevel.make_header(technician='tech', recording_additional='radd',
-                                                patientname='name', patient_additional='padd',
+        header = highlevel.make_header(technician='tech', recording_additional='r_add',
+                                                patientname='name', patient_additional='p_add',
                                                 patientcode='42', equipment='eeg', admincode='420',
                                                 gender='Male', startdate=startdate,birthdate='05.09.1980')
         annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
-        header['annotations'] = annotations
+
         signal_headers1 = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
-        signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
-        
-        success = highlevel.write_edf(self.edfplus_data_file, signals, signal_headers1, header)
-        self.assertTrue(os.path.isfile(self.edfplus_data_file))
-        self.assertGreater(os.path.getsize(self.edfplus_data_file), 0)
-        self.assertTrue(success)
-        
-        signals2, signal_headers2, header2 = highlevel.read_edf(self.edfplus_data_file)
 
-        self.assertEqual(len(signals2), 5)
-        self.assertEqual(len(signals2), len(signal_headers2))
-        for shead1, shead2 in zip(signal_headers1, signal_headers2):
-            self.assertDictEqual(shead1, shead2)
+        for file_type in [-1,0,1,2,3]:
+            if file_type in [0, 2]:
+                header['annotations'] = []
+            else:
+                header['annotations'] = annotations
+
+            file = '{}_{}_phys.edf'.format(self.tmp_testfile, file_type)
+            signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
+            success = highlevel.write_edf(file, signals, signal_headers1, header, file_type=file_type)
+            self.assertTrue(os.path.isfile(file))
+            self.assertGreater(os.path.getsize(file), 0)
+            self.assertTrue(success)
             
-        self.assertDictEqual(header, header2)
-        np.testing.assert_allclose(signals, signals2, atol=0.01)
+            signals2, signal_headers2, header2 = highlevel.read_edf(file)
     
-        signals = (signals*100).astype(np.int8)
-        success = highlevel.write_edf(self.edfplus_data_file, signals,  signal_headers1, header, digital=True)
-        self.assertTrue(os.path.isfile(self.edfplus_data_file))
-        self.assertGreater(os.path.getsize(self.edfplus_data_file), 0)
-        self.assertTrue(success)
-        
-        signals2, signal_headers2, header2 = highlevel.read_edf(self.edfplus_data_file, digital=True)
+            self.assertEqual(len(signals2), 5)
+            self.assertEqual(len(signals2), len(signal_headers2))
+            for shead1, shead2 in zip(signal_headers1, signal_headers2):
+                self.assertDictEqual(shead1, shead2)
+            np.testing.assert_allclose(signals, signals2, atol=0.01)
+            if file_type in [-1, 1, 3]:
+                self.assertDictEqual(header, header2)
 
-        self.assertEqual(len(signals2), 5)
-        self.assertEqual(len(signals2), len(signal_headers2))
-        for shead1, shead2 in zip(signal_headers1, signal_headers2):
-            self.assertDictEqual(shead1, shead2)
+            file = '{}_{}_dig.edf'.format(self.tmp_testfile, file_type)
+            signals = (signals*100).astype(np.int8)
+            success = highlevel.write_edf(file, signals,  signal_headers1, header, digital=True)
+            self.assertTrue(os.path.isfile(file))
+            self.assertGreater(os.path.getsize(file), 0)
+            self.assertTrue(success)
             
-        self.assertDictEqual(header, header2)
-        np.testing.assert_array_equal(signals, signals2)
-        
+            signals2, signal_headers2, header2 = highlevel.read_edf(file, digital=True)
+    
+            self.assertEqual(len(signals2), 5)
+            self.assertEqual(len(signals2), len(signal_headers2))
+            np.testing.assert_array_equal(signals, signals2)
+            for shead1, shead2 in zip(signal_headers1, signal_headers2):
+                self.assertDictEqual(shead1, shead2)
+            # EDF/BDF header writing does not correctly work yet
+            if file_type in [-1, 1, 3]:
+                self.assertDictEqual(header, header2)
         
     def test_read_write_with_annotations(self):
         signals, signal_headers, header = highlevel.read_edf(self.test_generator)

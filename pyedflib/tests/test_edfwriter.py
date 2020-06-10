@@ -20,6 +20,7 @@ class TestEdfWriter(unittest.TestCase):
         self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
         self.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')
         self.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
+        self.data_dir = data_dir
 
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
         for file in tmpfiles:
@@ -27,6 +28,73 @@ class TestEdfWriter(unittest.TestCase):
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
+
+
+
+    def test_write_functions(self):
+        channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 32767, 'physical_min': -32768,
+                        'digital_max': 32767, 'digital_min': -32768,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+        channel_info2 = {'label': 'label2', 'dimension': 'mV', 'sample_rate': 100,
+                              'physical_max': 32767, 'physical_min': -32768,
+                            'digital_max': 32767, 'digital_min': -32768,
+                            'prefilter': 'pre1', 'transducer': 'trans1'}
+
+        # I'm not raising the errors, but rather go through all tests and
+        # raise the error at the end if there was any.
+        # this makes it easier to find patterns of which functions fail generally
+        error = False
+
+        print() # empty line for readability
+
+        # just looping through all write methods and see if they work
+        for file_type in [0, 1, 2, 3]:
+            filename = os.path.join(self.data_dir, 'tmp_write_{}.edf'.format(file_type))
+
+            with pyedflib.EdfWriter(filename, 2,
+                                file_type=file_type) as f:
+                f.setSignalHeader(0, channel_info1)
+                f.setSignalHeader(1, channel_info2)
+                data = np.random.randint(-32768, 32767, 100)
+
+
+                for i in range(2):
+                    res = f.writePhysicalSamples(data.astype(float))
+                    if res<0:
+                        print(res, 'Error for filetype {} on writePhysicalSamples signal {}'.format(file_type, i))
+                        error = True
+                for i in range(2):
+                    res = f.writeDigitalSamples(data.astype(int))
+                    if res<0:
+                        print(res, 'Error for filetype {} on writeDigitalSamples signal {}'.format(file_type, i))
+                        error = True
+
+                res = f.blockWritePhysicalSamples(np.hstack([data.astype(float)]*2))
+                if res<0:
+                    print(res, 'Error for filetype {} on blockWritePhysicalSamples signal {}'.format(file_type, i))
+                    error = True
+
+                res = f.blockWriteDigitalSamples(np.hstack([data.astype(int)]*2))
+                if res<0:
+                    print(res, 'Error for filetype {} on blockWriteDigitalSamples signal {}'.format(file_type, i))
+                    error = True
+
+            with pyedflib.EdfReader(filename) as f:
+                data1 = f.readSignal(0)
+                data2 = f.readSignal(1)
+                try:
+                    np.testing.assert_array_almost_equal(data1, data2)
+                    self.assertEqual(data1.sum(), data.sum()*4, 'data written is not equal to data read')
+                    self.assertEqual(len(data1), 400, 'didnt write 400 samples')
+                except Exception as e:
+                    print(e)
+                    error=True
+
+        if error:
+            raise IOError('Writetests not successfully, see log for details')
+
+
 
 
     def test_EdfWriter_BDFplus(self):
@@ -200,8 +268,8 @@ class TestEdfWriter(unittest.TestCase):
         f.setHeader(header)
         f.setSignalHeader(0,channel_info)
         data = np.ones(100) * 0.1
-        f.writePhysicalSamples(data)
-        f.writePhysicalSamples(data)
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
         del f
 
         f = pyedflib.EdfReader(self.edfplus_data_file)
@@ -222,9 +290,8 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), 100)
         self.assertEqual(f.filetype, pyedflib.FILETYPE_EDFPLUS)
-
-
         del f
+
 
     def test_EdfWriter_EDF(self):
         channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
@@ -240,8 +307,8 @@ class TestEdfWriter(unittest.TestCase):
         f.setSignalHeader(0,channel_info1)
         f.setSignalHeader(1,channel_info2)
         data = np.ones(100) * 0.1
-        f.writePhysicalSamples(data)
-        f.writePhysicalSamples(data)
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
         del f
 
         f = pyedflib.EdfReader(self.edf_data_file)
@@ -255,6 +322,7 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
 
         del f
+
 
     def test_SampleWriting(self):
         channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,

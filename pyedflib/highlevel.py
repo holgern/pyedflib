@@ -429,8 +429,8 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     default_header.update(header)
     header = default_header
     
-    annotations = header.get('annotations', '')
-    
+    annotations = header.get('annotations', [])
+
     # check dmin, dmax and pmin, pmax dont exceed signal min/max
     for s, sh in zip(signals, signal_headers):
         dmin, dmax = sh['digital_min'], sh['digital_max']

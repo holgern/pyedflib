@@ -38,7 +38,6 @@
 
 
 
-
 #include "edflib.h"
 
 
@@ -7392,6 +7391,10 @@ static int edflib_atoi_nonlocalized(const char *str)
 
 static int edflib_write_tal(struct edfhdrblock *hdr, FILE *file)
 {
+  if ((hdr->edf||hdr->bdf) && !(hdr->edfplus||hdr->bdfplus)){
+	 // EDF/BDF =  means no annotations will be written.
+     return 0;
+  }
   int p;
 
   char str[EDFLIB_ANNOTATION_BYTES * (EDFLIB_MAX_ANNOTATION_CHANNELS + 1)];

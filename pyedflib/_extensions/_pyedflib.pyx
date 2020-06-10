@@ -62,7 +62,6 @@ open_errors = {
     }
 
 write_errors = {
-    EDFLIB_DATARECORD_SIZE_TOO_BIG      : "datarecord size is too big"
     EDFLIB_MALLOC_ERROR                 : "malloc error",  
     EDFLIB_NO_SUCH_FILE_OR_DIRECTORY    : "can not open file, no such file or directory",
     EDFLIB_MAXFILES_REACHED             : "to many files opened",
