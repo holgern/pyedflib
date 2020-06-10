@@ -65,7 +65,7 @@ class TestEdfWriter(unittest.TestCase):
                         print(res, 'Error for filetype {} on writePhysicalSamples signal {}'.format(file_type, i))
                         error = True
                 for i in range(2):
-                    res = f.writeDigitalSamples(data.astype(int))
+                    res = f.writeDigitalSamples(data.astype(np.int32))
                     if res<0:
                         print(res, 'Error for filetype {} on writeDigitalSamples signal {}'.format(file_type, i))
                         error = True
@@ -75,7 +75,7 @@ class TestEdfWriter(unittest.TestCase):
                     print(res, 'Error for filetype {} on blockWritePhysicalSamples signal {}'.format(file_type, i))
                     error = True
 
-                res = f.blockWriteDigitalSamples(np.hstack([data.astype(int)]*2))
+                res = f.blockWriteDigitalSamples(np.hstack([data.astype(np.int32)]*2))
                 if res<0:
                     print(res, 'Error for filetype {} on blockWriteDigitalSamples signal {}'.format(file_type, i))
                     error = True
