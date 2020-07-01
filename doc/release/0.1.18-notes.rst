@@ -1,0 +1,27 @@
+=============================
+PyEDFlib 0.1.18 Release Notes
+=============================
+
+.. contents::
+
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+* MeNsaaH
+
+
+Issues closed for v0.1.18
+-------------------------
+* Fix issue #72 - Numpy dependency
+
+Pull requests for v0.1.18
+-------------------------
+* PR #71 - Add more tests 
+* PR #73 - Install Numpy during installation and not fail when not installed 
+* PR #74 - added warnings of exceeding min/max 
+* PR #75 - small fix 
+* PR #77 - Reading of files with accented chars 
+* PR #78 - fix highlevel bdf/edf 

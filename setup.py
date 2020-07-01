@@ -24,7 +24,7 @@ except ImportError:
 MAJOR = 0
 MINOR = 1
 MICRO = 18
-ISRELEASED = False
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 # Version of Numpy required for setup
@@ -262,7 +262,9 @@ if __name__ == '__main__':
     setup(
         name="pyEDFlib",
         maintainer="Holger Nahrstaedt",
-        maintainer_email="holger@nahrstaedt.de",
+        maintainer_email="nahrstaedt@gmail.com",
+        author='Holger Nahrstaedt',
+        author_email='nahrstaedt@gmail.com',        
         url="https://github.com/holgern/pyedflib",
         license="BSD",
         description="library to read/write EDF+/BDF+ files",
