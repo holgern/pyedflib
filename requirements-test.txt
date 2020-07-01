@@ -1,3 +1,6 @@
+pip
+setuptools
+wheel
 flake8
 nose
 coverage
@@ -7,3 +10,4 @@ matplotlib
 pytest
 dateparser
 tqdm
+tox
