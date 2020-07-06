@@ -40,7 +40,7 @@ except TypeError:
 extensions = ['sphinx.ext.doctest', 'sphinx.ext.autodoc', 'sphinx.ext.todo',
               'sphinx.ext.extlinks', 'sphinx.ext.mathjax',
               'sphinx.ext.autosummary', 'numpydoc',
-              'sphinx.ext.intersphinx',
+              'sphinx.ext.intersphinx', 'sphinx.ext.viewcode',
               'matplotlib.sphinxext.plot_directive']
 
 # Add any paths that contain templates here, relative to this directory.
