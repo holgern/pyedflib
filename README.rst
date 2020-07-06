@@ -58,7 +58,7 @@ You need a C compiler and a recent version of `Cython`_. Go then to the source d
     python setup.py build
     python setup.py install
 
-There are binary wheels which can be installed by::
+There are binary wheels which can be installed by (use pip3 when available)::
 
     pip install pyEDFlib
 

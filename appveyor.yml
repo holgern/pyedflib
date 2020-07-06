@@ -7,7 +7,6 @@
 
 environment:
   matrix:
-      DISTUTILS_USE_SDK: "1"
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36"
