@@ -1,11 +1,10 @@
 /*
 *****************************************************************************
 *
-* Copyright (c) 2009 - 2015 Teunis van Beelen
-*               2017 - 2019 Holger Nahrstaedt
+* Copyright (c) 2009 - 2020 Teunis van Beelen
 * All rights reserved.
 *
-* email: teuniz@gmail.com
+* Email: teuniz@protonmail.com
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -14,11 +13,14 @@
 *     * Redistributions in binary form must reproduce the above copyright
 *       notice, this list of conditions and the following disclaimer in the
 *       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the copyright holder nor the names of its
+*       contributors may be used to endorse or promote products derived from
+*       this software without specific prior written permission.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ''AS IS'' AND ANY
 * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
@@ -30,17 +32,20 @@
 */
 
 
+
+
 /* compile with options "-D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE" */
+
 
 
 #include "edflib.h"
 
 
-#define EDFLIB_VERSION 112
-#define EDFLIB_MAXFILES 64
+#define EDFLIB_VERSION  (117)
+#define EDFLIB_MAXFILES  (64)
 
 
-#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__)
+#if defined(__APPLE__) || defined(__MACH__) || defined(__APPLE_CC__) || defined(__HAIKU__)
 
 #define fopeno fopen
 
@@ -73,12 +78,15 @@
 
 
 /* max size of annotationtext */
-#define EDFLIB_WRITE_MAX_ANNOTATION_LEN 40
+#define EDFLIB_WRITE_MAX_ANNOTATION_LEN  (40)
 
-/* bytes in datarecord for EDF annotations, must be a multiple of three and two */
-#define EDFLIB_ANNOTATION_BYTES 114
+/* bytes in datarecord for EDF annotations, must be an integer multiple of three and two */
+#define EDFLIB_ANNOTATION_BYTES  (114)
 
-#define EDFLIB_ANNOT_MEMBLOCKSZ 1000
+/* for writing only */
+#define EDFLIB_MAX_ANNOTATION_CHANNELS  (64)
+
+#define EDFLIB_ANNOT_MEMBLOCKSZ  (1000)
 
 
 struct edfparamblock{
@@ -144,6 +152,8 @@ struct edfhdrblock{
         int       annotlist_sz;
         int       total_annot_bytes;
         int       eq_sf;
+        char      *wrbuf;
+        int       wrbufsize;
         struct edfparamblock *edfparam;
       };
 
@@ -181,14 +191,16 @@ static void edflib_latin12utf8(char *, int);
 static void edflib_remove_padding_trailing_spaces(char *);
 static int edflib_atoi_nonlocalized(const char *);
 static double edflib_atof_nonlocalized(const char *);
-static int edflib_sprint_number_nonlocalized(char *, double);
+static int edflib_snprint_number_nonlocalized(char *, double, int);
 /*
 static int edflib_sprint_int_number_nonlocalized(char *, int, int, int);
 */
-static int edflib_sprint_ll_number_nonlocalized(char *, long long, int, int);
+static int edflib_snprint_ll_number_nonlocalized(char *, long long, int, int, int);
 static int edflib_fprint_int_number_nonlocalized(FILE *, int, int, int);
 static int edflib_fprint_ll_number_nonlocalized(FILE *, long long, int, int);
-
+static int edflib_write_tal(struct edfhdrblock *, FILE *);
+static int edflib_strlcpy(char *, const char *, int);
+static int edflib_strlcat(char *, const char *, int);
 
 
 
@@ -203,7 +215,7 @@ int edflib_is_file_used(const char *path)
     {
       if(!(strcmp(path, hdrlist[i]->path)))
       {
-        file_used = 1;
+		file_used= 1;
 
         break;
       }
@@ -263,21 +275,22 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
 
     return -1;
   }
+
+  if(check_file_size<0)	
+  {	
+    edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;	
+
+
+    return -1;	
+  }	
+
+  if(check_file_size>2)	
+  {	
+    edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;	
+
+    return -1;
+  }
   
-    if(check_file_size<0)
-  {
-    edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;
-
-    return -1;
-  }
-
-  if(check_file_size>2)
-  {
-    edfhdr->filetype = EDFLIB_INVALID_CHECK_SIZE_VALUE;
-
-    return -1;
-  }
-
   memset(edfhdr, 0, sizeof(struct edf_hdr_struct));
 
   if(edf_files_open>=EDFLIB_MAXFILES)
@@ -315,10 +328,11 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
     fclose(file);
     edflib_repair_file_size(path, hdr);
     free(hdr->edfparam);
-    free(hdr);
+    free(hdr);		
     file = fopeno(path, "rb");
     hdr = edflib_check_edf_file(file, &edf_error, EDFLIB_CHECK_FILE_SIZE);
   }
+
   if(hdr==NULL)
   {
     edfhdr->filetype = edf_error;
@@ -396,8 +410,8 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
 
   if((!(hdr->edfplus))&&(!(hdr->bdfplus)))
   {
-    strcpy(edfhdr->patient, hdr->patient);
-    strcpy(edfhdr->recording, hdr->recording);
+    edflib_strlcpy(edfhdr->patient, hdr->patient, 81);
+    edflib_strlcpy(edfhdr->recording, hdr->recording, 81);
     edfhdr->patientcode[0] = 0;
     edfhdr->gender[0] = 0;
     edfhdr->birthdate[0] = 0;
@@ -412,15 +426,15 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
   {
     edfhdr->patient[0] = 0;
     edfhdr->recording[0] = 0;
-    strcpy(edfhdr->patientcode, hdr->plus_patientcode);
-    strcpy(edfhdr->gender, hdr->plus_gender);
-    strcpy(edfhdr->birthdate, hdr->plus_birthdate);
-    strcpy(edfhdr->patient_name, hdr->plus_patient_name);
-    strcpy(edfhdr->patient_additional, hdr->plus_patient_additional);
-    strcpy(edfhdr->admincode, hdr->plus_admincode);
-    strcpy(edfhdr->technician, hdr->plus_technician);
-    strcpy(edfhdr->equipment, hdr->plus_equipment);
-    strcpy(edfhdr->recording_additional, hdr->plus_recording_additional);
+    edflib_strlcpy(edfhdr->patientcode, hdr->plus_patientcode, 81);
+    edflib_strlcpy(edfhdr->gender, hdr->plus_gender, 16);
+    edflib_strlcpy(edfhdr->birthdate, hdr->plus_birthdate, 16);
+    edflib_strlcpy(edfhdr->patient_name, hdr->plus_patient_name, 81);
+    edflib_strlcpy(edfhdr->patient_additional, hdr->plus_patient_additional, 81);
+    edflib_strlcpy(edfhdr->admincode, hdr->plus_admincode, 81);
+    edflib_strlcpy(edfhdr->technician, hdr->plus_technician, 81);
+    edflib_strlcpy(edfhdr->equipment, hdr->plus_equipment, 81);
+    edflib_strlcpy(edfhdr->recording_additional, hdr->plus_recording_additional, 81);
 
     if((read_annotations==EDFLIB_READ_ANNOTATIONS)||(read_annotations==EDFLIB_READ_ALL_ANNOTATIONS))
     {
@@ -431,16 +445,23 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
         fclose(file);
 
         free(hdr->edfparam);
+        hdr->edfparam = NULL;
         free(hdr);
+        hdr = NULL;
+        hdrlist[edfhdr->handle] = NULL;
+        free(annotationslist[edfhdr->handle]);
+        annotationslist[edfhdr->handle] = NULL;
 
         return -1;
       }
+
+      edfhdr->starttime_subsecond = hdr->starttime_offset;
     }
 
     edfhdr->annotations_in_file = hdr->annots_in_file;
   }
 
-  strcpy(hdr->path, path);
+  edflib_strlcpy(hdr->path, path, 1024);
 
   edf_files_open++;
 
@@ -458,10 +479,10 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
   {
     channel = hdr->mapped_signals[i];
 
-    strcpy(edfhdr->signalparam[i].label, hdr->edfparam[channel].label);
-    strcpy(edfhdr->signalparam[i].transducer, hdr->edfparam[channel].transducer);
-    strcpy(edfhdr->signalparam[i].physdimension, hdr->edfparam[channel].physdimension);
-    strcpy(edfhdr->signalparam[i].prefilter, hdr->edfparam[channel].prefilter);
+    edflib_strlcpy(edfhdr->signalparam[i].label, hdr->edfparam[channel].label, 17);
+    edflib_strlcpy(edfhdr->signalparam[i].transducer, hdr->edfparam[channel].transducer, 81);
+    edflib_strlcpy(edfhdr->signalparam[i].physdimension, hdr->edfparam[channel].physdimension, 9);
+    edflib_strlcpy(edfhdr->signalparam[i].prefilter, hdr->edfparam[channel].prefilter, 81);
     edfhdr->signalparam[i].smp_in_file = hdr->edfparam[channel].smp_per_record * hdr->datarecords;
     edfhdr->signalparam[i].phys_max = hdr->edfparam[channel].phys_max;
     edfhdr->signalparam[i].phys_min = hdr->edfparam[channel].phys_min;
@@ -478,7 +499,7 @@ int edfclose_file(int handle)
 {
   struct edf_write_annotationblock *annot2;
 
-  int i, j, k, n, p,
+  int i, j, k, n, p, err,
       datrecsize,
       nmemb;
 
@@ -511,22 +532,40 @@ int edfclose_file(int handle)
   {
     if(hdr->datarecords == 0LL)
     {
-      if(edflib_write_edf_header(hdr))
+      err = edflib_write_edf_header(hdr);
+      if(err)
       {
-        return -1;
+        fclose(hdr->file_hdl);
+
+        free(hdr->edfparam);
+
+        free(hdr->wrbuf);
+
+        free(hdr);
+
+        hdrlist[handle] = NULL;
+
+        free(write_annotationslist[handle]);
+
+        write_annotationslist[handle] = NULL;
+
+        edf_files_open--;
+
+        return err;
+
       }
 
       for(k=0; k<hdr->annots_in_file; k++)
       {
         annot2 = write_annotationslist[handle] + k;
 
-        p = edflib_fprint_ll_number_nonlocalized(hdr->file_hdl, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
+        p = edflib_fprint_ll_number_nonlocalized(hdr->file_hdl, (hdr->datarecords * hdr->long_data_record_duration + hdr->starttime_offset) / EDFLIB_TIME_DIMENSION, 0, 1);
 
-        if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
+        if((hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION) || (hdr->starttime_offset))
         {
           fputc('.', hdr->file_hdl);
           p++;
-          p += edflib_fprint_ll_number_nonlocalized(hdr->file_hdl, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
+          p += edflib_fprint_ll_number_nonlocalized(hdr->file_hdl, (hdr->datarecords * hdr->long_data_record_duration + hdr->starttime_offset) % EDFLIB_TIME_DIMENSION, 7, 0);
         }
         fputc(20, hdr->file_hdl);
         fputc(20, hdr->file_hdl);
@@ -578,6 +617,8 @@ int edfclose_file(int handle)
     {
       annot2 = write_annotationslist[handle] + k;
 
+      annot2->onset += hdr->starttime_offset / 1000LL;
+
       p = 0;
 
       if(j==0)  // first annotation signal
@@ -587,12 +628,12 @@ int edfclose_file(int handle)
           break;
         }
 
-        p += edflib_sprint_ll_number_nonlocalized(str, (datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
+        p += edflib_snprint_ll_number_nonlocalized(str, (datarecords * hdr->long_data_record_duration + hdr->starttime_offset) / EDFLIB_TIME_DIMENSION, 0, 1, EDFLIB_ANNOTATION_BYTES * 2);
 
-        if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
+        if((hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION) || (hdr->starttime_offset))
         {
           str[p++] = '.';
-          n = edflib_sprint_ll_number_nonlocalized(str + p, (datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
+          n = edflib_snprint_ll_number_nonlocalized(str + p, (datarecords * hdr->long_data_record_duration + hdr->starttime_offset) % EDFLIB_TIME_DIMENSION, 7, 0, (EDFLIB_ANNOTATION_BYTES * 2) - p);
           p += n;
         }
         str[p++] = 20;
@@ -600,23 +641,23 @@ int edfclose_file(int handle)
         str[p++] =  0;
       }
 
-      n = edflib_sprint_ll_number_nonlocalized(str + p, annot2->onset / 10000LL, 0, 1);
+      n = edflib_snprint_ll_number_nonlocalized(str + p, annot2->onset / 10000LL, 0, 1, (EDFLIB_ANNOTATION_BYTES * 2) - p);
       p += n;
       if(annot2->onset % 10000LL)
       {
         str[p++] = '.';
-        n = edflib_sprint_ll_number_nonlocalized(str + p, annot2->onset % 10000LL, 4, 0);
+        n = edflib_snprint_ll_number_nonlocalized(str + p, annot2->onset % 10000LL, 4, 0, (EDFLIB_ANNOTATION_BYTES * 2) - p);
         p += n;
       }
       if(annot2->duration>=0LL)
       {
         str[p++] = 21;
-        n = edflib_sprint_ll_number_nonlocalized(str + p, annot2->duration / 10000LL, 0, 0);
+        n = edflib_snprint_ll_number_nonlocalized(str + p, annot2->duration / 10000LL, 0, 0, (EDFLIB_ANNOTATION_BYTES * 2) - p);
         p += n;
         if(annot2->duration % 10000LL)
         {
           str[p++] = '.';
-          n = edflib_sprint_ll_number_nonlocalized(str + p, annot2->duration % 10000LL, 4, 0);
+          n = edflib_snprint_ll_number_nonlocalized(str + p, annot2->duration % 10000LL, 4, 0, (EDFLIB_ANNOTATION_BYTES * 2) - p);
           p += n;
         }
       }
@@ -671,6 +712,8 @@ int edfclose_file(int handle)
   fclose(hdr->file_hdl);
 
   free(hdr->edfparam);
+
+  free(hdr->wrbuf);
 
   free(hdr);
 
@@ -749,7 +792,7 @@ long long edfseek(int handle, int edfsignal, long long offset, int whence)
     hdrlist[handle]->edfparam[channel].sample_pntr = 0LL;
   }
 
-  return(hdrlist[handle]->edfparam[channel].sample_pntr);
+  return hdrlist[handle]->edfparam[channel].sample_pntr;
 }
 
 
@@ -790,7 +833,7 @@ long long edftell(int handle, int edfsignal)
 
   channel = hdrlist[handle]->mapped_signals[edfsignal];
 
-  return(hdrlist[handle]->edfparam[channel].sample_pntr);
+  return hdrlist[handle]->edfparam[channel].sample_pntr;
 }
 
 
@@ -1237,8 +1280,8 @@ int edf_get_annotation(int handle, int n, struct edf_annotation_struct *annot)
   }
 
   annot->onset = (annotationslist[handle] + n)->onset;
-  strcpy(annot->duration, (annotationslist[handle] + n)->duration);
-  strcpy(annot->annotation, (annotationslist[handle] + n)->annotation);
+  edflib_strlcpy(annot->duration, (annotationslist[handle] + n)->duration, 16);
+  edflib_strlcpy(annot->annotation, (annotationslist[handle] + n)->annotation, EDFLIB_MAX_ANNOTATION_LEN + 1);
 
   return 0;
 }
@@ -1801,7 +1844,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   }
   if((edfhdr->edfsignals!=edfhdr->nr_annot_chns)||((!edfhdr->edfplus)&&(!edfhdr->bdfplus)))
   {
-    //if(edfhdr->data_record_duration<0.0000001)
+	//if(edfhdr->data_record_duration<0.0000001)
     if(edfhdr->data_record_duration<0)
     {
       *edf_error = EDFLIB_FILE_ERRORS_LABEL;
@@ -1830,7 +1873,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     }
     strncpy(edfhdr->edfparam[i].transducer, edf_hdr + 256 + (edfhdr->edfsignals * 16) + (i * 80), 80);
     edfhdr->edfparam[i].transducer[80] = 0;
-/*
+
     if((edfhdr->edfplus) || (edfhdr->bdfplus))
     {
       if(edfhdr->edfparam[i].annotation)
@@ -1848,7 +1891,6 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
         }
       }
     }
-*/
   }
 
 /**************************** PHYSICAL DIMENSIONS *************************************/
@@ -1882,7 +1924,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_ERRORS_PHYS_DIMENSION;
+        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1892,7 +1934,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_ERRORS_PHYS_DIMENSION;
+      *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1931,7 +1973,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     }
 
     edfhdr->edfparam[i].phys_max = edflib_atof_nonlocalized(scratchpad);
-    if(edfhdr->edfparam[i].phys_max==edfhdr->edfparam[i].phys_min && (edfhdr->bdfplus || edfhdr->edfplus))
+    if(edfhdr->edfparam[i].phys_max==edfhdr->edfparam[i].phys_min)
     {
       *edf_error = EDFLIB_FILE_ERRORS_PHYS_MAX;
       free(edf_hdr);
@@ -1952,7 +1994,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((scratchpad[j]<32)||(scratchpad[j]>126))
       {
-        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
+        *edf_error = EDFLIB_FILE_ERRORS_DIG_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -1962,7 +2004,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edflib_is_integer_number(scratchpad))
     {
-      *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
+      *edf_error = EDFLIB_FILE_ERRORS_DIG_MIN;
       free(edf_hdr);
       free(edfhdr->edfparam);
       free(edfhdr);
@@ -1976,7 +2018,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       {
         if(n!=-32768)
         {
-          *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
+          *edf_error = EDFLIB_FILE_ERRORS_DIG_MIN;
           free(edf_hdr);
           free(edfhdr->edfparam);
           free(edfhdr);
@@ -1990,7 +2032,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
       {
         if(n!=-8388608)
         {
-          *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
+          *edf_error = EDFLIB_FILE_ERRORS_DIG_MIN;
           free(edf_hdr);
           free(edfhdr->edfparam);
           free(edfhdr);
@@ -2002,7 +2044,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((n>32767)||(n<-32768))
       {
-        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
+        *edf_error = EDFLIB_FILE_ERRORS_DIG_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2013,7 +2055,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     {
       if((n>8388607)||(n<-8388608))
       {
-        *edf_error = EDFLIB_FILE_ERRORS_PHYS_MIN;
+        *edf_error = EDFLIB_FILE_ERRORS_DIG_MIN;
         free(edf_hdr);
         free(edfhdr->edfparam);
         free(edfhdr);
@@ -2131,7 +2173,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     }
     strncpy(edfhdr->edfparam[i].prefilter, edf_hdr + 256 + (edfhdr->edfsignals * 136) + (i * 80), 80);
     edfhdr->edfparam[i].prefilter[80] = 0;
-/*
+
     if((edfhdr->edfplus) || (edfhdr->bdfplus))
     {
       if(edfhdr->edfparam[i].annotation)
@@ -2149,7 +2191,6 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
         }
       }
     }
-*/
   }
 
 /*********************** NR OF SAMPLES IN EACH DATARECORD ********************/
@@ -2199,7 +2240,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     edfhdr->recordsize *= 3;
 
-    if(edfhdr->recordsize > 15728640)
+    if(edfhdr->recordsize > (15 * 1024 * 1024))
     {
       *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
       free(edf_hdr);
@@ -2212,7 +2253,7 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   {
     edfhdr->recordsize *= 2;
 
-    if(edfhdr->recordsize > 10485760)
+    if(edfhdr->recordsize > (10 * 1024 * 1024))
     {
       *edf_error = EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD;
       free(edf_hdr);
@@ -2336,11 +2377,11 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
 
     if(edfhdr->patient[p]=='M')
     {
-      strcpy(edfhdr->plus_gender, "Male");
+      edflib_strlcpy(edfhdr->plus_gender, "Male", 16);
     }
     if(edfhdr->patient[p]=='F')
     {
-      strcpy(edfhdr->plus_gender, "Female");
+      edflib_strlcpy(edfhdr->plus_gender, "Female", 16);
     }
     if(edfhdr->patient[p]=='X')
     {
@@ -2598,17 +2639,18 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
   edfhdr->hdrsize = edfhdr->edfsignals * 256 + 256;
 
   if (check_file_size != EDFLIB_DO_NOT_CHECK_FILE_SIZE)
-  {
-    fseeko(inputfile, 0LL, SEEK_END);
-    if(ftello(inputfile)<(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
-    {
-         printf("filesize %d != %d*%d+%d ",ftello(inputfile),edfhdr->recordsize, edfhdr->datarecords, edfhdr->hdrsize);
-        *edf_error = EDFLIB_FILE_ERRORS_FILESIZE;
-        free(edf_hdr);
-        free(edfhdr->edfparam);
-        free(edfhdr);
-        return NULL;
-    }
+  {  
+	  fseeko(inputfile, 0LL, SEEK_END);
+	   if(ftello(inputfile)<(edfhdr->recordsize * edfhdr->datarecords + edfhdr->hdrsize))
+	  {
+		printf("filesize %d != %d*%d+%d ",ftello(inputfile),edfhdr->recordsize, edfhdr->datarecords, edfhdr->hdrsize);
+		*edf_error = EDFLIB_FILE_ERRORS_FILESIZE;
+		free(edf_hdr);
+		free(edfhdr->edfparam);
+		free(edfhdr);
+		return NULL;
+	  }
+
   }
   n = 0;
 
@@ -2617,15 +2659,16 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     edfhdr->edfparam[i].buf_offset = n;
     if(edfhdr->bdf)  n += edfhdr->edfparam[i].smp_per_record * 3;
     else  n += edfhdr->edfparam[i].smp_per_record * 2;
-    if ((edfhdr->edfparam[i].dig_max == edfhdr->edfparam[i].dig_min) || (edfhdr->edfparam[i].phys_max == edfhdr->edfparam[i].phys_min))
-      {
-        edfhdr->edfparam[i].bitvalue = 1;
-        edfhdr->edfparam[i].offset = 0;
-      }
-      else
-      {
-      edfhdr->edfparam[i].bitvalue = (edfhdr->edfparam[i].phys_max - edfhdr->edfparam[i].phys_min) / (edfhdr->edfparam[i].dig_max - edfhdr->edfparam[i].dig_min);
-      edfhdr->edfparam[i].offset = edfhdr->edfparam[i].phys_max / edfhdr->edfparam[i].bitvalue - edfhdr->edfparam[i].dig_max;
+	if ((edfhdr->edfparam[i].dig_max == edfhdr->edfparam[i].dig_min) || (edfhdr->edfparam[i].phys_max == edfhdr->edfparam[i].phys_min))
+	{
+		edfhdr->edfparam[i].bitvalue = 1;
+		edfhdr->edfparam[i].offset = 0;
+	}
+	else
+	{
+
+    edfhdr->edfparam[i].bitvalue = (edfhdr->edfparam[i].phys_max - edfhdr->edfparam[i].phys_min) / (edfhdr->edfparam[i].dig_max - edfhdr->edfparam[i].dig_min);
+    edfhdr->edfparam[i].offset = edfhdr->edfparam[i].phys_max / edfhdr->edfparam[i].bitvalue - edfhdr->edfparam[i].dig_max;
     }
   }
 
@@ -2798,9 +2841,8 @@ static int edflib_is_number(char *str)
 static long long edflib_get_long_duration(char *str)
 {
   int i, len=8, hasdot=0, dotposition=0;
-
   long long value=0, radix;
-  
+
   if((str[0] == '+') || (str[0] == '-'))
   {
     for(i=0; i<7; i++)
@@ -2809,7 +2851,7 @@ static long long edflib_get_long_duration(char *str)
     }
     str[7] = ' ';
   }
-   
+  
   for(i=0; i<8; i++)
   {
     if(str[i]==' ')
@@ -2871,8 +2913,8 @@ int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr)
 {
   int p;
   FILE *file;
-  
-  file = fopeno(path, "wb");  
+
+  file = fopeno(path, "wb");
   if(edfhdr->datarecords<100000000LL)
   {
     fseeko(file, 236LL, SEEK_SET);
@@ -2883,7 +2925,7 @@ int edflib_repair_file_size(const char *path, struct edfhdrblock *edfhdr)
     }
   }
   fclose(file);
-  return (0);
+  return 0;
 }
 
 static int edflib_get_annotations(struct edfhdrblock *edfhdr, int hdl, int read_annotations)
@@ -3166,7 +3208,7 @@ static int edflib_get_annotations(struct edfhdrblock *edfhdr, int hdl, int read_
 
                 new_annotation->annotation[0] = 0;
 
-                if(duration)  strcpy(new_annotation->duration, duration_in_txt);
+                if(duration)  edflib_strlcpy(new_annotation->duration, duration_in_txt, 16);
                 else  new_annotation->duration[0] = 0;
 
                 for(j=0; j<n; j++)
@@ -3177,6 +3219,8 @@ static int edflib_get_annotations(struct edfhdrblock *edfhdr, int hdl, int read_
                 new_annotation->annotation[j] = 0;
 
                 new_annotation->onset = edflib_get_long_time(time_in_txt);
+
+                new_annotation->onset -= edfhdr->starttime_offset;
 
                 edfhdr->annots_in_file++;
 
@@ -3209,7 +3253,7 @@ static int edflib_get_annotations(struct edfhdrblock *edfhdr, int hdl, int read_
             }
             onset = 1;
             n = 0;
-            strcpy(time_in_txt, scratchpad);
+            edflib_strlcpy(time_in_txt, scratchpad, max_tal_ln + 3);
             continue;
           }
 
@@ -3327,11 +3371,19 @@ static int edflib_is_onset_number(char *str)
 
 static long long edflib_get_long_time(char *str)
 {
-  int i, len, hasdot=0, dotposition=0;
+  int i, len, hasdot=0, dotposition=0, neg=0;
 
   long long value=0, radix;
 
-  str = str + 1;
+  if(str[0] == '+')
+  {
+    str++;
+  }
+  else if(str[0] == '-')
+    {
+      neg = 1;
+      str++;
+    }
 
   len = strlen(str);
 
@@ -3374,7 +3426,7 @@ static long long edflib_get_long_time(char *str)
     }
   }
 
-  if(str[-1]=='-')  value = -value;
+  if(neg)  value = -value;
 
   return value;
 }
@@ -3658,6 +3710,7 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
   }
   */
 
+
   if(edf_files_open>=EDFLIB_MAXFILES)
   {
     return EDFLIB_MAXFILES_REACHED;
@@ -3735,15 +3788,17 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
   if(file==NULL)
   {
     free(hdr->edfparam);
-
+    hdr->edfparam = NULL;
     free(hdr);
+    hdr = NULL;
+    hdrlist[handle] = NULL;
 
     return EDFLIB_NO_SUCH_FILE_OR_DIRECTORY;
   }
 
   hdr->file_hdl = file;
 
-  strcpy(hdr->path, path);
+  edflib_strlcpy(hdr->path, path, 1024);
 
   edf_files_open++;
 
@@ -3751,35 +3806,34 @@ int edfopen_file_writeonly(const char *path, int filetype, int number_of_signals
   {
     hdr->edf = 1;
     hdr->edfplus = 1;
-    hdr->nr_annot_chns = 1;
+	hdr->nr_annot_chns = 1;	
+	
   }
   
-    if(filetype==EDFLIB_FILETYPE_EDF)
+  if(filetype==EDFLIB_FILETYPE_EDF)
   {
     hdr->edf = 1;
     hdr->edfplus = 0;
     hdr->nr_annot_chns = 0;
   }
-
+  
   if(filetype==EDFLIB_FILETYPE_BDFPLUS)
   {
     hdr->bdf = 1;
     hdr->bdfplus = 1;
-    hdr->nr_annot_chns = 1;
+	hdr->nr_annot_chns = 1;	
   }
-
+  
   if(filetype==EDFLIB_FILETYPE_BDF)
   {
     hdr->bdf = 1;
     hdr->bdfplus = 0;
     hdr->nr_annot_chns = 0;
   }
-  
+
   hdr->long_data_record_duration = EDFLIB_TIME_DIMENSION;
 
   hdr->data_record_duration = 1.0;
-
-  
 
   return handle;
 }
@@ -3860,7 +3914,7 @@ int edf_set_number_of_annotation_signals(int handle, int annot_signals)
     return -1;
   }
 
-  if((annot_signals < 1) || (annot_signals > 64))
+  if((annot_signals < 1) || (annot_signals > EDFLIB_MAX_ANNOTATION_CHANNELS))
   {
     return -1;
   }
@@ -3924,9 +3978,87 @@ int edf_set_datarecord_duration(int handle, int duration)
 }
 
 
+int edf_set_micro_datarecord_duration(int handle, int duration)
+{
+  if(handle<0)
+  {
+    return -1;
+  }
+
+  if(handle>=EDFLIB_MAXFILES)
+  {
+    return -1;
+  }
+
+  if(hdrlist[handle]==NULL)
+  {
+    return -1;
+  }
+
+  if(!(hdrlist[handle]->writemode))
+  {
+    return -1;
+  }
+
+  if(hdrlist[handle]->datarecords)
+  {
+    return -1;
+  }
+
+  if((duration < 1) || (duration > 9999))
+  {
+    return -1;
+  }
+
+  hdrlist[handle]->long_data_record_duration = (long long)duration * 10LL;
+
+  hdrlist[handle]->data_record_duration = ((double)(hdrlist[handle]->long_data_record_duration)) / EDFLIB_TIME_DIMENSION;
+
+  return 0;
+}
+
+
+int edf_set_subsecond_starttime(int handle, int subsecond)
+{
+  if(handle<0)
+  {
+    return -1;
+  }
+
+  if(handle>=EDFLIB_MAXFILES)
+  {
+    return -1;
+  }
+
+  if(hdrlist[handle]==NULL)
+  {
+    return -1;
+  }
+
+  if(!(hdrlist[handle]->writemode))
+  {
+    return -1;
+  }
+
+  if(hdrlist[handle]->datarecords)
+  {
+    return -1;
+  }
+
+  if((subsecond < 0) || (subsecond > 9999999))
+  {
+    return -1;
+  }
+
+  hdrlist[handle]->starttime_offset = (long long)subsecond;
+
+  return 0;
+}
+
+
 int edfwrite_digital_short_samples(int handle, short *buf)
 {
-  int  i, p,
+  int  i,
        error,
        sf,
        digmax,
@@ -3994,32 +4126,73 @@ int edfwrite_digital_short_samples(int handle, short *buf)
 
   digmin = hdr->edfparam[edfsignal].dig_min;
 
-  for(i=0; i<sf; i++)
+  if(hdr->edf)
   {
-    value = buf[i];
-
-    if(value>digmax)
+    if((digmax != 32767) || (digmin != -32768))
     {
-      value = digmax;
+      for(i=0; i<sf; i++)
+      {
+        if(buf[i]>digmax)
+        {
+          buf[i] = digmax;
+        }
+
+        if(buf[i]<digmin)
+        {
+          buf[i] = digmin;
+        }
+      }
     }
 
-    if(value<digmin)
-    {
-      value = digmin;
-    }
-
-    fputc((value)&0xff, file);
-
-    if(fputc((value>>8)&0xff, file)==EOF)
+    if(fwrite(buf, sf * 2, 1, file) != 1)
     {
       return -1;
     }
-
-    if(hdr->bdf)
+  }
+  else  // BDF
+  {
+    if(hdr->wrbufsize < (sf * 3))
     {
-      fputc((value>>16)&0xff, file);
+      free(hdr->wrbuf);
+
+      hdr->wrbufsize = 0;
+
+      hdr->wrbuf = (char *)malloc(sf * 3);
+
+      if(hdr->wrbuf == NULL)
+      {
+        return -1;
+      }
+
+      hdr->wrbufsize = sf * 3;
+
     }
 
+    for(i=0; i<sf; i++)
+    {
+      value = buf[i];
+
+      if(value>digmax)
+      {
+        value = digmax;
+      }
+
+      if(value<digmin)
+      {
+        value = digmin;
+      }
+
+      hdr->wrbuf[i * 3] = value & 0xff;
+
+      hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
+
+      hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+    }
+
+    if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
+    {
+      return -1;
+    }
   }
 
   hdr->signal_write_sequence_pos++;
@@ -4027,23 +4200,12 @@ int edfwrite_digital_short_samples(int handle, short *buf)
   if(hdr->signal_write_sequence_pos == hdr->edfsignals)
   {
     hdr->signal_write_sequence_pos = 0;
-    if (hdr->bdfplus || hdr->edfplus)
+
+    if(edflib_write_tal(hdr, file))
     {
-      p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-      if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-      {
-        fputc('.', file);
-        p++;
-        p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-      }
-      fputc(20, file);
-      fputc(20, file);
-      p += 2;
-      for(; p<hdr->total_annot_bytes; p++)
-      {
-        fputc(0, file);
-      }
+      return -1;
     }
+
     hdr->datarecords++;
 
     fflush(file);
@@ -4055,7 +4217,7 @@ int edfwrite_digital_short_samples(int handle, short *buf)
 
 int edfwrite_digital_samples(int handle, int *buf)
 {
-  int  i, p,
+  int  i,
        error,
        sf,
        digmax,
@@ -4118,30 +4280,91 @@ int edfwrite_digital_samples(int handle, int *buf)
 
   digmin = hdr->edfparam[edfsignal].dig_min;
 
-  for(i=0; i<sf; i++)
+  if(hdr->edf)
   {
-    value = buf[i];
-
-    if(value>digmax)
+    if(hdr->wrbufsize < (sf * 2))
     {
-      value = digmax;
+      free(hdr->wrbuf);
+
+      hdr->wrbufsize = 0;
+
+      hdr->wrbuf = (char *)malloc(sf * 2);
+
+      if(hdr->wrbuf == NULL)
+      {
+        return -1;
+      }
+
+      hdr->wrbufsize = sf * 2;
     }
 
-    if(value<digmin)
+    for(i=0; i<sf; i++)
     {
-      value = digmin;
+      value = buf[i];
+
+      if(value>digmax)
+      {
+        value = digmax;
+      }
+
+      if(value<digmin)
+      {
+        value = digmin;
+      }
+
+      hdr->wrbuf[i * 2] = value & 0xff;
+
+      hdr->wrbuf[i * 2 + 1] = (value >> 8) & 0xff;
     }
 
-    fputc((value)&0xff, file);
-
-    if(fputc((value>>8)&0xff, file)==EOF)
+    if(fwrite(hdr->wrbuf, sf * 2, 1, file) != 1)
     {
       return -1;
     }
-
-    if(hdr->bdf)
+  }
+  else  // BDF
+  {
+    if(hdr->wrbufsize < (sf * 3))
     {
-      fputc((value>>16)&0xff, file);
+      free(hdr->wrbuf);
+
+      hdr->wrbufsize = 0;
+
+      hdr->wrbuf = (char *)malloc(sf * 3);
+
+      if(hdr->wrbuf == NULL)
+      {
+        return -1;
+      }
+
+      hdr->wrbufsize = sf * 3;
+    }
+
+    for(i=0; i<sf; i++)
+    {
+      value = buf[i];
+
+      if(value>digmax)
+      {
+        value = digmax;
+      }
+
+      if(value<digmin)
+      {
+        value = digmin;
+      }
+
+      hdr->wrbuf[i * 3] = value & 0xff;
+
+      hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
+
+      hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+
+    }
+
+    if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
+    {
+      return -1;
     }
   }
 
@@ -4150,23 +4373,12 @@ int edfwrite_digital_samples(int handle, int *buf)
   if(hdr->signal_write_sequence_pos == hdr->edfsignals)
   {
     hdr->signal_write_sequence_pos = 0;
-    if (hdr->bdfplus || hdr->edfplus)
+
+    if(edflib_write_tal(hdr, file))
     {
-      p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-      if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-      {
-        fputc('.', file);
-        p++;
-        p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-      }
-      fputc(20, file);
-      fputc(20, file);
-      p += 2;
-      for(; p<hdr->total_annot_bytes; p++)
-      {
-        fputc(0, file);
-      }
+      return -1;
     }
+
     hdr->datarecords++;
 
     fflush(file);
@@ -4178,7 +4390,7 @@ int edfwrite_digital_samples(int handle, int *buf)
 
 int edf_blockwrite_digital_samples(int handle, int *buf)
 {
-  int  i, j, p,
+  int  i, j,
        error,
        sf,
        digmax,
@@ -4248,52 +4460,101 @@ int edf_blockwrite_digital_samples(int handle, int *buf)
 
     digmin = hdr->edfparam[j].dig_min;
 
-    for(i=0; i<sf; i++)
+    if(hdr->edf)
     {
-      value = buf[i + buf_offset];
-
-      if(value>digmax)
+      if(hdr->wrbufsize < (sf * 2))
       {
-        value = digmax;
+        free(hdr->wrbuf);
+
+        hdr->wrbufsize = 0;
+
+        hdr->wrbuf = (char *)malloc(sf * 2);
+
+        if(hdr->wrbuf == NULL)
+        {
+          return -1;
+        }
+
+        hdr->wrbufsize = sf * 2;
       }
 
-      if(value<digmin)
+      for(i=0; i<sf; i++)
       {
-        value = digmin;
+        value = buf[i + buf_offset];
+
+        if(value>digmax)
+        {
+          value = digmax;
+        }
+
+        if(value<digmin)
+        {
+          value = digmin;
+        }
+
+        hdr->wrbuf[i * 2] = value & 0xff;
+
+        hdr->wrbuf[i * 2 + 1] = (value >> 8) & 0xff;
       }
 
-      fputc(value&0xff, file);
-
-      if(fputc((value>>8)&0xff, file)==EOF)
+      if(fwrite(hdr->wrbuf, sf * 2, 1, file) != 1)
       {
         return -1;
       }
-
-      if(hdr->bdf)
+    }
+    else  // BDF
+    {
+      if(hdr->wrbufsize < (sf * 3))
       {
-        fputc((value>>16)&0xff, file);
+        free(hdr->wrbuf);
+
+        hdr->wrbufsize = 0;
+
+        hdr->wrbuf = (char *)malloc(sf * 3);
+
+        if(hdr->wrbuf == NULL)
+        {
+          return -1;
+        }
+
+        hdr->wrbufsize = sf * 3;
+      }
+
+      for(i=0; i<sf; i++)
+      {
+        value = buf[i + buf_offset];
+
+        if(value>digmax)
+        {
+          value = digmax;
+        }
+
+        if(value<digmin)
+        {
+          value = digmin;
+        }
+
+        hdr->wrbuf[i * 3] = value & 0xff;
+
+        hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
+
+        hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+      }
+
+      if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
+      {
+        return -1;
       }
     }
 
     buf_offset += sf;
   }
-  if (hdr->bdfplus || hdr->edfplus)
+
+  if(edflib_write_tal(hdr, file))
   {
-    p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-    if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-    {
-      fputc('.', file);
-      p++;
-      p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-    }
-    fputc(20, file);
-    fputc(20, file);
-    p += 2;
-    for(; p<hdr->total_annot_bytes; p++)
-    {
-      fputc(0, file);
-    }
+    return -1;
   }
+
   hdr->datarecords++;
 
   fflush(file);
@@ -4304,7 +4565,7 @@ int edf_blockwrite_digital_samples(int handle, int *buf)
 
 int edf_blockwrite_digital_short_samples(int handle, short *buf)
 {
-  int  i, j, p,
+  int  i, j,
        error,
        sf,
        digmax,
@@ -4379,52 +4640,82 @@ int edf_blockwrite_digital_short_samples(int handle, short *buf)
 
     digmin = hdr->edfparam[j].dig_min;
 
-    for(i=0; i<sf; i++)
+    if(hdr->edf)
     {
-      value = buf[i + buf_offset];
-
-      if(value>digmax)
+      if((digmax != 32767) || (digmin != -32768))
       {
-        value = digmax;
+        for(i=0; i<sf; i++)
+        {
+          if(buf[i + buf_offset] > digmax)
+          {
+            buf[i + buf_offset] = digmax;
+          }
+
+          if(buf[i + buf_offset] < digmin)
+          {
+            buf[i + buf_offset] = digmin;
+          }
+        }
       }
 
-      if(value<digmin)
-      {
-        value = digmin;
-      }
-
-      fputc(value&0xff, file);
-
-      if(fputc((value>>8)&0xff, file)==EOF)
+      if(fwrite(buf + buf_offset, sf * 2, 1, file) != 1)
       {
         return -1;
       }
-
-      if(hdr->bdf)
+    }
+    else  // BDF
+    {
+      if(hdr->wrbufsize < (sf * 3))
       {
-        fputc((value>>16)&0xff, file);
+        free(hdr->wrbuf);
+
+        hdr->wrbufsize = 0;
+
+        hdr->wrbuf = (char *)malloc(sf * 3);
+
+        if(hdr->wrbuf == NULL)
+        {
+          return -1;
+        }
+
+        hdr->wrbufsize = sf * 3;
+      }
+
+      for(i=0; i<sf; i++)
+      {
+        value = buf[i + buf_offset];
+
+        if(value>digmax)
+        {
+          value = digmax;
+        }
+
+        if(value<digmin)
+        {
+          value = digmin;
+        }
+
+        hdr->wrbuf[i * 3] = value & 0xff;
+
+        hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
+
+        hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+      }
+
+      if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
+      {
+        return -1;
       }
     }
 
     buf_offset += sf;
   }
-  if (hdr->bdfplus || hdr->edfplus)
+
+  if(edflib_write_tal(hdr, file))
   {
-    p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-    if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-    {
-      fputc('.', file);
-      p++;
-      p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-    }
-    fputc(20, file);
-    fputc(20, file);
-    p += 2;
-    for(; p<hdr->total_annot_bytes; p++)
-    {
-      fputc(0, file);
-    }
+    return -1;
   }
+
   hdr->datarecords++;
 
   fflush(file);
@@ -4435,7 +4726,7 @@ int edf_blockwrite_digital_short_samples(int handle, short *buf)
 
 int edf_blockwrite_digital_3byte_samples(int handle, void *buf)
 {
-  int  j, p,
+  int  j,
        error,
        edfsignals,
        total_samples=0;
@@ -4505,23 +4796,12 @@ int edf_blockwrite_digital_3byte_samples(int handle, void *buf)
   {
     return -1;
   }
-  if (hdr->bdfplus || hdr->edfplus)
+
+  if(edflib_write_tal(hdr, file))
   {
-    p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-    if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-    {
-      fputc('.', file);
-      p++;
-      p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-    }
-    fputc(20, file);
-    fputc(20, file);
-    p += 2;
-    for(; p<hdr->total_annot_bytes; p++)
-    {
-      fputc(0, file);
-    }
+    return -1;
   }
+
   hdr->datarecords++;
 
   fflush(file);
@@ -4532,7 +4812,7 @@ int edf_blockwrite_digital_3byte_samples(int handle, void *buf)
 
 int edfwrite_physical_samples(int handle, double *buf)
 {
-  int  i, p,
+  int  i,
        error,
        sf,
        digmax,
@@ -4544,11 +4824,8 @@ int edfwrite_physical_samples(int handle, double *buf)
          phys_offset;
 
   FILE *file;
-  char *digbuf;
 
   struct edfhdrblock *hdr;
-
-
 
 
   if(handle<0)
@@ -4605,71 +4882,104 @@ int edfwrite_physical_samples(int handle, double *buf)
 
   phys_offset = hdr->edfparam[edfsignal].offset;
 
-  if(hdr->bdf)
-    digbuf = (char *)calloc(1, sf*3);
-  else
-    digbuf = (char *)calloc(1, sf*2);
-      
-  for(i=0; i<sf; i++)
+  if(hdr->edf)
   {
-    value = (buf[i] / bitvalue) - phys_offset;
-
-    if(value>digmax)
+    if(hdr->wrbufsize < (sf * 2))
     {
-      value = digmax;
+      free(hdr->wrbuf);
+
+      hdr->wrbufsize = 0;
+
+      hdr->wrbuf = (char *)malloc(sf * 2);
+
+      if(hdr->wrbuf == NULL)
+      {
+        return -1;
+      }
+
+      hdr->wrbufsize = sf * 2;
     }
 
-    if(value<digmin)
+    for(i=0; i<sf; i++)
     {
-      value = digmin;
+      value = (buf[i] / bitvalue) - phys_offset;
+
+      if(value>digmax)
+      {
+        value = digmax;
+      }
+
+      if(value<digmin)
+      {
+        value = digmin;
+      }
+
+      hdr->wrbuf[i * 2] = value & 0xff;
+
+      hdr->wrbuf[i * 2 + 1] = (value >> 8) & 0xff;
     }
 
-    //fputc(value&0xff, file);
-
-    //if(fputc((value>>8)&0xff, file)==EOF)
-    //{
-    //  return -1;
-    //}
-
-    if(hdr->bdf)
+    if(fwrite(hdr->wrbuf, sf * 2, 1, file) != 1)
     {
-      digbuf[3*i] =value&0xff;
-      digbuf[3*i + 1] = (value>>8)&0xff;
-      digbuf[3*i + 2] = (value>>16)&0xff;
-    }
-    else
-    {
-      digbuf[2*i] = value&0xff;
-      digbuf[2*i + 1] = (value>>8)&0xff;
+      return -1;
     }
   }
-  if(hdr->bdf)
-    fwrite(digbuf, 1, sf*3, file);
-  else
-    fwrite(digbuf, 1, sf*2, file);
-  free (digbuf);
+  else  // BDF
+  {
+    if(hdr->wrbufsize < (sf * 3))
+    {
+      free(hdr->wrbuf);
+
+      hdr->wrbufsize = 0;
+
+      hdr->wrbuf = (char *)malloc(sf * 3);
+
+      if(hdr->wrbuf == NULL)
+      {
+        return -1;
+      }
+
+      hdr->wrbufsize = sf * 3;
+    }
+
+    for(i=0; i<sf; i++)
+    {
+      value = (buf[i] / bitvalue) - phys_offset;
+
+      if(value>digmax)
+      {
+        value = digmax;
+      }
+
+      if(value<digmin)
+      {
+        value = digmin;
+      }
+
+      hdr->wrbuf[i * 3] = value & 0xff;
+
+      hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
+
+      hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+    }
+
+    if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
+    {
+      return -1;
+    }
+  }
+
   hdr->signal_write_sequence_pos++;
 
   if(hdr->signal_write_sequence_pos == hdr->edfsignals)
   {
     hdr->signal_write_sequence_pos = 0;
-    if (hdr->bdfplus || hdr->edfplus)
+
+    if(edflib_write_tal(hdr, file))
     {
-      p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-      if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-      {
-        fputc('.', file);
-        p++;
-        p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-      }
-      fputc(20, file);
-      fputc(20, file);
-      p += 2;
-      for(; p<hdr->total_annot_bytes; p++)
-      {
-        fputc(0, file);
-      }
+      return -1;
     }
+
     hdr->datarecords++;
 
     fflush(file);
@@ -4681,7 +4991,7 @@ int edfwrite_physical_samples(int handle, double *buf)
 
 int edf_blockwrite_physical_samples(int handle, double *buf)
 {
-  int  i, j, p,
+  int  i, j,
        error,
        sf,
        digmax,
@@ -4694,11 +5004,8 @@ int edf_blockwrite_physical_samples(int handle, double *buf)
          phys_offset;
 
   FILE *file;
-  char *digbuf;
 
   struct edfhdrblock *hdr;
-
-
 
 
   if(handle<0)
@@ -4760,70 +5067,102 @@ int edf_blockwrite_physical_samples(int handle, double *buf)
     bitvalue = hdr->edfparam[j].bitvalue;
 
     phys_offset = hdr->edfparam[j].offset;
-    if(hdr->bdf)
-      digbuf = (char *)calloc(1, sf*3);
-    else
-      digbuf = (char *)calloc(1, sf*2);
 
-    for(i=0; i<sf; i++)
+    if(hdr->edf)
     {
-      value = (buf[i + buf_offset] / bitvalue) - phys_offset;
-
-      if(value>digmax)
+      if(hdr->wrbufsize < (sf * 2))
       {
-        value = digmax;
+        free(hdr->wrbuf);
+
+        hdr->wrbufsize = 0;
+
+        hdr->wrbuf = (char *)malloc(sf * 2);
+
+        if(hdr->wrbuf == NULL)
+        {
+          return -1;
+        }
+
+        hdr->wrbufsize = sf * 2;
       }
 
-      if(value<digmin)
+      for(i=0; i<sf; i++)
       {
-        value = digmin;
+        value = (buf[i + buf_offset] / bitvalue) - phys_offset;
+
+        if(value>digmax)
+        {
+          value = digmax;
+        }
+
+        if(value<digmin)
+        {
+          value = digmin;
+        }
+
+        hdr->wrbuf[i * 2] = value & 0xff;
+
+        hdr->wrbuf[i * 2 + 1] = (value >> 8) & 0xff;
       }
 
-      //fputc(value&0xff, file);
-      
-
-      //if(fputc((value>>8)&0xff, file)==EOF)
-      //{
-      //  return -1;
-      //}
-
-      if(hdr->bdf)
+      if(fwrite(hdr->wrbuf, sf * 2, 1, file) != 1)
       {
-        digbuf[3*i] =value&0xff;
-        digbuf[3*i + 1] = (value>>8)&0xff;
-        digbuf[3*i + 2] = (value>>16)&0xff;
-      }
-      else
-      {
-        digbuf[2*i] = value&0xff;
-        digbuf[2*i + 1] = (value>>8)&0xff;
+        return -1;
       }
     }
-    if(hdr->bdf)
-      fwrite(digbuf, 1, sf*3, file);
-    else
-      fwrite(digbuf, 1, sf*2, file);
-    free (digbuf);
+    else  // BDF
+    {
+      if(hdr->wrbufsize < (sf * 3))
+      {
+        free(hdr->wrbuf);
+
+        hdr->wrbufsize = 0;
+
+        hdr->wrbuf = (char *)malloc(sf * 3);
+
+        if(hdr->wrbuf == NULL)
+        {
+          return -1;
+        }
+
+        hdr->wrbufsize = sf * 3;
+      }
+
+      for(i=0; i<sf; i++)
+      {
+        value = (buf[i + buf_offset] / bitvalue) - phys_offset;
+
+        if(value>digmax)
+        {
+          value = digmax;
+        }
+
+        if(value<digmin)
+        {
+          value = digmin;
+        }
+
+        hdr->wrbuf[i * 3] = value & 0xff;
+
+        hdr->wrbuf[i * 3 + 1] = (value >> 8) & 0xff;
+
+        hdr->wrbuf[i * 3 + 2] = (value >> 16) & 0xff;
+      }
+
+      if(fwrite(hdr->wrbuf, sf * 3, 1, file) != 1)
+      {
+        return -1;
+      }
+    }
 
     buf_offset += sf;
   }
-  if (hdr->bdfplus || hdr->edfplus)
+
+  if(edflib_write_tal(hdr, file))
   {
-    p = edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) / EDFLIB_TIME_DIMENSION, 0, 1);
-    if(hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION)
-    {
-      fputc('.', file);
-      p++;
-      p += edflib_fprint_ll_number_nonlocalized(file, (hdr->datarecords * hdr->long_data_record_duration) % EDFLIB_TIME_DIMENSION, 7, 0);
-    }
-    fputc(20, file);
-    fputc(20, file);
-    p += 2;
-    for(; p<hdr->total_annot_bytes; p++)
-    {
-      fputc(0, file);
-    }
+    return -1;
   }
+
   hdr->datarecords++;
 
   fflush(file);
@@ -4854,16 +5193,19 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
 
   if(edfsignals<0)
   {
-    return(-20);
+    return EDFLIB_NO_SIGNALS;
   }
 
   if(edfsignals>EDFLIB_MAXSIGNALS)
   {
-    return(-21);
+    return EDFLIB_TOO_MANY_SIGNALS;
   }
 
   hdr->eq_sf = 1;
 
+  hdr->recordsize = 0;
+
+  hdr->total_annot_bytes = EDFLIB_ANNOTATION_BYTES * hdr->nr_annot_chns;
 
   for(i=0; i<edfsignals; i++)
   {
@@ -4871,23 +5213,26 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
    {
       if(hdr->edfparam[i].smp_per_record<1)
       {
-        return(-22);
+        return EDFLIB_NO_SAMPLES_IN_RECORD ;
       }
   
       if(hdr->edfparam[i].dig_max==hdr->edfparam[i].dig_min)
       {
-        return(-23);
+        return EDFLIB_DIGMIN_IS_DIGMAX;
       }
   
       if(hdr->edfparam[i].dig_max<hdr->edfparam[i].dig_min)
       {
-        return(-24);
+        return EDFLIB_DIGMAX_LOWER_THAN_DIGMIN;
       }
   
       if(hdr->edfparam[i].phys_max==hdr->edfparam[i].phys_min)
       {
-        return(-25);
+        return EDFLIB_PHYSMIN_IS_PHYSMAX;
       }
+	  
+	  hdr->recordsize += hdr->edfparam[i].smp_per_record;
+	  
     }
     if(i > 0)
     {
@@ -4897,19 +5242,45 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
       }
     }
   }
+	  
+
+  if(hdr->edf)
+  {
+    hdr->recordsize *= 2;
+
+    hdr->recordsize += hdr->total_annot_bytes;
+
+    if(hdr->recordsize > (10 * 1024 * 1024))  /* datarecord size should not exceed 10MB for EDF */
+    {
+      return EDFLIB_DATARECORD_SIZE_TOO_BIG;
+    }  /* if your application gets hit by this limitation, lower the value for the datarecord duration */
+       /* using the function edf_set_datarecord_duration() */
+  }
+  else
+  {
+    hdr->recordsize *= 3;
+
+    hdr->recordsize += hdr->total_annot_bytes;
+
+    if(hdr->recordsize > (15 * 1024 * 1024))  /* datarecord size should not exceed 15MB for BDF */
+    {
+      return EDFLIB_DATARECORD_SIZE_TOO_BIG;
+    }  /* if your application gets hit by this limitation, lower the value for the datarecord duration */
+       /* using the function edf_set_datarecord_duration() */
+  }
 
   for(i=0; i<edfsignals; i++)
   {
-    if ((hdr->edfparam[i].phys_max == hdr->edfparam[i].phys_min) || (hdr->edfparam[i].dig_max == hdr->edfparam[i].dig_min))
-      {
-        hdr->edfparam[i].bitvalue = 1;
-        hdr->edfparam[i].offset = 0;
-      }
-      else
-      {
-        hdr->edfparam[i].bitvalue = (hdr->edfparam[i].phys_max - hdr->edfparam[i].phys_min) / (hdr->edfparam[i].dig_max - hdr->edfparam[i].dig_min);
-        hdr->edfparam[i].offset = hdr->edfparam[i].phys_max / hdr->edfparam[i].bitvalue - hdr->edfparam[i].dig_max;
-    }
+	if ((hdr->edfparam[i].phys_max == hdr->edfparam[i].phys_min) || (hdr->edfparam[i].dig_max == hdr->edfparam[i].dig_min))
+	{
+		hdr->edfparam[i].bitvalue = 1;
+		hdr->edfparam[i].offset = 0;
+	}
+	else
+	{
+    hdr->edfparam[i].bitvalue = (hdr->edfparam[i].phys_max - hdr->edfparam[i].phys_min) / (hdr->edfparam[i].dig_max - hdr->edfparam[i].dig_min);
+    hdr->edfparam[i].offset = hdr->edfparam[i].phys_max / hdr->edfparam[i].bitvalue - hdr->edfparam[i].dig_max;
+	}
   }
 
   rewind(file);
@@ -4947,7 +5318,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       rest -= len;
     }
-    strcpy(str, hdr->plus_patientcode);
+    edflib_strlcpy(str, hdr->plus_patientcode, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     for(i=0; i<len; i++)
@@ -5032,7 +5403,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       rest -= len;
     }
-    strcpy(str, hdr->plus_patient_name);
+    edflib_strlcpy(str, hdr->plus_patient_name, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     for(i=0; i<len; i++)
@@ -5042,13 +5413,22 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
         str[i] = '_';
       }
     }
-    p += fprintf(file, "%s ", str);
+    p += fprintf(file, "%s", str);
   }
   else
   {
     fputc('X', file);
 
     p++;
+  }
+
+  if(rest)
+  {
+    fputc(' ', file);
+
+    p++;
+
+    rest--;
   }
 
   len = strlen(hdr->plus_patient_additional);
@@ -5058,7 +5438,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       len = rest;
     }
-    strcpy(str, hdr->plus_patient_additional);
+    edflib_strlcpy(str, hdr->plus_patient_additional, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     p += fprintf(file, "%s", str);
@@ -5121,7 +5501,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       rest -= len;
     }
-    strcpy(str, hdr->plus_admincode);
+    edflib_strlcpy(str, hdr->plus_admincode, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     for(i=0; i<len; i++)
@@ -5131,11 +5511,20 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
         str[i] = '_';
       }
     }
-    p += fprintf(file, "%s ", str);
+    p += fprintf(file, "%s", str);
   }
   else
   {
-    p += fprintf(file, "X ");
+    p += fprintf(file, "X");
+  }
+
+  if(rest)
+  {
+    fputc(' ', file);
+
+    p++;
+
+    rest--;
   }
 
   len = strlen(hdr->plus_technician);
@@ -5150,7 +5539,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       rest -= len;
     }
-    strcpy(str, hdr->plus_technician);
+    edflib_strlcpy(str, hdr->plus_technician, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     for(i=0; i<len; i++)
@@ -5160,11 +5549,20 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
         str[i] = '_';
       }
     }
-    p += fprintf(file, "%s ", str);
+    p += fprintf(file, "%s", str);
   }
   else
   {
-    p += fprintf(file, "X ");
+    p += fprintf(file, "X");
+  }
+
+  if(rest)
+  {
+    fputc(' ', file);
+
+    p++;
+
+    rest--;
   }
 
   len = strlen(hdr->plus_equipment);
@@ -5179,7 +5577,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       rest -= len;
     }
-    strcpy(str, hdr->plus_equipment);
+    edflib_strlcpy(str, hdr->plus_equipment, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     for(i=0; i<len; i++)
@@ -5189,11 +5587,20 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
         str[i] = '_';
       }
     }
-    p += fprintf(file, "%s ", str);
+    p += fprintf(file, "%s", str);
   }
   else
   {
-    p += fprintf(file, "X ");
+    p += fprintf(file, "X");
+  }
+
+  if(rest)
+  {
+    fputc(' ', file);
+
+    p++;
+
+    rest--;
   }
 
   len = strlen(hdr->plus_recording_additional);
@@ -5203,7 +5610,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
     {
       len = rest;
     }
-    strcpy(str, hdr->plus_recording_additional);
+    edflib_strlcpy(str, hdr->plus_recording_additional, 128);
     edflib_latin1_to_ascii(str, len);
     str[len] = 0;
     p += fprintf(file, "%s", str);
@@ -5229,7 +5636,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   {
     fprintf(file, "BDF+C");
   }
-  else 
+  else
   {
     fprintf(file, "     ");
   }
@@ -5244,8 +5651,8 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   }
   else
   {
-    edflib_sprint_number_nonlocalized(str, hdr->data_record_duration);
-    strcat(str, "        ");
+    edflib_snprint_number_nonlocalized(str, hdr->data_record_duration, 128);
+    edflib_strlcat(str, "        ", 128);
     str[8] = 0;
     fprintf(file, "%s", str);
   }
@@ -5318,7 +5725,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   }
   for(i=0; i<edfsignals; i++)
   {
-    p = edflib_sprint_number_nonlocalized(str, hdr->edfparam[i].phys_min);
+    p = edflib_snprint_number_nonlocalized(str, hdr->edfparam[i].phys_min, 128);
     for(; p<8; p++)
     {
       str[p] = ' ';
@@ -5332,7 +5739,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   }
   for(i=0; i<edfsignals; i++)
   {
-    p = edflib_sprint_number_nonlocalized(str, hdr->edfparam[i].phys_max);
+    p = edflib_snprint_number_nonlocalized(str, hdr->edfparam[i].phys_max, 128);
     for(; p<8; p++)
     {
       str[p] = ' ';
@@ -5437,9 +5844,7 @@ static int edflib_write_edf_header(struct edfhdrblock *hdr)
   {
     fputc(' ', file);
   }
-
-  hdr->total_annot_bytes = EDFLIB_ANNOTATION_BYTES * hdr->nr_annot_chns;
-
+  
   return 0;
 }
 
@@ -6607,11 +7012,16 @@ static int edflib_sprint_int_number_nonlocalized(char *str, int q, int minimum, 
 /* if sign is zero, only negative numbers will have the sign '-' character */
 /* if sign is one, the sign '+' or '-' character will always be printed */
 /* returns the amount of characters printed */
-static int edflib_sprint_ll_number_nonlocalized(char *str, long long q, int minimum, int sign)
+static int edflib_snprint_ll_number_nonlocalized(char *dest, long long q, int minimum, int sign, int sz)
 {
   int flag=0, z, i, j=0;
 
   long long base = 1000000000000000000LL;
+
+  if(sz < 1)
+  {
+    return 0;
+  }
 
   if(minimum < 0)
   {
@@ -6625,7 +7035,7 @@ static int edflib_sprint_ll_number_nonlocalized(char *str, long long q, int mini
 
   if(q < 0LL)
   {
-    str[j++] = '-';
+    dest[j++] = '-';
 
     q = -q;
   }
@@ -6633,8 +7043,15 @@ static int edflib_sprint_ll_number_nonlocalized(char *str, long long q, int mini
   {
     if(sign)
     {
-      str[j++] = '+';
+      dest[j++] = '+';
     }
+  }
+
+  if(j == sz)
+  {
+    dest[--j] = 0;
+
+    return j;
   }
 
   for(i=19; i; i--)
@@ -6650,7 +7067,14 @@ static int edflib_sprint_ll_number_nonlocalized(char *str, long long q, int mini
 
     if(z || flag)
     {
-      str[j++] = '0' + z;
+      dest[j++] = '0' + z;
+
+      if(j == sz)
+      {
+        dest[--j] = 0;
+
+        return j;
+      }
 
       flag = 1;
     }
@@ -6660,33 +7084,48 @@ static int edflib_sprint_ll_number_nonlocalized(char *str, long long q, int mini
 
   if(!flag)
   {
-    str[j++] = '0';
+    dest[j++] = '0';
   }
 
-  str[j] = 0;
+  if(j == sz)
+  {
+    dest[--j] = 0;
 
-  return j;
-}
+    return j;
+  }
+
+  dest[j] = 0;
+
+  return j;}
 
 
-static int edflib_sprint_number_nonlocalized(char *str, double nr)
+static int edflib_snprint_number_nonlocalized(char *dest, double val, int sz)
 {
   int flag=0, z, i, j=0, q, base = 1000000000;
 
   double var;
 
-  q = (int)nr;
+  if(sz < 1)  return 0;
 
-  var = nr - q;
+  q = (int)val;
 
-  if(nr < 0.0)
+  var = val - q;
+
+  if(val < 0.0)
   {
-    str[j++] = '-';
+    dest[j++] = '-';
 
     if(q < 0)
     {
       q = -q;
     }
+  }
+
+  if(j == sz)
+  {
+    dest[--j] = 0;
+
+    return j;
   }
 
   for(i=10; i; i--)
@@ -6697,7 +7136,14 @@ static int edflib_sprint_number_nonlocalized(char *str, double nr)
 
     if(z || flag)
     {
-      str[j++] = '0' + z;
+      dest[j++] = '0' + z;
+
+      if(j == sz)
+      {
+        dest[--j] = 0;
+
+        return j;
+      }
 
       flag = 1;
     }
@@ -6707,7 +7153,14 @@ static int edflib_sprint_number_nonlocalized(char *str, double nr)
 
   if(!flag)
   {
-    str[j++] = '0';
+    dest[j++] = '0';
+  }
+
+  if(j == sz)
+  {
+    dest[--j] = 0;
+
+    return j;
   }
 
   base = 100000000;
@@ -6723,12 +7176,19 @@ static int edflib_sprint_number_nonlocalized(char *str, double nr)
 
   if(!q)
   {
-    str[j] = 0;
+    dest[j] = 0;
 
     return j;
   }
 
-  str[j++] = '.';
+  dest[j++] = '.';
+
+  if(j == sz)
+  {
+    dest[--j] = 0;
+
+    return j;
+  }
 
   for(i=9; i; i--)
   {
@@ -6736,20 +7196,27 @@ static int edflib_sprint_number_nonlocalized(char *str, double nr)
 
     q %= base;
 
-    str[j++] = '0' + z;
+    dest[j++] = '0' + z;
+
+    if(j == sz)
+    {
+      dest[--j] = 0;
+
+      return j;
+    }
 
     base /= 10;
   }
 
-  str[j] = 0;
+  dest[j] = 0;
 
   j--;
 
   for(; j>0; j--)
   {
-    if(str[j] == '0')
+    if(dest[j] == '0')
     {
-      str[j] = 0;
+      dest[j] = 0;
     }
     else
     {
@@ -6765,7 +7232,7 @@ static int edflib_sprint_number_nonlocalized(char *str, double nr)
 
 static double edflib_atof_nonlocalized(const char *str)
 {
-  int i=0, dot_pos=-1, decimals=0, sign=1;
+  int i=0, j, dot_pos=-1, decimals=0, sign=1, exp_pos=-1, exp_sign=1, exp_val=0;
 
   double value, value2=0.0;
 
@@ -6791,6 +7258,13 @@ static double edflib_atof_nonlocalized(const char *str)
   {
     if(str[i] == 0)
     {
+      break;
+    }
+
+    if((str[i] == 'e') || (str[i] == 'E'))
+    {
+      exp_pos = i;
+
       break;
     }
 
@@ -6832,9 +7306,50 @@ static double edflib_atof_nonlocalized(const char *str)
     }
 
     value2 /= i;
+
+    value += value2;
   }
 
-  return(value + value2);
+  if(exp_pos > 0)
+  {
+    i = exp_pos + 1;
+
+    if(str[i])
+    {
+      if(str[i] == '+')
+      {
+        i++;
+      }
+      else if(str[i] == '-')
+        {
+          exp_sign = -1;
+
+          i++;
+        }
+
+      if(str[i])
+      {
+        exp_val = edflib_atoi_nonlocalized(str + i);
+
+        if(exp_val > 0)
+        {
+          for(j=0; j<exp_val; j++)
+          {
+            if(exp_sign > 0)
+            {
+              value *= 10;
+            }
+            else
+            {
+              value /= 10;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return value;
 }
 
 
@@ -6874,5 +7389,106 @@ static int edflib_atoi_nonlocalized(const char *str)
     value += (str[i] - '0');
   }
 
-  return(value * sign);
+  return value * sign;
 }
+
+
+static int edflib_write_tal(struct edfhdrblock *hdr, FILE *file)
+{
+  if ((hdr->edf||hdr->bdf) && !(hdr->edfplus||hdr->bdfplus)){
+	 // EDF/BDF =  means no annotations will be written.
+     return 0;
+  }
+  int p;
+
+  char str[EDFLIB_ANNOTATION_BYTES * (EDFLIB_MAX_ANNOTATION_CHANNELS + 1)];
+
+  p = edflib_snprint_ll_number_nonlocalized(str, (hdr->datarecords * hdr->long_data_record_duration + hdr->starttime_offset) / EDFLIB_TIME_DIMENSION, 0, 1, EDFLIB_ANNOTATION_BYTES * (EDFLIB_MAX_ANNOTATION_CHANNELS + 1));
+  if((hdr->long_data_record_duration % EDFLIB_TIME_DIMENSION) || (hdr->starttime_offset))
+  {
+    str[p++] = '.';
+    p += edflib_snprint_ll_number_nonlocalized(str + p, (hdr->datarecords * hdr->long_data_record_duration + hdr->starttime_offset) % EDFLIB_TIME_DIMENSION, 7, 0, (EDFLIB_ANNOTATION_BYTES * (EDFLIB_MAX_ANNOTATION_CHANNELS + 1)) - p);
+  }
+  str[p++] = 20;
+  str[p++] = 20;
+  for(; p<hdr->total_annot_bytes; p++)
+  {
+    str[p] = 0;
+  }
+
+  if(fwrite(str, hdr->total_annot_bytes, 1, file) != 1)
+  {
+    return -1;
+  }
+
+  return 0;
+}
+
+
+static int edflib_strlcpy(char *dst, const char *src, int sz)
+{
+  int srclen;
+
+  sz--;
+
+  srclen = strlen(src);
+
+  if(srclen > sz)  srclen = sz;
+
+  memcpy(dst, src, srclen);
+
+  dst[srclen] = 0;
+
+  return srclen;
+}
+
+
+static int edflib_strlcat(char *dst, const char *src, int sz)
+{
+  int srclen,
+      dstlen;
+
+  dstlen = strlen(dst);
+
+  sz -= dstlen + 1;
+
+  if(!sz)  return dstlen;
+
+  srclen = strlen(src);
+
+  if(srclen > sz)  srclen = sz;
+
+  memcpy(dst + dstlen, src, srclen);
+
+  dst[dstlen + srclen] = 0;
+
+  return (dstlen + srclen);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

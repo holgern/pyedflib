@@ -176,8 +176,6 @@ cdef class CyEdfReader:
         "number of data records"
         def __get__(self):
             return self.hdr.datarecords_in_file
-            
-
 
     property signals_in_file:
         def __get__(self):
@@ -187,6 +185,10 @@ cdef class CyEdfReader:
         "file duration in seconds"
         def __get__(self):
             return self.hdr.file_duration/EDFLIB_TIME_DIMENSION
+
+    property filetype:
+        def __get__(self):
+            return self.hdr.filetype
 
     property patient:
         "patient name?"

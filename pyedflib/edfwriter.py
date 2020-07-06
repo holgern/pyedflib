@@ -702,13 +702,17 @@ class EdfWriter(object):
                 ind[i] += sampleRates[i]
                 # dataOfOneSecondInd += sampleRates[i]
             if digital:
-                self.blockWriteDigitalSamples(dataOfOneSecond)   
+                success = self.blockWriteDigitalSamples(dataOfOneSecond)
             else:
-                self.blockWritePhysicalSamples(dataOfOneSecond)
-                
+                success = self.blockWritePhysicalSamples(dataOfOneSecond)
+
+            if success<0:
+                raise IOError('Unknown error while calling blockWriteSamples')
+
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
                     notAtEnd = False
+
 
         # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
@@ -720,15 +724,20 @@ class EdfWriter(object):
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
                 # dataOfOneSecondInd += self.channels[i]['sample_rate']
                 if digital:
-                    self.writeDigitalSamples(lastSamples)   
+                    success = self.writeDigitalSamples(lastSamples)
                 else:
-                    self.writePhysicalSamples(lastSamples)
+                    success = self.writePhysicalSamples(lastSamples)
+
+                if success<0:
+                    raise IOError('Unknown error while calling writeSamples')
         # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
         Writes an annotation/event to the file
         """
+        if self.file_type in [FILETYPE_EDF, FILETYPE_BDF]:
+            raise TypeError('Trying to write annotation to EDF/BDF, must use EDF+/BDF+')
         if str_format == 'utf-8':
             if duration_in_seconds >= 0:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), du(description))
