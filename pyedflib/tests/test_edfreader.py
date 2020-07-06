@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015 Holger Nahrstaedt
-from __future__ import division, print_function, absolute_import
 
 import os
 import numpy as np
@@ -12,13 +11,22 @@ import pyedflib
 
 
 class TestEdfReader(unittest.TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpClass(self):
         # data_dir = os.path.join(os.getcwd(), 'data')
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         self.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
         self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
+
+        tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
+        for file in tmpfiles:
+            try:
+                os.remove(os.path.join(data_dir, file))
+            except Exception as e:
+                print(e)
 
     def test_EdfReader(self):
         try:

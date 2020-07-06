@@ -4,7 +4,6 @@
 # Copyright (c) 2016-2017 The pyedflib Developers
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
-from __future__ import division, print_function, absolute_import
 
 import numpy as np
 import sys
@@ -21,26 +20,15 @@ from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, bl
 __all__ = ['EdfWriter']
 
 
-if sys.version_info < (3,):
-    import codecs
+def u(x):
+    return x.decode("utf-8", "strict")
 
-    def u(x):
-        return codecs.unicode_escape_decode(x)[0]
 
-    def du(x):
-        if isinstance(x, unicode):
-            return x.encode("utf-8")
-        else:
-            return x
-else:
-    def u(x):
-        return x.decode("utf-8", "strict")
-
-    def du(x):
-        if isbytestr(x):
-            return x
-        else:
-            return x.encode("utf-8")
+def du(x):
+    if isbytestr(x):
+        return x
+    else:
+        return x.encode("utf-8")
 
 
 def isstr(s):
@@ -702,13 +690,17 @@ class EdfWriter(object):
                 ind[i] += sampleRates[i]
                 # dataOfOneSecondInd += sampleRates[i]
             if digital:
-                self.blockWriteDigitalSamples(dataOfOneSecond)   
+                success = self.blockWriteDigitalSamples(dataOfOneSecond)
             else:
-                self.blockWritePhysicalSamples(dataOfOneSecond)
-                
+                success = self.blockWritePhysicalSamples(dataOfOneSecond)
+
+            if success<0:
+                raise IOError('Unknown error while calling blockWriteSamples')
+
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
                     notAtEnd = False
+
 
         # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
@@ -720,15 +712,20 @@ class EdfWriter(object):
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
                 # dataOfOneSecondInd += self.channels[i]['sample_rate']
                 if digital:
-                    self.writeDigitalSamples(lastSamples)   
+                    success = self.writeDigitalSamples(lastSamples)
                 else:
-                    self.writePhysicalSamples(lastSamples)
+                    success = self.writePhysicalSamples(lastSamples)
+
+                if success<0:
+                    raise IOError('Unknown error while calling writeSamples')
         # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
         Writes an annotation/event to the file
         """
+        if self.file_type in [FILETYPE_EDF, FILETYPE_BDF]:
+            raise TypeError('Trying to write annotation to EDF/BDF, must use EDF+/BDF+')
         if str_format == 'utf-8':
             if duration_in_seconds >= 0:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), du(description))
