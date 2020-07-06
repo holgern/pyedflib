@@ -4,7 +4,6 @@
 # Copyright (c) 2016-2017 The pyedflib Developers
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
-from __future__ import division, print_function, absolute_import
 
 import numpy as np
 import sys
@@ -21,26 +20,15 @@ from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, bl
 __all__ = ['EdfWriter']
 
 
-if sys.version_info < (3,):
-    import codecs
+def u(x):
+    return x.decode("utf-8", "strict")
 
-    def u(x):
-        return codecs.unicode_escape_decode(x)[0]
 
-    def du(x):
-        if isinstance(x, unicode):
-            return x.encode("utf-8")
-        else:
-            return x
-else:
-    def u(x):
-        return x.decode("utf-8", "strict")
-
-    def du(x):
-        if isbytestr(x):
-            return x
-        else:
-            return x.encode("utf-8")
+def du(x):
+    if isbytestr(x):
+        return x
+    else:
+        return x.encode("utf-8")
 
 
 def isstr(s):

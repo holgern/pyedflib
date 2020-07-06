@@ -5,7 +5,6 @@
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
 
-from __future__ import division, print_function, absolute_import
 from datetime import datetime
 import numpy as np
 
@@ -82,15 +81,7 @@ class EdfReader(CyEdfReader):
         return result
 
     def _convert_string(self,s):
-        UNICODE_EXISTS = False
-        try:
-            UNICODE_EXISTS = bool(type(unicode))
-        except NameError:
-            # unicode = lambda s: str(s)
-            UNICODE_EXISTS = False
-        if UNICODE_EXISTS:
-            return unicode(s, "utf-8")
-        elif isinstance(s, bytes):
+        if isinstance(s, bytes):
             return s.decode("latin")
         else:
             return s.decode("utf-8", "strict")

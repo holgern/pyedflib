@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015 Holger Nahrstaedt
-from __future__ import division, print_function, absolute_import
+
 import os, sys
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
@@ -18,9 +18,9 @@ class TestHighLevel(unittest.TestCase):
 
         cls.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
         cls.test_generator = os.path.join(data_dir, 'test_generator.edf')
-        cls.test_accented = os.path.join(data_dir, u"tmp_áä'üöß.edf")
-        cls.anonymized = os.path.join(data_dir, u"tmp_anonymized.edf")
-        cls.personalized = os.path.join(data_dir, u"tmp_personalized.edf")
+        cls.test_accented = os.path.join(data_dir, "tmp_áä'üöß.edf")
+        cls.anonymized = os.path.join(data_dir, "tmp_anonymized.edf")
+        cls.personalized = os.path.join(data_dir, "tmp_personalized.edf")
         cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
         cls.tmp_testfile = os.path.join(data_dir, 'tmp')
 
