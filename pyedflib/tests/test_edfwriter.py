@@ -94,6 +94,32 @@ class TestEdfWriter(unittest.TestCase):
             raise IOError('Writetests not successfully, see log for details')
 
 
+    def test_subsecond_starttime(self):
+
+        f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                                file_type=pyedflib.FILETYPE_EDFPLUS)
+
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 32767, 'digital_min': -32768,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+        startdate = datetime(2017, 1, 2, 13, 14, 15, 250)
+        header = {'technician': 'tec1', 'recording_additional': 'recAdd1', 'patientname': 'pat1',
+                  'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
+                  'admincode':'admin1','gender':1,'startdate':startdate,'birthdate':date(1951, 8, 2)}
+        f.setHeader(header)
+        f.setStartdatetime(startdate)
+        f.setSignalHeader(0, channel_info)
+        data = np.ones(100) * 0.1
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+        del f
+
+        f = pyedflib.EdfReader(self.edfplus_data_file)
+        startdate2 = f.getStartdatetime()
+        assert startdate2==startdate, 'write {} != read {}'.format(startdate, startdate2)
+        del f
+
 
 
     def test_EdfWriter_BDFplus(self):

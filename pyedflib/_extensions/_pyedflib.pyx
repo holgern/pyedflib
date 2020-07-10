@@ -546,6 +546,10 @@ def set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
     return c_edf.edf_set_startdatetime(handle, startdate_year, startdate_month, startdate_day,
                                  starttime_hour, starttime_minute, starttime_second)
 
+def set_starttime_offset(handle, starttime_offset):
+    """int edf_set_subsecond_starttime(int handle, int subsecond)"""
+    return c_edf.edf_set_subsecond_starttime(handle, subsecond)
+
 def set_datarecord_duration(handle, duration):
     """int edf_set_datarecord_duration(int handle, int duration)"""
     return c_edf.edf_set_datarecord_duration(handle, duration)
