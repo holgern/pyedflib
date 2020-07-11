@@ -111,7 +111,8 @@ class EdfWriter(object):
         self.patient_additional = ''
         self.admincode = ''
         self.gender = None
-        self.recording_start_time = datetime.now()
+        self.recording_start_time = datetime.now().replace(microsecond=0)
+
         self.birthdate = ''
         self.duration = 1
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
@@ -157,8 +158,8 @@ class EdfWriter(object):
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
         # subseconds are noted in nanoseconds, so we multiply by 100
-
-        set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
+        if self.recording_start_time.microsecond>0:
+            set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
         if isstr(self.birthdate):
             if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()

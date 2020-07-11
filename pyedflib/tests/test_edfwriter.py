@@ -691,7 +691,9 @@ class TestEdfWriter(unittest.TestCase):
         f.writeAnnotation(1.23, 0.2, b'Zaehne')
         f.writeAnnotation(0.25, -1, b'Fuss')
         f.writeAnnotation(1.25, 0, b'abc')
+
         del f
+
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
         self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
