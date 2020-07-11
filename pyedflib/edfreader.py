@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2015 - 2017 Holger Nahrstaedt
+# Copyright (c) 2019 - 2020 Simon Kern
+# Copyright (c) 2015 - 2020 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # Copyright (c) 2016-2017 The pyedflib Developers
 #                         <https://github.com/holgern/pyedflib>
@@ -319,8 +320,11 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
+        # denoted as long long in nanoseconds, we need to transfer it to microsecond
+        subsecond = self.starttime_subsecond//100
         return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
-                                 self.starttime_hour, self.starttime_minute, self.starttime_second)
+                                 self.starttime_hour, self.starttime_minute, self.starttime_second,
+                                 subsecond)
 
     def getBirthdate(self, string=True):
         """

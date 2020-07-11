@@ -49,10 +49,10 @@ cdef extern from "c/edflib.h":
         int startdate_day
         int startdate_month
         int startdate_year
-        long long int starttime_subsecond
         int starttime_second
         int starttime_minute
         int starttime_hour
+        long long starttime_subsecond
         char * patient
         char * recording
         char * patientcode
@@ -86,6 +86,7 @@ cdef extern from "c/edflib.h":
     int edf_set_prefilter(int, int, char *)
     long long int edfseek(int, int, long long int, int)
     int edf_set_startdatetime(int, int, int, int, int, int, int)
+    int edf_set_subsecond_starttime(int, int)
     int edf_set_datarecord_duration(int, int)
     int edf_set_number_of_annotation_signals(int, int)
 

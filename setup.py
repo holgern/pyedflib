@@ -235,7 +235,10 @@ class develop_build_clib(develop):
         self.reinitialize_command('build_ext', inplace=1)
         self.run_command('build_ext')
 
-        self.install_site_py()  # ensure that target dir is site-safe
+        try:
+            self.install_site_py()  # ensure that target dir is site-safe
+        except Exception as e:
+            print(e)
 
         if setuptools.bootstrap_install_from:
             self.easy_install(setuptools.bootstrap_install_from)

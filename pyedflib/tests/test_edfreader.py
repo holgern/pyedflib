@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
 import os
@@ -20,6 +21,7 @@ class TestEdfReader(unittest.TestCase):
         self.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
         self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
+        self.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
 
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
         for file in tmpfiles:
@@ -100,6 +102,11 @@ class TestEdfReader(unittest.TestCase):
         f.file_info()
         f.file_info_long()
         f.close()
+
+    def test_EdfReader_subsecond(self):
+        f = pyedflib.EdfReader(self.edf_subsecond)
+        self.assertEqual(f.getStartdatetime(), datetime(2020, 1, 24, 4, 5, 56, 39453))
+
 
     def test_EdfReader_ReadAnnotations(self):
         try:
