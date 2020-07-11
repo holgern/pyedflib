@@ -157,8 +157,8 @@ class EdfWriter(object):
                           self.recording_start_time.day, self.recording_start_time.hour,
                           self.recording_start_time.minute, self.recording_start_time.second)
         # subseconds are noted in nanoseconds, so we multiply by 100
-        if self.recording_start_time.microsecond>0:
-            set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
+
+        set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
         if isstr(self.birthdate):
             if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
