@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
 import os
@@ -93,6 +94,70 @@ class TestEdfWriter(unittest.TestCase):
         if error:
             raise IOError('Writetests not successfully, see log for details')
 
+
+    def test_subsecond_starttime(self):
+
+        f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                                file_type=pyedflib.FILETYPE_EDFPLUS)
+
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 32767, 'digital_min': -32768,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+        startdate = datetime(2017, 1, 2, 13, 14, 15, 250)
+        header = {'technician': 'tec1', 'recording_additional': 'recAdd1', 'patientname': 'pat1',
+                  'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
+                  'admincode':'admin1','gender':1,'startdate':startdate,'birthdate':date(1951, 8, 2)}
+        f.setHeader(header)
+        f.setStartdatetime(startdate)
+        f.setSignalHeader(0, channel_info)
+        data = np.ones(100) * 0.1
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+        assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+        del f
+
+        f = pyedflib.EdfReader(self.edfplus_data_file)
+        startdate2 = f.getStartdatetime()
+        assert startdate2==startdate, 'write {} != read {}'.format(startdate, startdate2)
+        del f
+
+
+    def test_subsecond_annotation(self):
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+        f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
+                               file_type=pyedflib.FILETYPE_BDFPLUS)
+        f.setSignalHeader(0,channel_info)
+        data = np.ones(100) * 0.1
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writeAnnotation(1.23456, 0.2222, u"annotation1_ä")
+        f.writeAnnotation(0.2567, -1, u"annotation2_ü")
+        f.writeAnnotation(1.2567, 0, u"annotation3_ö")
+        f.writeAnnotation(1.3067, -1, u"annotation4_ß")
+        del f
+
+        f = pyedflib.EdfReader(self.bdfplus_data_file)
+        self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
+
+        ann_time, ann_duration, ann_text = f.readAnnotations()
+        del f
+        np.testing.assert_almost_equal(ann_time[0], 1.2345, decimal=4)
+        np.testing.assert_almost_equal(ann_duration[0], 0.2222, decimal=4)
+        np.testing.assert_equal(ann_text[0], "annotation1_..")
+        np.testing.assert_almost_equal(ann_time[1], 0.2567, decimal=4)
+        np.testing.assert_almost_equal(ann_duration[1], -1)
+        np.testing.assert_equal(ann_text[1], "annotation2_..")
+        np.testing.assert_almost_equal(ann_time[2], 1.2567, decimal=4)
+        np.testing.assert_almost_equal(ann_duration[2], 0)
+        np.testing.assert_equal(ann_text[2], "annotation3_..")
+        np.testing.assert_almost_equal(ann_time[3], 1.3067, decimal=4)
+        np.testing.assert_almost_equal(ann_duration[3], -1)
+        np.testing.assert_equal(ann_text[3], "annotation4_..")
 
 
 
@@ -626,7 +691,9 @@ class TestEdfWriter(unittest.TestCase):
         f.writeAnnotation(1.23, 0.2, b'Zaehne')
         f.writeAnnotation(0.25, -1, b'Fuss')
         f.writeAnnotation(1.25, 0, b'abc')
+
         del f
+
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
         self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
