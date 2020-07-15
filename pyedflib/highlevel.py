@@ -496,7 +496,7 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 
 
-def read_edf_header(edf_file):
+def read_edf_header(edf_file, read_annotations=True):
     """
     Reads the header and signal headers of an EDF file and it's annotations
 
@@ -513,13 +513,15 @@ def read_edf_header(edf_file):
     """
     assert os.path.isfile(edf_file), 'file {} does not exist'.format(edf_file)
     with pyedflib.EdfReader(edf_file) as f:
-        annotations = f.read_annotation()
-        annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
+
         summary = f.getHeader()
         summary['Duration'] = f.getFileDuration()
         summary['SignalHeaders'] = f.getSignalHeaders()
         summary['channels'] = f.getSignalLabels()
-        summary['annotations'] = annotations
+        if read_annotations:
+            annotations = f.read_annotation()
+            annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
+            summary['annotations'] = annotations
     del f
     return summary
 
