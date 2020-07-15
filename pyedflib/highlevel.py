@@ -514,7 +514,7 @@ def read_edf_header(edf_file):
     assert os.path.isfile(edf_file), 'file {} does not exist'.format(edf_file)
     with pyedflib.EdfReader(edf_file) as f:
         annotations = f.read_annotation()
-        annotations = [[t//10000000, d if d else -1, x] for t,d,x in annotations]
+        annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
         summary = f.getHeader()
         summary['Duration'] = f.getFileDuration()
         summary['SignalHeaders'] = f.getSignalHeaders()

@@ -321,7 +321,7 @@ class EdfReader(CyEdfReader):
 
         """
         # denoted as long long in nanoseconds, we need to transfer it to microsecond
-        subsecond = self.starttime_subsecond//100
+        subsecond = np.round(self.starttime_subsecond/100).astype(int)
         return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
                                  self.starttime_hour, self.starttime_minute, self.starttime_second,
                                  subsecond)
