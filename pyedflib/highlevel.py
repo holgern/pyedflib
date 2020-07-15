@@ -416,9 +416,9 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
 
     if file_type==-1:
         ext = os.path.splitext(edf_file)[-1]
-        if ext == '.edf':
+        if ext.lower() == '.edf':
             file_type = pyedflib.FILETYPE_EDFPLUS
-        elif ext == '.bdf':
+        elif ext.lower() == '.bdf':
             file_type = pyedflib.FILETYPE_BDFPLUS
         else:
             raise ValueError('Unknown extension {}'.format(ext))
