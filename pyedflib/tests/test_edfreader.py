@@ -105,7 +105,7 @@ class TestEdfReader(unittest.TestCase):
 
     def test_EdfReader_subsecond(self):
         f = pyedflib.EdfReader(self.edf_subsecond)
-        self.assertEqual(f.getStartdatetime(), datetime(2020, 1, 24, 4, 5, 56, 39453))
+        self.assertEqual(f.getStartdatetime(), datetime(2020, 1, 24, 4, 5, 56, 394531))
 
 
     def test_EdfReader_ReadAnnotations(self):

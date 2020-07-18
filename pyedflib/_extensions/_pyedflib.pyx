@@ -389,10 +389,10 @@ def set_patientcode(int handle, char *patientcode):
     return c_edf.edf_set_patientcode(handle, patientcode)
 
 cpdef int write_annotation_latin1(int handle, long long onset, long long duration, char *description):
-        return c_edf.edfwrite_annotation_latin1(handle, onset, duration, description)
+    return c_edf.edfwrite_annotation_latin1(handle, onset, duration, description)
 
 cpdef int write_annotation_utf8(int handle, long long onset, long long duration, char *description):
-        return c_edf.edfwrite_annotation_utf8(handle, onset, duration, description)
+    return c_edf.edfwrite_annotation_utf8(handle, onset, duration, description)
 
 cpdef int set_technician(int handle, char *technician):
     return c_edf.edf_set_technician(handle, technician)

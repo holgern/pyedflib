@@ -642,6 +642,8 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_duration[3], -1)
         np.testing.assert_equal(ann_text[3], "annotation4_..")
 
+
+
     def test_AnnotationWritingUTF8(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,

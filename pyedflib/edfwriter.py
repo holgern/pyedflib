@@ -159,7 +159,7 @@ class EdfWriter(object):
                           self.recording_start_time.minute, self.recording_start_time.second)
         # subseconds are noted in nanoseconds, so we multiply by 100
         if self.recording_start_time.microsecond>0:
-            set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
+            set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*10)
         if isstr(self.birthdate):
             if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
@@ -730,16 +730,18 @@ class EdfWriter(object):
         """
         if self.file_type in [FILETYPE_EDF, FILETYPE_BDF]:
             raise TypeError('Trying to write annotation to EDF/BDF, must use EDF+/BDF+')
-        if str_format == 'utf-8':
-            if duration_in_seconds >= 0:
-                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), du(description))
-            else:
-                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, du(description))
+
+        # convert to microseconds
+        onset_in_seconds = np.round(onset_in_seconds*10000).astype(np.uint64)
+        if duration_in_seconds >= 0:
+            duration_in_seconds = np.round(duration_in_seconds*10000).astype(np.uint64)
         else:
-            if duration_in_seconds >= 0:
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), u(description).encode('latin1'))
-            else:
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(int), -1, u(description).encode('latin1'))
+            duration_in_seconds = -1
+
+        if str_format == 'utf-8':
+            return write_annotation_utf8(self.handle, onset_in_seconds, duration_in_seconds, du(description))
+        else:
+            return write_annotation_latin1(self.handle, onset_in_seconds, duration_in_seconds, u(description).encode('latin1'))
 
     def close(self):
         """

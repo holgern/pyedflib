@@ -19,10 +19,13 @@ class TestHighLevel(unittest.TestCase):
 
         cls.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
         cls.test_generator = os.path.join(data_dir, 'test_generator.edf')
+        cls.test_subsecond = os.path.join(data_dir, 'test_subsecond.edf')
         cls.test_accented = os.path.join(data_dir, "tmp_áä'üöß.edf")
+        cls.test_annotations = os.path.join(data_dir, 'C:/Users/Simon/Desktop/pyedflib/pyedflib/tests/data/test_annotations.EDF')
         cls.anonymized = os.path.join(data_dir, "tmp_anonymized.edf")
         cls.personalized = os.path.join(data_dir, "tmp_personalized.edf")
         cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
+        cls.tmp_annotations = os.path.join(data_dir, 'tmp_annotations.edf')
         cls.tmp_testfile = os.path.join(data_dir, 'tmp')
 
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
@@ -31,6 +34,25 @@ class TestHighLevel(unittest.TestCase):
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
+
+
+
+    def test_write_annotation_subsecond(self):
+        edf_file = self.tmp_annotations
+
+        signals = np.random.rand(1,128*30)
+        sheads = highlevel.make_signal_headers(['dummy'], sample_rate=128)
+        header = highlevel.make_header()
+
+        header['annotations'] = [[0.0175, -1, 'dummy_annotation']]
+
+        highlevel.write_edf(edf_file, signals, sheads, header)
+        _, _, header2 = highlevel.read_edf(edf_file)
+
+        annot1, annot2 = header['annotations'], header2['annotations']
+        self.assertEqual( header['startdate'], header2['startdate'])
+        self.assertEqual( annot1[0][0], annot2[0][0])
+
 
 
     def test_dig2phys_calc(self):
