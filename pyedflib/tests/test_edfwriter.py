@@ -710,6 +710,26 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_duration[2], 0)
         np.testing.assert_equal(ann_text[2], "abc")
 
+    def test_physical_range_inequality(self):
+        # Prepare data
+        channel_data1 = np.sin(np.arange(1,1001))
+        channel_info1 = {'label': 'test_label_sin', 'dimension': 'mV', 'sample_rate': 100,
+                        'physical_max': max(channel_data1), 'physical_min': min(channel_data1),
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'pre1', 'transducer': 'trans1'}
+
+        channel_data2 = np.zeros((1000,))
+        channel_info2 = {'label': 'test_label_zero', 'dimension': 'mV', 'sample_rate': 100,
+                            'physical_max': max(channel_data2), 'physical_min': min(channel_data2),
+                            'digital_max': 8388607, 'digital_min': -8388608,
+                            'prefilter': 'pre1', 'transducer': 'trans1'}
+        f = pyedflib.EdfWriter(self.edf_data_file, 2,
+                                file_type=pyedflib.FILETYPE_BDF)
+        f.setSignalHeader(0,channel_info1)
+        f.setSignalHeader(1,channel_info2)
+        
+        # Test that assertion fails
+        self.assertRaises(AssertionError, f.writeSamples, [channel_data1, channel_data2])
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
