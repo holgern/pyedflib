@@ -445,8 +445,6 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
             assert dmax>=s.max(), \
             'digital_min is {}, but signal_min is {}' \
             'for channel {}'.format(dmax, s.max(), label)
-            assert pmin != pmax, \
-            'physical_min {} should be different from physical_max {}'.format(pmin,pmax)
         else: # only warning, as this will not lead to clipping
             assert pmin<=s.min(), \
             'phys_min is {}, but signal_min is {} ' \
