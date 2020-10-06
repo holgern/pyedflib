@@ -46,7 +46,9 @@ def isbytestr(s):
 def gender2int(gender):
     if isinstance(gender, int) or gender is None:
         return gender
-    if gender.lower() in ["female", "woman", "f", "w"]:
+    elif gender.lower() in ['', 'x', 'xx', 'xxx', 'unknown', '?', '??']:
+        return None
+    elif gender.lower() in ["female", "woman", "f", "w"]:
         return 0
     elif gender.lower() in  ["male", "man", "m"]:
         return 1
