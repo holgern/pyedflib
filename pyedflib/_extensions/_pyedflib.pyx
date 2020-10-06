@@ -525,6 +525,7 @@ def rewind(handle, edfsignal):
     
 def set_gender(handle, gender):
     """int edf_set_gender(int handle, int gender)"""
+    if gender is None: return 0 #don't set gender at all to prevent default 'F'
     return c_edf.edf_set_gender(handle, gender)
 
 def set_physical_dimension(handle, edfsignal, phys_dim):
