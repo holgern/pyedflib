@@ -667,6 +667,11 @@ class EdfWriter(object):
             if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
                 raise TypeError('Digital = True requires all signals in int')
 
+        # Check that all channels have different physical_minimum and physical_maximum
+        for chan in self.channels:
+            assert chan['physical_min'] != chan['physical_max'], \
+            'In chan {} physical_min {} should be different from '\
+            'physical_max {}'.format(chan['label'], chan['physical_min'], chan['physical_max'])
 
         ind = []
         notAtEnd = True
