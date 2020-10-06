@@ -44,14 +44,16 @@ def isbytestr(s):
 
 
 def gender2int(gender):
-    if isinstance(gender, int):
+    if isinstance(gender, int) or gender is None:
         return gender
-    if gender in ["Female", "FEMALE", "female", "f", "F"]:
+    elif gender.lower() in ['', 'x', 'xx', 'xxx', 'unknown', '?', '??']:
+        return None
+    elif gender.lower() in ["female", "woman", "f", "w"]:
         return 0
-    elif gender in ["Male", "MALE", "male", "m", "M"]:
+    elif gender.lower() in  ["male", "man", "m"]:
         return 1
     else:
-        return 0
+        raise ValueError("Unknown gender: '{}'".format(gender))
 
 
 class ChannelDoesNotExist(Exception):
@@ -147,10 +149,7 @@ class EdfWriter(object):
         set_patient_additional(self.handle, du(self.patient_additional))
         set_equipment(self.handle, du(self.equipment))
         set_admincode(self.handle, du(self.admincode))
-        if isinstance(self.gender, int):
-            set_gender(self.handle, self.gender)
-        else:
-            set_gender(self.handle, gender2int(self.gender))
+        set_gender(self.handle, gender2int(self.gender))
 
         set_datarecord_duration(self.handle, self.duration)
         set_number_of_annotation_signals(self.handle, self.number_of_annotations)
@@ -334,11 +333,7 @@ class EdfWriter(object):
         gender : int
             1 is male, 0 is female
         """
-        if isinstance(gender, int):
-            self.gender = gender
-        else:
-            self.gender = gender2int(gender)
-
+        self.gender = gender2int(gender)
         self.update_header()
 
     def setDatarecordDuration(self, duration):

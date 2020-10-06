@@ -159,8 +159,6 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_duration[3], -1)
         np.testing.assert_equal(ann_text[3], "annotation4_..")
 
-
-
     def test_EdfWriter_BDFplus(self):
         channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
@@ -730,6 +728,40 @@ class TestEdfWriter(unittest.TestCase):
         
         # Test that assertion fails
         self.assertRaises(AssertionError, f.writeSamples, [channel_data1, channel_data2])
+
+
+    def test_gender_setting_correctly(self):
+        channel_info1 = {'label': 'test_label1', 'dimension': 'mV', 'sample_rate': 100,
+                         'physical_max': 3.0, 'physical_min': -3.0,
+                         'digital_max': 32767, 'digital_min': -32768,
+                         'prefilter': 'pre1', 'transducer': 'trans1'}
+        channel_info2 = {'label': 'test_label2', 'dimension': 'mV', 'sample_rate': 100,
+                         'physical_max': 3.0, 'physical_min': -3.0,
+                         'digital_max': 32767, 'digital_min': -32768,
+                         'prefilter': 'pre1', 'transducer': 'trans1'}
+
+        gender_mapping = {'X': '', 'XX':'', 'XXX':'', '?':'', None:'',
+                          'M': 'Male', 'male':'Male', 'man':'Male', 1:'Male',
+                          'F':'Female', 'female':'Female', 0:'Female'}
+
+        for gender, expected in gender_mapping.items():
+            f = pyedflib.EdfWriter(self.edf_data_file, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
+            f.setGender(gender)
+            f.setSignalHeader(0, channel_info1)
+            f.setSignalHeader(1, channel_info2)
+            data = np.ones(100) * 0.1
+            assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+            assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+            del f
+    
+            f = pyedflib.EdfReader(self.edf_data_file)
+            np.testing.assert_equal(f.getLabel(0), 'test_label1')
+            np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
+            np.testing.assert_equal(f.getSampleFrequency(0), 100)
+            self.assertEqual(f.getGender(), expected,
+                             'set {}, but {}!={} '.format(gender, expected, f.getGender()))
+            del f
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
