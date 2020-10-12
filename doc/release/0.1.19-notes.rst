@@ -1,0 +1,23 @@
+=============================
+PyEDFlib 0.1.19 Release Notes
+=============================
+
+.. contents::
+
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+* LucaCerina
+
+Issues closed for v0.1.19
+-------------------------
+* Fix issue #87 - Gender and patient name can't be properly anonymized
+
+Pull requests for v0.1.19
+-------------------------
+* PR #85 - Add subsecond precision
+* PR #89 - Assert that physical_min is different from physical_max
+* PR #90 - Add support for gender removal
