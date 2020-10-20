@@ -36,7 +36,7 @@ def tqdm(iteratable, *args, **kwargs):
 
     install this dependency with `pip install tqdm`
 
-    if not installed this is just a pass through iterator
+    if not installed this is just a pass through iterator.
     """
     try:
         from tqdm import tqdm as iterator

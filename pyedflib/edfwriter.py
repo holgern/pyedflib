@@ -392,7 +392,7 @@ class EdfWriter(object):
             Sets the recording start Time
         """
         if not isinstance(recording_start_time, datetime):
-            self.recording_start_time = datetime.strptime(recording_start_time,"%d %b %Y %H:%M:%S")
+            recording_start_time = datetime.strptime(recording_start_time,"%d %b %Y %H:%M:%S")
         self.recording_start_time = recording_start_time
         self.update_header()
 
