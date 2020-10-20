@@ -416,6 +416,8 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
+        if isinstance(birthdate, str):
+            birthdate = datetime.strptime(birthdate, "%d.%m.%Y")
         self.birthdate = birthdate
         self.update_header()
 
