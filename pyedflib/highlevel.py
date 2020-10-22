@@ -406,6 +406,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         set the block size for writing. Should be divisor of signal length
         in seconds. Higher values mean faster writing speed, but if it
         is not a divisor of the signal duration, it will append zeros.
+        Can be any value between 1 and 60, -1 will auto-infer the best value.
 
     Returns
     -------
@@ -420,7 +421,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         'signals and signal_headers must be same length'
     assert file_type in [-1, 0, 1, 2, 3], \
         'filetype must be in range -1, 3'
-    assert block_size<=60 and block_size>=-1, \
+    assert block_size<=60 and block_size>=-1 and block_size!=0, \
         'blocksize must be smaller or equal to 60'
 
     # copy objects to prevent accidential changes to mutable objects
@@ -451,6 +452,10 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     if block_size == -1:
         signal_duration = len(signals[0]) // signal_headers[0]['sample_rate']
         block_size = max([d for d in range(1, 61) if signal_duration % d == 0])
+    else:
+        if signal_duration % block_size != 0:
+            warnings.warn('Signal length is not dividable by block_size. '+
+                          'The file will have a zeros appended.')
 
     # check dmin, dmax and pmin, pmax dont exceed signal min/max
     for sig, shead in zip(signals, signal_headers):
