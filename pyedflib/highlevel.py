@@ -25,6 +25,7 @@ import os
 import numpy as np
 import warnings
 import pyedflib
+from copy import deepcopy
 from datetime import datetime
 # from . import EdfWriter
 # from . import EdfReader
@@ -242,8 +243,9 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
 
 
 def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
-                       physical_min=-200, physical_max=200, digital_min=-32768,
-                       digital_max=32767, transducer='', prefiler=''):
+                       physical_min=-200.0, physical_max=200.0,
+                       digital_min=-32768, digital_max=32767,
+                       transducer='', prefiler=''):
     """
     A function that creates signal headers for a given list of channel labels.
     This can only be used if each channel has the same sampling frequency
@@ -375,7 +377,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
 
 
 def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
-              file_type=-1):
+              file_type=-1, block_size=-1):
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. EDF+/BDF+ is selected based on the filename extension,
@@ -400,6 +402,10 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     filetype: int, optional
         choose filetype for saving.
         EDF = 0, EDF+ = 1, BDF = 2, BDF+ = 3, automatic from extension = -1
+    block_size : int
+        set the block size for writing. Should be divisor of signal length
+        in seconds. Higher values mean faster writing speed, but if it
+        is not a divisor of the signal duration, it will append zeros.
 
     Returns
     -------
@@ -412,7 +418,14 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         'signal headers must be list'
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
-    assert file_type in [-1, 0, 1, 2, 3], 'filetype must be in range -1, 3'
+    assert file_type in [-1, 0, 1, 2, 3], \
+        'filetype must be in range -1, 3'
+    assert block_size<=60 and block_size>=-1, \
+        'blocksize must be smaller or equal to 60'
+
+    # copy objects to prevent accidential changes to mutable objects
+    header = deepcopy(header)
+    signal_headers = deepcopy(signal_headers)
 
     if file_type==-1:
         ext = os.path.splitext(edf_file)[-1]
@@ -425,37 +438,48 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
 
     n_channels = len(signals)
 
-    if header is None: header = {}
+    # if there is no header, we create one with dummy values
+    if header is None:
+        header = {}
     default_header = make_header()
     default_header.update(header)
     header = default_header
-    
-    annotations = header.get('annotations', [])
 
+    # block_size sets the size of each writing block and should be a divisor
+    # of the length of the signal. If it is not, the remainder of the file
+    # will be filled with zeros.
+    if block_size == -1:
+        signal_duration = len(signals[0]) // signal_headers[0]['sample_rate']
+        block_size = max([d for d in range(1, 61) if signal_duration % d == 0])
 
     # check dmin, dmax and pmin, pmax dont exceed signal min/max
-    for s, sh in zip(signals, signal_headers):
-        dmin, dmax = sh['digital_min'], sh['digital_max']
-        pmin, pmax = sh['physical_min'], sh['physical_max']
-        label = sh['label']
+    for sig, shead in zip(signals, signal_headers):
+        dmin, dmax = shead['digital_min'], shead['digital_max']
+        pmin, pmax = shead['physical_min'], shead['physical_max']
+        label = shead['label']
         if digital: # exception as it will lead to clipping
-            assert dmin<=s.min(), \
+            assert dmin<=sig.min(), \
             'digital_min is {}, but signal_min is {}' \
-            'for channel {}'.format(dmin, s.min(), label)
-            assert dmax>=s.max(), \
+            'for channel {}'.format(dmin, sig.min(), label)
+            assert dmax>=sig.max(), \
             'digital_min is {}, but signal_min is {}' \
-            'for channel {}'.format(dmax, s.max(), label)
+            'for channel {}'.format(dmax, sig.max(), label)
             assert pmin != pmax, \
             'physical_min {} should be different from physical_max {}'.format(pmin,pmax)
         else: # only warning, as this will not lead to clipping
-            assert pmin<=s.min(), \
+            assert pmin<=sig.min(), \
             'phys_min is {}, but signal_min is {} ' \
-            'for channel {}'.format(pmin, s.min(), label)
-            assert pmax>=s.max(), \
+            'for channel {}'.format(pmin, sig.min(), label)
+            assert pmax>=sig.max(), \
             'phys_max is {}, but signal_max is {} ' \
-            'for channel {}'.format(pmax, s.max(), label)
+            'for channel {}'.format(pmax, sig.max(), label)
+        shead['sample_rate'] *= block_size
+
+    # get annotations, in format [[timepoint, duration, description], [...]]
+    annotations = header.get('annotations', [])
 
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:
+        f.setDatarecordDuration(int(100000 * block_size))
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)
         f.writeSamples(signals, digital=digital)

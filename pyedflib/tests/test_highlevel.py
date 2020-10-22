@@ -56,7 +56,7 @@ class TestHighLevel(unittest.TestCase):
         
         header = highlevel.make_header(technician='tech', recording_additional='r_add',
                                                 patientname='name', patient_additional='p_add',
-                                                patientcode='42', equipment='eeg', admincode='420',
+                                                patientcode='42', equipment='eeg', admincode='120',
                                                 gender='Male', startdate=startdate,birthdate='05.09.1980')
         annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
 
@@ -249,6 +249,37 @@ class TestHighLevel(unittest.TestCase):
         
         with self.assertRaises(AssertionError):
             highlevel.drop_channels(self.drop_from, to_keep=['ch1'], to_drop=['ch3'])
+
+
+    def test_blocksize_auto(self):
+        """ test that the blocksize parameter works as intended"""
+        file = '{}.edf'.format(self.tmp_testfile)
+        siglen = 256* 155
+        signals = np.random.rand(10, siglen)
+        sheads = highlevel.make_signal_headers([str(x) for x in range(10)],
+                                              sample_rate=256, physical_max=1,
+                                              physical_min=-1)
+
+        valid_block_sizes = [-1, 1, 5, 31]
+        for block_size in valid_block_sizes:
+            highlevel.write_edf(file, signals, sheads, block_size=block_size)
+            signals2, _, _ = highlevel.read_edf(file)
+            np.testing.assert_allclose(signals, signals2, atol=0.01)
+
+        with self.assertRaises(AssertionError):
+            highlevel.write_edf(file, signals, sheads, block_size=61)
+
+        with self.assertRaises(AssertionError):
+            highlevel.write_edf(file, signals, sheads, block_size=-2)
+
+        # now test non-divisor block_size
+        siglen = signals.shape[-1]
+        highlevel.write_edf(file, signals, sheads, block_size=60)
+        signals2, _, _ = highlevel.read_edf(file)
+        self.assertEqual(signals2.shape, (10, 256*60*3))
+        np.testing.assert_allclose(signals2[:,:siglen], signals, atol=0.01)
+        np.testing.assert_allclose(signals2[:,siglen:], np.zeros([10, 25*256]),
+                                   atol=0.0001)
 
 
     # def test_rename_channels(self):
