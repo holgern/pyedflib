@@ -377,7 +377,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
 
 
 def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
-              file_type=-1, block_size=-1):
+              file_type=-1, block_size=1):
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. EDF+/BDF+ is selected based on the filename extension,
@@ -406,7 +406,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         set the block size for writing. Should be divisor of signal length
         in seconds. Higher values mean faster writing speed, but if it
         is not a divisor of the signal duration, it will append zeros.
-        Can be any value between 1 and 60, -1 will auto-infer the best value.
+        Can be any value between 1=><=60, -1 will auto-infer the fastest value.
 
     Returns
     -------
