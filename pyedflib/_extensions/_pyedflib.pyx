@@ -124,7 +124,8 @@ cdef class CyEdfReader:
         if result == 0:
             return True
         else:
-            raise IOError, open_errors[self.hdr.filetype]
+            msg = open_errors[self.hdr.filetype]
+            raise IOError, '{}: {}'.format(self.file_name, msg)
             # return False
             
     def make_buffer(self):
