@@ -27,6 +27,10 @@ def test_generator():
     >>> del f
 
     """
-    fname = os.path.join(os.path.dirname(__file__), 'test_generator.edf')
+    fname = get_generator_filename()
     f = pyedflib.EdfReader(fname)
     return f
+
+
+def get_generator_filename():
+    return os.path.join(os.path.dirname(__file__), 'test_generator.edf')
