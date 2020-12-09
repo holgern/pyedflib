@@ -1,0 +1,20 @@
+=============================
+PyEDFlib 0.1.20 Release Notes
+=============================
+
+.. contents::
+
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+
+Issues closed for v0.1.20
+-------------------------
+* Fix issue #91 - Fix date given as string (backwards compatible)
+
+Pull requests for v0.1.20
+-------------------------
+* PR #93 - Automatically set blocksize // speed up writing
