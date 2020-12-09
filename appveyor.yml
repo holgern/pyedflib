@@ -4,6 +4,7 @@
 
 # This file is built on the template here:
 # http://python-packaging-user-guide.readthedocs.org/en/latest/appveyor/
+image: Visual Studio 2019
 
 environment:
   matrix:
