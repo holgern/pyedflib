@@ -4,20 +4,31 @@
 
 # This file is built on the template here:
 # http://python-packaging-user-guide.readthedocs.org/en/latest/appveyor/
-image: Visual Studio 2019
 
 environment:
   matrix:
     - PYTHON: "C:\\Python35"
+      ARCHITECTURE: x86
     - PYTHON: "C:\\Python35-x64"
+      ARCHITECTURE: x64
     - PYTHON: "C:\\Python36"
+      ARCHITECTURE: x86
     - PYTHON: "C:\\Python36-x64"
+      ARCHITECTURE: x64
     - PYTHON: "C:\\Python37"
+      ARCHITECTURE: x86
     - PYTHON: "C:\\Python37-x64"
+      ARCHITECTURE: x64
     - PYTHON: "C:\\Python38"
+      ARCHITECTURE: x86
     - PYTHON: "C:\\Python38-x64"
+      ARCHITECTURE: x64
     - PYTHON: "C:\\Python39"
+      ARCHITECTURE: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - PYTHON: "C:\\Python39-x64"
+      ARCHITECTURE: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 build: off
 
