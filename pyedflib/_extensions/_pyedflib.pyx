@@ -534,9 +534,9 @@ def open_file_writeonly(path, filetype, number_of_signals):
         # Check if we're on Windows and the file path contains Unicode.
         # If so, use workaround to create file: In Python, create the file,
         # then look up and pass the short file name to the C library
-        if using_unicode:
+        if not using_unicode:
             warnings.warn('Attempting to write Unicode file {} on Windows. ' \
-                          'Consider chaning your locale to UTF8.'.format(path))
+                          'Consider changing your locale to UTF8.'.format(path))
             with open(path, 'wb'): pass
             path = get_short_path_name(path)
 
