@@ -20,6 +20,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
 
 #from c_edf cimport *
 import os
+import warnings
 cimport c_edf
 cimport cpython
 import numpy as np
@@ -86,6 +87,13 @@ FILETYPE_BDF = EDFLIB_FILETYPE_BDF
 FILETYPE_BDFPLUS = EDFLIB_FILETYPE_BDFPLUS
 
 
+def contains_unicode(string):
+        try:
+            string.encode('ascii')
+            return False
+        except:
+            return True
+
 def get_short_path_name(long_name):
     """
     Gets the short path name of a given long path.
@@ -136,12 +144,19 @@ cdef class CyEdfReader:
         try:
             self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
         except OSError as e:
+            # if files contain Unicode on Windows, and the locale is set incorrectly
+            # there can be errors when creating the file.
+            # in this case, we can use a workaround and work on the file
+            # using short file names (DOS style)
             exists = os.path.isfile(file_name)
             is_windows = os.name == 'nt'
-            if exists and is_windows:
+            if exists and is_windows and contains_unicode(file_name):
                 # work-around to at least make Unicode files readable at all
                 file_name = get_short_path_name(file_name)
                 self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+                warnings.warn('the filename {} contains Unicode, but Windows does not fully support this. ' \
+                              'Please consider changing your locale to support UTF8. Attempting to ' 
+                              'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
             elif exists:
                 raise OSError('File {} was found but cant be accessed. ' \
                               'Make sure it contains no special characters ' \
@@ -506,6 +521,14 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
+
+    if os.name=='nt' and contains_unicode(path):
+        # Check if we're on Windows and the file path contains Unicode.
+        # If so, use workaround to create file: In Python, create the file,
+        # then look up and pass the short file name to the C library
+        with open(path, 'wb'): pass
+        path = get_short_path_name(path)
+
     py_byte_string  = _ustring(path).encode('utf8','strict')
     cdef char* path_str = py_byte_string
     return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)

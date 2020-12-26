@@ -163,8 +163,8 @@ class TestHighLevel(unittest.TestCase):
         signals2, _, _ = highlevel.read_edf(self.test_accented)
         
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
-        if os.name!='nt':
-            self.assertTrue(os.path.isfile(self.test_accented), 'File does not exist')
+        # if os.name!='nt':
+        self.assertTrue(os.path.isfile(self.test_accented), 'File does not exist')
 
     def test_read_unicode(self):
         signals = np.random.rand(3, 256*60)
@@ -172,6 +172,7 @@ class TestHighLevel(unittest.TestCase):
         self.assertTrue(success)
         shutil.copy(self.edfplus_data_file, self.test_unicode)
         signals2, _, _ = highlevel.read_edf(self.test_unicode)
+        self.assertTrue(os.path.isfile(self.test_unicode), 'File does not exist')
 
 
     def test_read_header(self):
