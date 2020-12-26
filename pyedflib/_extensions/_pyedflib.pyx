@@ -19,6 +19,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
 
 
 #from c_edf cimport *
+import os
 cimport c_edf
 cimport cpython
 import numpy as np
@@ -85,6 +86,25 @@ FILETYPE_BDF = EDFLIB_FILETYPE_BDF
 FILETYPE_BDFPLUS = EDFLIB_FILETYPE_BDFPLUS
 
 
+def get_short_path_name(long_name):
+    """
+    Gets the short path name of a given long path.
+    http://stackoverflow.com/a/23598461/200291
+    """
+    import ctypes
+    from ctypes import wintypes
+    _GetShortPathNameW = ctypes.windll.kernel32.GetShortPathNameW
+    _GetShortPathNameW.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+    _GetShortPathNameW.restype = wintypes.DWORD
+    output_buf_size = 0
+    while True:
+        output_buf = ctypes.create_unicode_buffer(output_buf_size)
+        needed = _GetShortPathNameW(long_name, output_buf, output_buf_size)
+        if output_buf_size >= needed:
+            return output_buf.value
+        else:
+            output_buf_size = needed
+
 def lib_version():
     return c_edf.edflib_version()
 
@@ -113,7 +133,22 @@ cdef class CyEdfReader:
         EdfReader(file_name, annotations_mode, check_file_size)
         """
         self.hdr.handle = -1
-        self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+        try:
+            self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+        except OSError as e:
+            exists = os.path.isfile(file_name)
+            is_windows = os.name == 'nt'
+            if exists and is_windows:
+                # work-around to at least make Unicode files readable at all
+                file_name = get_short_path_name(file_name)
+                self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+            elif exists:
+                raise OSError('File {} was found but cant be accessed. ' \
+                              'Make sure it contains no special characters ' \
+                              'or change your locale to use UTF8.'.format(file_name))
+            else:
+                raise e
+
 
     def __dealloc__(self):
         if self.hdr.handle >= 0:
