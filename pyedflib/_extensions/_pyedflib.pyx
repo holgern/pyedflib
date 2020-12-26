@@ -523,14 +523,22 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
 
-    if os.name=='nt' and contains_unicode(path) and locale.getlocale()[1].lower()!='utf8':
+    if os.name=='nt' and contains_unicode(path):
+        default_enc = locale.getdefaultlocale()[1]
+        if default_enc is None:
+            default_enc = ''
+        else:
+            default_enc = default_enc.lower()
+        using_unicode = 'utf' in default_enc or 'unicode' in default_enc or \
+                        '10646' in  default_enc or default_enc=='cp65001'
         # Check if we're on Windows and the file path contains Unicode.
         # If so, use workaround to create file: In Python, create the file,
         # then look up and pass the short file name to the C library
-        warnings.warn('Attempting to write Unicode file {} on Windows. ' \
-                      'Consider chaning your locale to UTF8.'.format(path))
-        with open(path, 'wb'): pass
-        path = get_short_path_name(path)
+        if using_unicode:
+            warnings.warn('Attempting to write Unicode file {} on Windows. ' \
+                          'Consider chaning your locale to UTF8.'.format(path))
+            with open(path, 'wb'): pass
+            path = get_short_path_name(path)
 
     py_byte_string  = _ustring(path).encode('utf8','strict')
     cdef char* path_str = py_byte_string
