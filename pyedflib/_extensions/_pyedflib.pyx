@@ -152,11 +152,11 @@ cdef class CyEdfReader:
             is_windows = os.name == 'nt'
             if exists and is_windows and contains_unicode(file_name):
                 # work-around to at least make Unicode files readable at all
-                file_name = get_short_path_name(file_name)
-                self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
                 warnings.warn('the filename {} contains Unicode, but Windows does not fully support this. ' \
                               'Please consider changing your locale to support UTF8. Attempting to ' 
                               'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
+                file_name = get_short_path_name(file_name)
+                self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
             elif exists:
                 raise OSError('File {} was found but cant be accessed. ' \
                               'Make sure it contains no special characters ' \
@@ -522,10 +522,12 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
 
-    if os.name=='nt' and contains_unicode(path):
+    if os.name=='nt' and contains_unicode(path) and locale.getlocale()[1].lower()!='utf8':
         # Check if we're on Windows and the file path contains Unicode.
         # If so, use workaround to create file: In Python, create the file,
         # then look up and pass the short file name to the C library
+        warnings.warn('Attempting to write Unicode file {} on Windows. ' \
+                      'Consider chaning your locale to UTF8.'.format(path))
         with open(path, 'wb'): pass
         path = get_short_path_name(path)
 
