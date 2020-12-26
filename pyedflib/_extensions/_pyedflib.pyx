@@ -136,6 +136,10 @@ cdef class CyEdfReader:
         try:
             self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
         except OSError as e:
+            # if files contain Unicode on Windows, and the locale is set incorrectly
+            # there can be errors when creating the file.
+            # in this case, we can use a workaround and work on the file
+            # using short file names (DOS style)
             exists = os.path.isfile(file_name)
             is_windows = os.name == 'nt'
             if exists and is_windows:
@@ -506,6 +510,15 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
+    if os.name=='nt': # on
+        try: # on Windows: Check if path contains Unicode
+            path.encode('ascii')
+        except:
+            # If so, use workaround to create file:
+            # create in Python, then pass the short file name to the C library
+            with open(path, 'wb'):
+                pass
+            path = get_short_path_name(path)
     py_byte_string  = _ustring(path).encode('utf8','strict')
     cdef char* path_str = py_byte_string
     return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)

@@ -36,7 +36,8 @@
 
 /* compile with options "-D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE" */
 
-
+#pragma warning( disable : 4996 ) // ignore unsafe strncpy
+#pragma warning( disable : 4244 ) // ignore precision loss
 
 #include "edflib.h"
 
