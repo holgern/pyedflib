@@ -117,7 +117,7 @@ class TestHighLevel(unittest.TestCase):
     def test_quick_write(self):
         signals = np.random.randint(-2048, 2048, [3, 256*60])
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True)
-        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
         np.testing.assert_allclose(signals, signals2)
         signals = np.random.rand(3, 256*60)
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
@@ -211,7 +211,7 @@ class TestHighLevel(unittest.TestCase):
                                                    'admincode', 'patientcode',
                                                    'technician'],
                                         new_values=['x', '', 'xx', 'xxx',
-                                                    'xxxx'], verify=True)
+                                                    'xxxx'], verify=True, verbose=True)
         new_header = highlevel.read_edf_header(self.anonymized)
         self.assertEqual(new_header['birthdate'], '')
         self.assertEqual(new_header['patientname'], 'x')
@@ -246,7 +246,7 @@ class TestHighLevel(unittest.TestCase):
         signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
         highlevel.write_edf(self.drop_from, signals, signal_headers)
         
-        dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'])
+        dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'], verbose=True)
         
         signals2, signal_headers, header = highlevel.read_edf(dropped)
         
