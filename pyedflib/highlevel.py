@@ -793,11 +793,11 @@ def rename_channels(edf_file, mapping, new_file=None, verbose=False):
                                             ch_nrs=ch_nr, verbose=verbose)
         ch = signal_header[0]['label']
         if ch in mapping :
-            print('{} to {}'.format(ch, mapping[ch]))
+            if verbose: print('{} to {}'.format(ch, mapping[ch]))
             ch = mapping[ch]
             signal_header[0]['label']=ch
         else:
-            print('no mapping for {}, leave as it is'.format(ch))
+            if verbose: print('no mapping for {}, leave as it is'.format(ch))
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
 
