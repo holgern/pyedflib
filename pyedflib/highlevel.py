@@ -287,7 +287,7 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
     return signal_headers
 
 
-def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
+def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False):
     """
     Convenience function for reading EDF+/BDF data with pyedflib.
 
@@ -307,7 +307,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=True):
     digital : bool, optional
         will return the signals as digital values (ADC). The default is False.
     verbose : bool, optional
-        DESCRIPTION. The default is True.
+        Print progress bar while loading or not. The default is False.
 
     Returns
     -------
@@ -556,7 +556,7 @@ def read_edf_header(edf_file, read_annotations=True):
     return summary
 
 
-def compare_edf(edf_file1, edf_file2, verbose=True):
+def compare_edf(edf_file1, edf_file2, verbose=False):
     """
     Loads two edf files and checks whether the values contained in
     them are the same. Does not check the header or annotations data.
@@ -571,7 +571,7 @@ def compare_edf(edf_file1, edf_file2, verbose=True):
     edf_file2 : str
         edf file 2 to compare.
     verbose : bool, optional
-        print progress or not. The default is True.
+        print progress or not. The default is False.
 
     Returns
     -------
@@ -619,7 +619,8 @@ def compare_edf(edf_file1, edf_file2, verbose=True):
     return True
 
 
-def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
+def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
+                  verbose=False):
     """
     Remove channels from an edf file. Save the file.
     For safety reasons, no source files can be overwritten.
@@ -639,6 +640,8 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
     to_drop : list, optional
         A list of channel names/indices that should be dropped.
         Strings will be interpreted as channel names. The default is None.
+    verbose : bool, optional
+        print progress or not. The default is False.
 
     Returns
     -------
@@ -693,7 +696,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
 
     signals, signal_headers, header = read_edf(edf_source,
                                                ch_nrs=load_channels,
-                                               digital=True)
+                                               digital=True, verbose=verbose)
 
     write_edf(edf_target, signals, signal_headers, header, digital=True)
     return edf_target
@@ -701,7 +704,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None):
 
 def anonymize_edf(edf_file, new_file=None,
                   to_remove=['patientname', 'birthdate'],
-                  new_values=['xxx', ''], verify=False):
+                  new_values=['xxx', ''], verify=False, verbose=False):
     """Anonymize an EDF file by replacing values of header fields.
 
     This function can be used to overwrite all header information that is
@@ -726,6 +729,8 @@ def anonymize_edf(edf_file, new_file=None,
     verify : bool
         Compare `edf_file` and `new_file` for equality (i.e., double check that
         values are same). Defaults to False
+    verbose : bool, optional
+        print progress or not. The default is False.
 
     Returns
     -------
@@ -740,18 +745,19 @@ def anonymize_edf(edf_file, new_file=None,
         file, ext = os.path.splitext(edf_file)
         new_file = file + '_anonymized' + ext
 
-    signals, signal_headers, header = read_edf(edf_file, digital=True)
+    signals, signal_headers, header = read_edf(edf_file, digital=True,
+                                               verbose=verbose)
 
     for new_val, attr in zip(new_values, to_remove):
         header[attr] = new_val
 
     write_edf(new_file, signals, signal_headers, header, digital=True)
     if verify:
-        compare_edf(edf_file, new_file)
+        compare_edf(edf_file, new_file, verbose=verbose)
     return True
 
 
-def rename_channels(edf_file, mapping, new_file=None):
+def rename_channels(edf_file, mapping, new_file=None, verbose=False):
     """
     A convenience function to rename channels in an EDF file.
 
@@ -765,6 +771,8 @@ def rename_channels(edf_file, mapping, new_file=None):
     new_file : str, optional
         the new filename. If None will be edf_file + '_renamed'
         The default is None.
+    verbose : bool, optional
+        print progress or not. The default is False.
 
     Returns
     -------
@@ -780,9 +788,9 @@ def rename_channels(edf_file, mapping, new_file=None):
 
     signal_headers = []
     signals = []
-    for ch_nr in tqdm(range(len(channels))):
+    for ch_nr in tqdm(range(len(channels)), disable=not verbose):
         signal, signal_header, _ = read_edf(file, digital=True,
-                                            ch_nrs=ch_nr, verbose=False)
+                                            ch_nrs=ch_nr, verbose=verbose)
         ch = signal_header[0]['label']
         if ch in mapping :
             print('{} to {}'.format(ch, mapping[ch]))
@@ -796,7 +804,8 @@ def rename_channels(edf_file, mapping, new_file=None):
     return write_edf(new_file, signals, signal_headers, header, digital=True)
 
 
-def change_polarity(edf_file, channels, new_file=None, verify=True, verbose=True):
+def change_polarity(edf_file, channels, new_file=None, verify=True,
+                    verbose=False):
     """
     Change polarity of certain channels
 
@@ -826,12 +835,14 @@ def change_polarity(edf_file, channels, new_file=None, verify=True, verbose=True
     if isinstance(channels, str): channels=[channels]
     channels = [c.lower() for c in channels]
 
-    signals, signal_headers, header = read_edf(edf_file, digital=True, verbose=verbose)
+    signals, signal_headers, header = read_edf(edf_file, digital=True,
+                                               verbose=verbose)
     for i,sig in enumerate(signals):
         label = signal_headers[i]['label'].lower()
         if label in channels:
             if verbose: print('inverting {}'.format(label))
             signals[i] = -sig
-    write_edf(new_file, signals, signal_headers, header, digital=True, correct=False)
+    write_edf(new_file, signals, signal_headers, header,
+              digital=True, correct=False, verbose=verbose)
     if verify: compare_edf(edf_file, new_file)
     return True
