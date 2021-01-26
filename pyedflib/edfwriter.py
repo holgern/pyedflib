@@ -8,6 +8,7 @@
 
 import numpy as np
 import sys
+import warnings
 from datetime import datetime, date
 from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_BDF, FILETYPE_EDF
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
@@ -19,6 +20,17 @@ from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, bl
 
 
 __all__ = ['EdfWriter']
+
+
+def check_is_ascii(string):
+    """according to the EDF+ specifications, only ASCII chars in ordeal
+    range 32...126 are allowed, where 32 is space
+
+    https://www.edfplus.info/specs/edfplus.html#header
+    """
+    if not all([ord(x)>32 and ord(x)<127 for x in string]):
+        warnings.warn('Invalid char: header entries should contain only ASCII'\
+                      ' characters and no spaces: "{}"'.format(string))
 
 
 def u(x):
@@ -142,6 +154,20 @@ class EdfWriter(object):
         """
         Updates header to edffile struct
         """
+        # some checks that warn users if header fields exceed 80 chars
+        patient_ident = len(self.patient_code) + len(self.patient_name) \
+                        + len(self.patient_additional) + 3 + 1 + 11 # 3 spaces 1 gender 11 birthdate
+        record_ident = len(self.equipment) + len(self.technician) \
+                       + len(self.admincode) + len(self.recording_additional) \
+                       + len('Startdate') + 3 + 11 # 3 spaces 11 birthdate
+
+        if patient_ident>80:
+            warnings.warn('Patient code, name, gender and birthdate combined must not be larger than 80 chars. ' +
+                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(patient_ident))
+        if record_ident>80:
+            warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
+                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(record_ident))
+
         set_technician(self.handle, du(self.technician))
         set_recording_additional(self.handle, du(self.recording_additional))
         set_patientname(self.handle, du(self.patient_name))
@@ -247,6 +273,7 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
+        check_is_ascii(technician)
         self.technician = technician
         self.update_header()
 
@@ -258,6 +285,7 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
+        check_is_ascii(recording_additional)
         self.recording_additional = recording_additional
         self.update_header()
 
@@ -269,6 +297,7 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
+        check_is_ascii(patient_name)
         self.patient_name = patient_name
         self.update_header()
 
@@ -280,6 +309,7 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
+        check_is_ascii(patient_code)
         self.patient_code = patient_code
         self.update_header()
 
@@ -291,6 +321,7 @@ class EdfWriter(object):
         -----
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
         """
+        check_is_ascii(patient_additional)
         self.patient_additional = patient_additional
         self.update_header()
 
@@ -305,6 +336,7 @@ class EdfWriter(object):
             Describes the measurement equpipment
 
         """
+        check_is_ascii(equipment)
         self.equipment = equipment
         self.update_header()
 
@@ -320,6 +352,7 @@ class EdfWriter(object):
             admincode which is written into the header
 
         """
+        check_is_ascii(admincode)
         self.admincode = admincode
         self.update_header()
 
