@@ -181,7 +181,7 @@ class TestEdfWriter(unittest.TestCase):
         f.setEquipment('eq1')
         f.setGender(1)
         f.setBirthdate(date(1951, 8, 2))
-        f.setBirthdate('2.8.1951')
+        # f.setBirthdate('2.8.1951')
         startdate = datetime(2017, 1, 1, 1, 1, 1)
         f.setStartdatetime(startdate)
         f.setStartdatetime(startdate.strftime("%d %b %Y %H:%M:%S"))
