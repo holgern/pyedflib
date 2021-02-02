@@ -482,7 +482,8 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
 
-    if any([np.isfortran(s) for s in signals]) or np.isfortran(signals):
+    if any([np.isfortran(s) for s in signals]) or \
+        (isinstance(signals, np.ndarray) and np.isfortran(signals)):
            warnings.warn('signals are in Fortran order. Will automatically ' \
                          'transfer to C order for compatibility with edflib.')
     if isinstance(signals, list):
