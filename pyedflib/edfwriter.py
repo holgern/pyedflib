@@ -692,7 +692,10 @@ class EdfWriter(object):
 
         if (len(data_list) != len(self.channels)):
             raise WrongInputSize(len(data_list))
-            
+
+        if any([np.isfortran(s) for s in data_list]) or np.isfortran(data_list):
+               warnings.warn('Members of data_list are in Fortran order. ' \
+                             'Please convert arrays to C order for best compatibility with edflib.')
         if digital:
             if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
                 raise TypeError('Digital = True requires all signals in int')
