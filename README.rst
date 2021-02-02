@@ -103,8 +103,12 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     highlevel.anonymize_edf('edf_file.edf', new_file='anonymized.edf'
 	                         to_remove=['patientname', 'birthdate'],
 	                         new_values=['anonymized', ''])
-	# check if the two files have the same content
-	highlevel.compare_edf('edf_file.edf', 'anonymized.edf')
+    # check if the two files have the same content
+    highlevel.compare_edf('edf_file.edf', 'anonymized.edf')
+    # change polarity of certain channels 
+    highlevel.change_polarity('file.edf', channels=[1,3])
+    # rename channels within a file
+    highlevel.rename_channels('file.edf', mapping={'C3-M1':'C3'})
 
 
 License
