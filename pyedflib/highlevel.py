@@ -527,7 +527,7 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
 
     """
     signals = np.atleast_2d(signals)
-    header = make_signal_header('ch_1', sample_rate=sfreq)
+    header = make_header(technician='pyedflib-quickwrite')
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
     pmin, pmax = signals.min(), signals.max()
     signal_headers = make_signal_headers(labels, sample_rate = sfreq,

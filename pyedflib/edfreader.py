@@ -111,7 +111,7 @@ class EdfReader(CyEdfReader):
         """
         return {'label': self.getLabel(chn),
                 'dimension': self.getPhysicalDimension(chn),
-                                 'sample_rate': self.getSampleFrequency(chn),
+                'sample_rate': self.getSampleFrequency(chn),
                 'physical_max':self.getPhysicalMaximum(chn),
                 'physical_min': self.getPhysicalMinimum(chn),
                 'digital_max': self.getDigitalMaximum(chn),
@@ -388,7 +388,7 @@ class EdfReader(CyEdfReader):
 
         """
         if 0 <= chn < self.signals_in_file:
-            return round(self.samplefrequency(chn))
+            return np.round(self.samplefrequency(chn), decimals=3)
         else:
             return 0
 
