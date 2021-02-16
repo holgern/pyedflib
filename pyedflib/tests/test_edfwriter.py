@@ -766,6 +766,7 @@ class TestEdfWriter(unittest.TestCase):
             del f
 
 
+
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()

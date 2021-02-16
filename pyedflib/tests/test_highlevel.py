@@ -123,7 +123,26 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
-        
+
+
+    def test_read_write_decimal_sample_rates(self):
+        signals = np.random.randint(-2048, 2048, [3, 256*60])
+        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True)
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        np.testing.assert_allclose(signals, signals2)
+        signals = np.random.rand(3, 256*60)
+        highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=8.5, digital=False)
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=False, verbose=True)
+        np.testing.assert_allclose(signals, signals2, atol=0.0001)
+
+    # def test_read_write_decimal_sample_rates_smaller_one(self):
+    #     signals = np.random.randint(-2048, 2048, [3, 256*60])
+    #     highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=1/3, digital=True)
+    #     signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+    #     np.testing.assert_allclose(signals, signals2)
+
+
+
     def test_read_write_diff_sfreq(self):
         
         signals = []
