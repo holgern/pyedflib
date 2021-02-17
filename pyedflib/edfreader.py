@@ -23,6 +23,47 @@ CHECK_FILE_SIZE = 0
 DO_NOT_CHECK_FILE_SIZE = 1
 REPAIR_FILE_SIZE_IF_WRONG = 2
 
+def _debug_parse_header(filename):
+    """
+    A debug function that reads a header and outputs everything that
+    is contained in the header
+    """
+    import json
+    from collections import OrderedDict
+    header = OrderedDict()
+    with open(filename, 'rb') as f:
+        f.seek(0)
+        header['version'] = f.read(8).decode()
+        header['patient'] = f.read(80).decode().strip()
+        header['recording'] = f.read(80).decode().strip()
+        header['startdate'] = f.read(8).decode()
+        header['starttime'] = f.read(8).decode()
+        header['n_bytes'] = f.read(8).decode()
+        header['reserved'] = f.read(44).decode().strip()
+        header['n_records'] = f.read(8).decode()
+        header['duration'] = f.read(8).decode()
+        header['n_signals'] = f.read(4).decode()
+
+        print('\n## Header')
+        print(json.dumps(header, indent=2))
+
+        ns = int(header['n_signals'])
+        label = [f.read(16).decode() for i in range(ns)]
+        transducer = [f.read(80).decode().strip() for i in range(ns)]
+        dimension = [f.read(8).decode().strip() for i in range(ns)]
+        pmin = [f.read(8).decode() for i in range(ns)]
+        pmax = [f.read(8).decode() for i in range(ns)]
+        dmin = [f.read(8).decode() for i in range(ns)]
+        dmax = [f.read(8).decode() for i in range(ns)]
+        prefilter = [f.read(80).decode().strip() for i in range(ns)]
+        n_samples = [f.read(8).decode() for i in range(ns)]
+        reserved = [f.read(32).decode() for i in range(ns)]
+        _ = zip(label, transducer, dimension, pmin, pmax, dmin, dmax, prefilter, n_samples, reserved)
+        fields = ['label', 'transducer', 'dimension', 'pmin', 'pmax', 'dmin', 'dmax', 'prefilter', 'n_samples', 'reserved']
+        sheaders = [{field:globals()[field][i] for field in fields} for i in range(ns)]
+        print('## Signal Headers')
+        print(json.dumps(sheaders, indent=2))
+
 
 class EdfReader(CyEdfReader):
     """
