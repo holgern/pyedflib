@@ -352,8 +352,10 @@ cdef class CyEdfReader:
         return self.hdr.signalparam[channel].transducer
 
     def samplefrequency(self, channel):
-        return (<double>self.hdr.signalparam[channel].smp_in_datarecord / self.hdr.datarecord_duration) * EDFLIB_TIME_DIMENSION
-
+        try:
+            return (<double>self.hdr.signalparam[channel].smp_in_datarecord / self.hdr.datarecord_duration) * EDFLIB_TIME_DIMENSION
+        except:
+            return 0
     # def _tryoffset0(self):
     #     """
     #     fooling around to find offset in file to allow shortcut mmap interface
