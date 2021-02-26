@@ -41,7 +41,6 @@
 
 #include "edflib.h"
 
-
 #define EDFLIB_VERSION  (117)
 #define EDFLIB_MAXFILES  (64)
 
@@ -2174,24 +2173,6 @@ static struct edfhdrblock * edflib_check_edf_file(FILE *inputfile, int *edf_erro
     }
     strncpy(edfhdr->edfparam[i].prefilter, edf_hdr + 256 + (edfhdr->edfsignals * 136) + (i * 80), 80);
     edfhdr->edfparam[i].prefilter[80] = 0;
-
-    if((edfhdr->edfplus) || (edfhdr->bdfplus))
-    {
-      if(edfhdr->edfparam[i].annotation)
-      {
-        for(j=0; j<80; j++)
-        {
-          if(edfhdr->edfparam[i].prefilter[j]!=' ')
-          {
-            *edf_error = EDFLIB_FILE_ERRORS_PREFILTER;
-            free(edf_hdr);
-            free(edfhdr->edfparam);
-            free(edfhdr);
-            return NULL;
-          }
-        }
-      }
-    }
   }
 
 /*********************** NR OF SAMPLES IN EACH DATARECORD ********************/
