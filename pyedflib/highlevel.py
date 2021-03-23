@@ -798,7 +798,7 @@ def rename_channels(edf_file, mapping, new_file=None, verbose=False):
     signal_headers = []
     signals = []
     for ch_nr in tqdm(range(len(channels)), disable=not verbose):
-        signal, signal_header, _ = read_edf(file, digital=True,
+        signal, signal_header, _ = read_edf(edf_file, digital=True,
                                             ch_nrs=ch_nr, verbose=verbose)
         ch = signal_header[0]['label']
         if ch in mapping :
