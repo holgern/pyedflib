@@ -6,8 +6,8 @@ pyEDFlib
 .. image:: https://codecov.io/gh/holgern/pyedflib/branch/master/graph/badge.svg
   :target: https://codecov.io/gh/holgern/pyedflib
 
-.. image:: https://travis-ci.org/holgern/pyedflib.svg?branch=master
-    :target: https://travis-ci.org/holgern/pyedflib
+.. image:: https://travis-ci.com/holgern/pyedflib.svg?branch=master
+    :target: https://travis-ci.com/holgern/pyedflib
     
 .. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
   :target: https://ci.appveyor.com/project/holger80/pyedflib
