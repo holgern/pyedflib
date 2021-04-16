@@ -19,7 +19,7 @@ matrix:
     - sudo: required
       services:
         - docker
-      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_i686
            PRE_CMD=linux32
            PLAT=manylinux1_i686
            MANYLINUX=1
