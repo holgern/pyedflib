@@ -1,0 +1,8 @@
+nose
+cython
+numpy
+matplotlib
+pytest
+dateparser
+tqdm
+tox
