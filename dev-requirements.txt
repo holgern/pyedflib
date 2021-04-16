@@ -1,6 +1,7 @@
 nose
 cython
 numpy
+freetype-py
 matplotlib
 pytest
 dateparser
