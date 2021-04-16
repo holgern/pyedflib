@@ -86,7 +86,6 @@ matrix:
         - MAC_WHEEL=1
         - MANYLINUX=0
         - TOXENV=py36
-        - SCRYPT_SUPPRESS_LINK_FLAGS=1
     - os: osx
       osx_image: xcode10.2
       language: objective-c
