@@ -13,6 +13,11 @@ function repair_wheel {
 # Install a system package required by our library
 yum install -y freetype-devel
 yum install -y libpng-devel
+if [ `getconf LONG_BIT` = "32" ]
+then
+    yum install -y pkg-config
+fi
+
 
 
 # Compile wheels
