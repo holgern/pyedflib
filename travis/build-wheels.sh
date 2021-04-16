@@ -13,7 +13,6 @@ function repair_wheel {
 # Install a system package required by our library
 yum install -y freetype-devel
 yum install -y libpng-devel
-yum install -y pkg-config
 
 
 # Compile wheels
