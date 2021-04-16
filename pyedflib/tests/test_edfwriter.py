@@ -148,16 +148,16 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.2345, decimal=4)
         np.testing.assert_almost_equal(ann_duration[0], 0.2222, decimal=4)
-        np.testing.assert_equal(ann_text[0], "annotation1_..")
+        np.testing.assert_equal(ann_text[0] in ["annotation1_..", "annotation1_Ã¤"], True)
         np.testing.assert_almost_equal(ann_time[1], 0.2567, decimal=4)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], "annotation2_..")
+        np.testing.assert_equal(ann_text[1] in ["annotation2_..", "annotation2_Ã¤"], True)
         np.testing.assert_almost_equal(ann_time[2], 1.2567, decimal=4)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], "annotation3_..")
+        np.testing.assert_equal(ann_text[2] in ["annotation3_..", "annotation3_Ã¤"], True)
         np.testing.assert_almost_equal(ann_time[3], 1.3067, decimal=4)
         np.testing.assert_almost_equal(ann_duration[3], -1)
-        np.testing.assert_equal(ann_text[3], "annotation4_..")
+        np.testing.assert_equal(ann_text[3] in ["annotation4_..", "annotation4_Ã¤"], True)
 
     def test_EdfWriter_BDFplus(self):
         channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
@@ -632,16 +632,16 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], "annotation1_..")
+        np.testing.assert_equal(ann_text[0] in ["annotation1_..", "annotation1_Ã¤"], True)
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], "annotation2_..")
+        np.testing.assert_equal(ann_text[1] in ["annotation2_..", "annotation2_Ã¤"], True)
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
-        np.testing.assert_equal(ann_text[2], "annotation3_..")
+        np.testing.assert_equal(ann_text[2] in ["annotation3_..", "annotation3_Ã¤"], True)
         np.testing.assert_almost_equal(ann_time[3], 1.30)
         np.testing.assert_almost_equal(ann_duration[3], -1)
-        np.testing.assert_equal(ann_text[3], "annotation4_..")
+        np.testing.assert_equal(ann_text[3] in ["annotation4_..", "annotation4_Ã¤"], True)
 
     def test_AnnotationWritingUTF8(self):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
@@ -668,10 +668,10 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0], "Z..hne")
+        np.testing.assert_equal(ann_text[0] in ["Z..hne", "ZÃ¤hne"], True)
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1], "Fu..")
+        np.testing.assert_equal(ann_text[1] in ["Fu..", "FuÃ¤"], True)
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
         np.testing.assert_equal(ann_text[2], "abc")
