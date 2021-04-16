@@ -1,7 +1,6 @@
 # After changing this file, check it on:
 #   http://lint.travis-ci.org/
 language: python
-sudo: false
 
 env:
   global:
@@ -11,6 +10,34 @@ env:
 
 matrix:
   include:
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
+           PLAT=manylinux1_x86_64
+           MANYLINUX=1
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux1_i686
+           PRE_CMD=linux32
+           PLAT=manylinux1_i686
+           MANYLINUX=1
+    - sudo: required
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+           PLAT=manylinux2010_x86_64
+           MANYLINUX=1
+    - sudo: required
+      arch: arm64-graviton2
+      group: edge
+      virt: lxd
+      services:
+        - docker
+      env: DOCKER_IMAGE=quay.io/pypa/manylinux2014_aarch64
+           PLAT=manylinux2014_aarch64
+           MANYLINUX=1
     - os: linux
       python: 3.6
       env:
@@ -18,6 +45,8 @@ matrix:
         - MATPLOTLIBSPEC=matplotlib
         - CYTHONSPEC=cython
         - USE_WHEEL=1
+        - LINUX_WHEEL=1
+        - MANYLINUX=0
     - os: linux
       python: 3.7
       dist: xenial # travis-ci/travis-ci/issues/9815
@@ -29,6 +58,7 @@ matrix:
         - USE_SDIST=1
         - USE_SCIPY=1
         - REFGUIDE_CHECK=1
+        - MANYLINUX=0
     - os: linux
       python: 3.8
       dist: xenial # travis-ci/travis-ci/issues/9815
@@ -49,11 +79,39 @@ matrix:
       osx_image: xcode9.4
       language: objective-c
       env:
-        - NUMPYSPEC=numpy
-        - MATPLOTLIBSPEC=matplotlib
-        - CYTHONSPEC=cython
+        - USE_WHEEL=1
         - TRAVIS_PYTHON_VERSION=3.6
-
+        - MAC_WHEEL=1
+        - MANYLINUX=0
+        - TOXENV=py36
+        - SCRYPT_SUPPRESS_LINK_FLAGS=1
+    - os: osx
+      osx_image: xcode10.2
+      language: objective-c
+      env:
+        - USE_WHEEL=1
+        - TRAVIS_PYTHON_VERSION=3.7
+        - MAC_WHEEL=1
+        - MANYLINUX=0
+        - TOXENV=py37
+    - os: osx
+      osx_image: xcode10.2
+      language: objective-c
+      env:
+        - USE_WHEEL=1
+        - TRAVIS_PYTHON_VERSION=3.8
+        - MAC_WHEEL=1
+        - MANYLINUX=0
+        - TOXENV=py38
+    - os: osx
+      osx_image: xcode11.6
+      language: objective-c
+      env:
+        - USE_WHEEL=1
+        - TRAVIS_PYTHON_VERSION=3.9
+        - MAC_WHEEL=1
+        - MANYLINUX=0
+        - TOXENV=py39
 cache: pip
 
 before_install:
@@ -62,14 +120,20 @@ before_install:
   - ulimit -a
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source util/travis_osx_install.sh; fi
   - ccache -s
-  - which python; python --version
-  - pip install --upgrade pip
-  - pip install --upgrade wheel
-  # Set numpy version first, other packages link against it
-  - pip install $NUMPYSPEC
-  - pip install $MATPLOTLIBSPEC
-  - pip install $CYTHONSPEC
-  - pip install pytest pytest-cov coverage codecov futures
+  - |
+    if [ "${MANYLINUX}" == "0" ]; then
+        which python; python --version
+        pip install --upgrade pip
+        pip install --upgrade wheel
+        pip install $NUMPYSPEC
+        pip install $MATPLOTLIBSPEC
+        pip install $CYTHONSPEC
+        pip install pytest pytest-cov coverage codecov futures
+        mkdir ${TRAVIS_BUILD_DIR}/wheelhouse
+        pip install --upgrade auditwheel
+    else
+        docker pull $DOCKER_IMAGE
+    fi
   - set -o pipefail
   - if [ "${USE_WHEEL}" == "1" ]; then pip install wheel; fi
   - if [ "${USE_SCIPY}" == "1" ]; then pip install scipy; fi
@@ -80,10 +144,24 @@ before_install:
 
 script:
   # Define a fixed build dir so next step works
-  - |
-    if [ "${USE_WHEEL}" == "1" ]; then
-        # Need verbose output or TravisCI will terminate after 10 minutes
+   - |
+    if [ "${LINUX_WHEEL}" == "1" ]; then
         pip wheel . -v
+    fi
+  - |
+    if [ "${MAC_WHEEL}" == "1" ]; then
+       pip wheel . -v
+       #delocate-listdeps pyedflib*.whl
+       #delocate-wheel -v pyedflib*.whl
+       #delocate-listdeps --all pyedflib*.whl
+    fi
+  - |
+    if [ "${MANYLINUX}" == "1" ]; then
+        docker run --rm -e PLAT=$PLAT -v `pwd`:/io $DOCKER_IMAGE $PRE_CMD /io/travis/build-wheels.sh
+    elif [ "${USE_WHEEL}" == "1" ]; then
+        # Need verbose output or TravisCI will terminate after 10 minutes
+        # pip wheel . -v
+        cp *.whl ${TRAVIS_BUILD_DIR}/wheelhouse/
         pip install PyEDFlib*.whl -v
         pushd demo
         pytest --pyargs pyedflib
@@ -110,7 +188,10 @@ script:
     fi
 
 after_success:
-  - codecov
-  # Travis CI has old gcov, needs object dir explicitly specified
-  - gcov --object-directory build/tmp/pyedflib/_extensions/c/ build/tmp/pyedflib/_extensions/c/*.o
-  - bash <(curl -s https://codecov.io/bash)
+  - |
+    if [ "${MANYLINUX}" == "0" ]; then
+        codecov
+        # Travis CI has old gcov, needs object dir explicitly specified
+        gcov --object-directory build/tmp/pyedflib/_extensions/c/ build/tmp/pyedflib/_extensions/c/*.o
+        bash <(curl -s https://codecov.io/bash)
+    fi
