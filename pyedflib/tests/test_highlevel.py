@@ -26,6 +26,9 @@ class TestHighLevel(unittest.TestCase):
         cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
         cls.tmp_testfile = os.path.join(data_dir, 'tmp')
 
+    @classmethod
+    def tearDownClass(cls):
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
         for file in tmpfiles:
             try:

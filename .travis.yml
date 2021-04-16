@@ -196,3 +196,13 @@ after_success:
         gcov --object-directory build/tmp/pyedflib/_extensions/c/ build/tmp/pyedflib/_extensions/c/*.o
         bash <(curl -s https://codecov.io/bash)
     fi
+
+deploy:
+  provider: releases
+  api-key:
+    secure: "gF0H+Zv5gRo6UT1MCF+46Dd26SVdf9L69ZdcZZaovb1TdXDyGeaf/SO7lUGaGhrCh96cmSj1T0EUQNh30amyCT9JmjbpUMRVHro3Opu1/EKvCgbQVqGK4+46hoWNuEsg0BCrRkGRNWVxQ1IlfFhaMiP58Yk8wZpYmWDvmAQoz4fdwkN6e1kUNxSnRiEB/ln4XAxnwVUj8WQSA9LRQkuwF3Ug7PMuDnaoIqUlGn3GiSZXXIzV7grT07+DS0+lTU4XN/RDxOh8y3MQqfN9QDv2ewR/EylkFM5e4MrxFDjXNsWD4oemCNeBBRVHbEU1wEKb7y5vhrunuXAdtZcjo7rZYnq1Wlj7EeRK0ZAJHImlA3kF5tuGbga4oXO0Xv0BuCnspbOStmC2rX5e1m57v0FNfRv2LyVjOsu9i6sEgZpOXDsJiGezkoGYyhU5lq8LwgCC4o2aDImOoj8/YpFRWXG6uwnuuk/2ELAElPJ6mqCRraUF4LZbC3Dz5iOPHagUizqBnTClQPphoiOClmPJxjBqoO62ldTflas0jA4bxv4dQY1P3RijfuJWY7pBkJ1W6++pEWr0gN4L4fJQjuyTFzi9KIYWfh5MU6ualxe6QjCjGaPWfjETS57qE6WC5zPK5Mg9a4yIgYO0bL5Eh/WXaK8j+0iNeBdI9jHegoBhCswIbK4="
+  file: ${TRAVIS_BUILD_DIR}/wheelhouse/*
+  skip_cleanup: true
+  draft: true
+  on:
+    tags: true

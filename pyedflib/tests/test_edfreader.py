@@ -14,15 +14,18 @@ import pyedflib
 class TestEdfReader(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         # data_dir = os.path.join(os.getcwd(), 'data')
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
-        self.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
-        self.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
-        self.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
-        self.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
-        self.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
+        cls.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
+        cls.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
+        cls.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
+        cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
+        cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
 
+    @classmethod
+    def tearDownClass(cls):
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
         for file in tmpfiles:
             try:

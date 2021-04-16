@@ -14,22 +14,23 @@ from datetime import datetime, date
 class TestEdfWriter(unittest.TestCase):
 
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
-        self.bdfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.bdf')
-        self.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
-        self.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')
-        self.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
-        self.data_dir = data_dir
+        cls.bdfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.bdf')
+        cls.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
+        cls.bdf_data_file = os.path.join(data_dir, 'tmp_test_file.bdf')
+        cls.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
+        cls.data_dir = data_dir
 
+    @classmethod
+    def tearDownClass(cls):
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
         tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
         for file in tmpfiles:
             try:
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
-
-
 
     def test_write_functions(self):
         channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_rate': 100,
