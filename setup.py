@@ -287,16 +287,16 @@ if __name__ == '__main__':
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
         version=get_version_info()[0],
-        packages=['pyedflib','pyedflib._extensions','pyedflib.data'],
-        package_data={'pyedflib.data': ['*.edf', '*.bdf']},
+        packages=['pyedflib','pyedflib._extensions','pyedflib.data', 'pyedflib.tests'],
+        package_data={'pyedflib.data': ['*.edf', '*.bdf'], 'pyedflib.tests.data': ['*.edf', '*.bdf'], },
         ext_modules=ext_modules,
         libraries=[c_lib],
         cmdclass={'develop': develop_build_clib},
-        test_suite='nose.collector',
         install_requires=[REQUIRED_NUMPY],
     )
 
