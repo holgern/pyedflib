@@ -292,7 +292,7 @@ if __name__ == '__main__':
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
         version=get_version_info()[0],
-        packages=['pyedflib','pyedflib._extensions','pyedflib.data', 'pyedflib.tests'],
+        packages=['pyedflib','pyedflib._extensions','pyedflib.data', 'pyedflib.tests', 'pyedflib.tests.data'],
         package_data={'pyedflib.data': ['*.edf', '*.bdf'], 'pyedflib.tests.data': ['*.edf', '*.bdf'], },
         ext_modules=ext_modules,
         libraries=[c_lib],
