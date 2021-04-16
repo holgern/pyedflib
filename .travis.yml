@@ -144,7 +144,7 @@ before_install:
 
 script:
   # Define a fixed build dir so next step works
-   - |
+  - |
     if [ "${LINUX_WHEEL}" == "1" ]; then
         pip wheel . -v
     fi
