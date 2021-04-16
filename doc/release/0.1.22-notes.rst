@@ -1,0 +1,21 @@
+=============================
+PyEDFlib 0.1.22 Release Notes
+=============================
+
+.. contents::
+
+- Fix manylinux wheel uploading
+- Remove test artifacts from wheel
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+
+Issues closed for v0.1.22
+-------------------------
+
+
+Pull requests for v0.1.22
+-------------------------
