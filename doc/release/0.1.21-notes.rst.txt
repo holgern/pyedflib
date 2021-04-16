@@ -1,0 +1,30 @@
+=============================
+PyEDFlib 0.1.21 Release Notes
+=============================
+
+.. contents::
+
+- Include unit tests into python package
+- Add manylinux builds
+- Fix unit test für ARM
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+
+Issues closed for v0.1.21
+-------------------------
+* Fix issue #99 - The pyedflib File Package does not support Chinese path
+* Fix issue #105 - Take hours/days to write signals into edf file using highlevel.write_edf?
+* Fix issue #109 - highlevel.read_edf fails with ValueError
+
+Pull requests for v0.1.21
+-------------------------
+* PR #100 - adding unicode read/write tests + workaround windows unicode files 
+* PR #103 - Verbose options default to False
+* PR #106 - add warnings for header length
+* PR #107 - Prevent fortran layout
+* PR #109 - Round sample rates up to 3 decimals not to int 
+* PR #116 - fixed wrong variable use in rename_channel function
