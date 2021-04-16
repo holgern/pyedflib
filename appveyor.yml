@@ -7,10 +7,6 @@
 
 environment:
   matrix:
-    - PYTHON: "C:\\Python35"
-      ARCHITECTURE: x86
-    - PYTHON: "C:\\Python35-x64"
-      ARCHITECTURE: x64
     - PYTHON: "C:\\Python36"
       ARCHITECTURE: x86
     - PYTHON: "C:\\Python36-x64"
