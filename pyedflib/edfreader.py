@@ -407,7 +407,7 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
-        return np.array([round(self.samplefrequency(chn))
+        return np.array([self.samplefrequency(chn)
                          for chn in np.arange(self.signals_in_file)])
 
     def getSampleFrequency(self,chn):
@@ -429,7 +429,7 @@ class EdfReader(CyEdfReader):
 
         """
         if 0 <= chn < self.signals_in_file:
-            return np.round(self.samplefrequency(chn), decimals=3)
+            return self.samplefrequency(chn)
         else:
             return 0
 
