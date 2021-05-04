@@ -451,7 +451,9 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     # will be filled with zeros.
     signal_duration = len(signals[0]) // signal_headers[0]['sample_rate']
     if block_size == -1:
-        block_size = max([d for d in range(1, 61) if signal_duration % d == 0])
+        samplefrequencies = np.array([hdr["sample_rate"] for hdr in signal_headers])
+        block_size = min(
+            [d for d in range(1, 61) if ((signal_duration % d == 0) and np.all(((samplefrequencies*d) % 1) == 0))])
     elif signal_duration % block_size != 0:
             warnings.warn('Signal length is not dividable by block_size. '+
                           'The file will have a zeros appended.')
