@@ -58,9 +58,9 @@ def _debug_parse_header(filename):
         prefilter = [f.read(80).decode().strip() for i in range(ns)]
         n_samples = [f.read(8).decode() for i in range(ns)]
         reserved = [f.read(32).decode() for i in range(ns)]
-        _ = zip(label, transducer, dimension, pmin, pmax, dmin, dmax, prefilter, n_samples, reserved)
+        values = np.array([label, transducer, dimension, pmin, pmax, dmin, dmax, prefilter, n_samples, reserved]).T
         fields = ['label', 'transducer', 'dimension', 'pmin', 'pmax', 'dmin', 'dmax', 'prefilter', 'n_samples', 'reserved']
-        sheaders = [{field:globals()[field][i] for field in fields} for i in range(ns)]
+        sheaders = [{field: v for field, v in zip(fields, val)} for i, val in zip(range(ns), values)]
         print('## Signal Headers')
         print(json.dumps(sheaders, indent=2))
 
