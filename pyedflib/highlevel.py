@@ -193,7 +193,7 @@ def make_header(technician='', recording_additional='', patientname='',
     return header
 
 
-def make_signal_header(label, dimension='uV', sample_rate=256,
+def make_signal_header(label, dimension='uV', sample_frequency=256,
                        physical_min=-200, physical_max=200, digital_min=-32768,
                        digital_max=32767, transducer='', prefiler=''):
     """
@@ -208,7 +208,7 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
         the name of the channel.
     dimension : str, optional
         dimension, eg mV. The default is 'uV'.
-    sample_rate : int, optional
+    sample_frequency : int, optional
         sampling frequency. The default is 256.
     physical_min : float, optional
         minimum value in dimension. The default is -200.
@@ -232,7 +232,7 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
 
     signal_header = {'label': label,
                'dimension': dimension,
-               'sample_rate': sample_rate,
+               'sample_frequency': sample_frequency,
                'physical_min': physical_min,
                'physical_max': physical_max,
                'digital_min':  digital_min,
@@ -242,7 +242,7 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
     return signal_header
 
 
-def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
+def make_signal_headers(list_of_labels, dimension='uV', sample_frequency=256,
                        physical_min=-200.0, physical_max=200.0,
                        digital_min=-32768, digital_max=32767,
                        transducer='', prefiler=''):
@@ -256,7 +256,7 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
         A list with labels for each channel.
     dimension : str, optional
         dimension, eg mV. The default is 'uV'.
-    sample_rate : int, optional
+    sample_frequency : int, optional
         sampling frequency. The default is 256.
     physical_min : float, optional
         minimum value in dimension. The default is -200.
@@ -279,7 +279,7 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
     """
     signal_headers = []
     for label in list_of_labels:
-        header = make_signal_header(label, dimension=dimension, sample_rate=sample_rate,
+        header = make_signal_header(label, dimension=dimension, sample_frequency=sample_frequency,
                                     physical_min=physical_min, physical_max=physical_max,
                                     digital_min=digital_min, digital_max=digital_max,
                                     transducer=transducer, prefiler=prefiler)
@@ -364,7 +364,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
             signals.append(signal)
 
         # we can only return a np.array if all signals have the same samplefreq
-        sfreqs = [shead['sample_rate'] for shead in signal_headers]
+        sfreqs = [shead['sample_frequency'] for shead in signal_headers]
         all_sfreq_same = sfreqs[1:]==sfreqs[:-1]
         if all_sfreq_same:
             dtype = np.int32 if digital else np.float
@@ -449,7 +449,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     # block_size sets the size of each writing block and should be a divisor
     # of the length of the signal. If it is not, the remainder of the file
     # will be filled with zeros.
-    signal_duration = len(signals[0]) // signal_headers[0]['sample_rate']
+    signal_duration = len(signals[0]) // signal_headers[0]['sample_frequency']
     if block_size == -1:
         block_size = max([d for d in range(1, 61) if signal_duration % d == 0])
     elif signal_duration % block_size != 0:
@@ -477,7 +477,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
             assert pmax>=sig.max(), \
             'phys_max is {}, but signal_max is {} ' \
             'for channel {}'.format(pmax, sig.max(), label)
-        shead['sample_rate'] *= block_size
+        shead['sample_frequency'] *= block_size
 
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
@@ -530,7 +530,7 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     header = make_header(technician='pyedflib-quickwrite')
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
     pmin, pmax = signals.min(), signals.max()
-    signal_headers = make_signal_headers(labels, sample_rate = sfreq,
+    signal_headers = make_signal_headers(labels, sample_frequency = sfreq,
                                          physical_min=pmin, physical_max=pmax)
     return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 

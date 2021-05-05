@@ -109,7 +109,7 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
+            'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -135,12 +135,12 @@ class EdfWriter(object):
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
@@ -192,7 +192,7 @@ class EdfWriter(object):
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
-            set_samplefrequency(self.handle, i, self.channels[i]['sample_rate'])
+            set_samplefrequency(self.handle, i, self.channels[i]['sample_frequency'])
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
@@ -227,7 +227,7 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
+            'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -250,8 +250,8 @@ class EdfWriter(object):
                           channel label (string, <= 16 characters, must be unique)
                 'dimension' : str
                           physical dimension (e.g., mV) (string, <= 8 characters)
-                'sample_rate' : int
-                          sample frequency in hertz
+                'sample_frequency' : int
+                          number of samples per record
                 'physical_max' : float
                           maximum physical value
                 'physical_min' : float
@@ -464,7 +464,7 @@ class EdfWriter(object):
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
-        self.channels[edfsignal]['sample_rate'] = samplefrequency
+        self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
     def setPhysicalMaximum(self, edfsignal, physical_maximum):
@@ -713,43 +713,43 @@ class EdfWriter(object):
             ind.append(0)
 
         sampleLength = 0
-        sampleRates = np.zeros(len(data_list), dtype=np.int32)
+        sampleFrequencies = np.zeros(len(data_list), dtype=np.int32)
         for i in np.arange(len(data_list)):
-            sampleRates[i] = self.channels[i]['sample_rate']
-            if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+            sampleFrequencies[i] = self.channels[i]['sample_frequency']
+            if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_frequency']):
                 notAtEnd = False
-            sampleLength += self.channels[i]['sample_rate']
+            sampleLength += self.channels[i]['sample_frequency']
 
-        dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
+        dataRecord = np.array([], dtype=np.int32 if digital else None)
 
         while notAtEnd:
             # dataOfOneSecondInd = 0
-            del dataOfOneSecond
-            dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
+            del dataRecord
+            dataRecord = np.array([], dtype=np.int32 if digital else None)
             for i in np.arange(len(data_list)):
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
-                dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
+                dataRecord = np.append(dataRecord,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleFrequencies[i])])
                 # self.writePhysicalSamples(data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
-                ind[i] += sampleRates[i]
+                ind[i] += sampleFrequencies[i]
                 # dataOfOneSecondInd += sampleRates[i]
             if digital:
-                success = self.blockWriteDigitalSamples(dataOfOneSecond)
+                success = self.blockWriteDigitalSamples(dataRecord)
             else:
-                success = self.blockWritePhysicalSamples(dataOfOneSecond)
+                success = self.blockWritePhysicalSamples(dataRecord)
 
             if success<0:
                 raise IOError('Unknown error while calling blockWriteSamples')
 
             for i in np.arange(len(data_list)):
-                if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
+                if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                     notAtEnd = False
 
 
         # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(sampleRates[i], dtype=np.int32 if digital else None)
+            lastSamples = np.zeros(sampleFrequencies[i], dtype=np.int32 if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
-            lastSampleInd = int(np.min((lastSampleInd,sampleRates[i])))
+            lastSampleInd = int(np.min((lastSampleInd,sampleFrequencies[i])))
             if lastSampleInd > 0:
                 lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
                 # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
