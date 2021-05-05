@@ -353,7 +353,7 @@ cdef class CyEdfReader:
 
     def samplefrequency(self, channel):
         try:
-            return (<double>self.hdr.signalparam[channel].smp_in_datarecord / self.hdr.datarecord_duration) * EDFLIB_TIME_DIMENSION
+            return <double>self.hdr.signalparam[channel].smp_in_datarecord
         except:
             return 0
     # def _tryoffset0(self):

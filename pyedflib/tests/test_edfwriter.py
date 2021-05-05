@@ -767,6 +767,46 @@ class TestEdfWriter(unittest.TestCase):
                              'set {}, but {}!={} '.format(gender, expected, f.getGender()))
             del f
 
+    def test_non_one_second_record_duration(self):
+        channel_count = 4
+        record_duration_seconds = 2
+        record_duration = record_duration_seconds * 1000 * 100
+        sample_frequency = 256
+        record_count = 10
+        sample_count_per_channel = sample_frequency * record_count
+
+        f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+        f.setDatarecordDuration(record_duration)
+
+        physMax = 1
+        physMin = -physMax
+        digMax = 32767
+        digMin = -digMax
+
+        f.setSignalHeaders([{
+            'label': 'test_label{}'.format(idx),
+            'sample_frequency': sample_frequency,
+            'dimension': 'mV',
+            'physical_min': physMin,
+            'physical_max': physMax,
+            'digital_min': digMin,
+            'digital_max': digMax,
+            'transducer': 'trans{}'.format(idx),
+            'prefilter': 'pre{}'.format(idx)
+        } for idx in range(channel_count)])
+
+        f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+        del f
+
+        f = pyedflib.EdfReader(self.edf_data_file)
+
+        for signal_header in f.getSignalHeaders():
+            self.assertEqual(signal_header['sample_frequency'], sample_frequency)
+
+        self.assertEqual(f.datarecord_duration, record_duration_seconds)
+        self.assertEqual(f.datarecords_in_file, record_count)
+
+        del f
 
 
 if __name__ == '__main__':
