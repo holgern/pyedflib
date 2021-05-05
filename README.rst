@@ -90,13 +90,13 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     # write an edf file
     signals = np.random.rand(5, 256*300)*200 # 5 minutes of random signal
     channel_names = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5']
-    signal_headers = highlevel.make_signal_headers(channel_names, sample_rate=256)
+    signal_headers = highlevel.make_signal_headers(channel_names, sample_frequency=256)
     header = highlevel.make_header(patientname='patient_x', gender='Female')
     highlevel.write_edf('edf_file.edf', signals, signal_headers, header)
-	    
+
     # read an edf file
     signals, signal_headers, header = highlevel.read_edf('edf_file.edf')
-    print(signal_headers[0]['sample_rate']) # prints 256
+    print(signal_headers[0]['sample_frequency']) # prints 256
 
     # drop a channel from the file or anonymize edf
     highlevel.drop_channels('edf_file.edf', to_drop=['ch2', 'ch4'])

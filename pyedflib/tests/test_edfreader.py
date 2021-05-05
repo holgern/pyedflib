@@ -143,7 +143,7 @@ class TestEdfReader(unittest.TestCase):
         del f
 
     def test_EdfReader_Check_Size(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -183,7 +183,7 @@ class TestEdfReader(unittest.TestCase):
         del f, ff
 
     def test_BdfReader_Read_accented_file(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}

@@ -152,7 +152,7 @@ class EdfReader(CyEdfReader):
         """
         return {'label': self.getLabel(chn),
                 'dimension': self.getPhysicalDimension(chn),
-                'sample_rate': self.getSampleFrequency(chn),
+                'sample_frequency': self.getSampleFrequency(chn),
                 'physical_max':self.getPhysicalMaximum(chn),
                 'physical_min': self.getPhysicalMinimum(chn),
                 'digital_max': self.getDigitalMaximum(chn),

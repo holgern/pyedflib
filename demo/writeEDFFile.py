@@ -32,7 +32,7 @@ if __name__ == '__main__':
     channel_info = []
     data_list = []
 
-    ch_dict = {'label': 'squarewave', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'squarewave', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     xtemp = np.sin(2*np.pi*0.1*time)
@@ -41,13 +41,13 @@ if __name__ == '__main__':
     x1[np.where(xtemp < 0)[0]] = -100
     data_list.append(x1)
 
-    ch_dict = {'label': 'ramp', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'ramp', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     x2 = signal.sawtooth(2 * np.pi * 1 * time)
     data_list.append(x2)
 
-    ch_dict = {'label': 'pulse 1', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'pulse 1', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     xtemp = np.sin(2*np.pi*0.5*time)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     x3[np.where(np.all((xtemp < 0.02, xtemp > -0.02),axis=0))[0]] = 100
     data_list.append(x3)
 
-    ch_dict = {'label': 'pulse 2', 'dimension': 'uV', 'sample_rate': 256, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'pulse 2', 'dimension': 'uV', 'sample_frequency': 256, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*256)
     xtemp = np.sin(2*np.pi*0.5*time)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     x4[np.where(np.all((xtemp < 0.02, xtemp > -0.02),axis=0))[0]] = 100
     data_list.append(x4)
 
-    ch_dict = {'label': 'pulse 3', 'dimension': 'uV', 'sample_rate': 217, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'pulse 3', 'dimension': 'uV', 'sample_frequency': 217, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*217)
     xtemp = np.sin(2*np.pi*0.5*time)
@@ -71,41 +71,41 @@ if __name__ == '__main__':
     x5[np.where(np.all((xtemp < 0.02, xtemp > -0.02),axis=0))[0]] = 100
     data_list.append(x5)
 
-    ch_dict = {'label': 'noise', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'noise', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     data_list.append(np.random.normal(size=file_duration*200))
 
-    ch_dict = {'label': 'sine 1 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 1 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*1*time))
 
-    ch_dict = {'label': 'sine 8 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 8 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*8*time))
 
-    ch_dict = {'label': 'sine 8.1777 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 8.1777 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*8.1777*time))
 
-    ch_dict = {'label': 'sine 8.5 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 8.5 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*8.5*time))
 
-    ch_dict = {'label': 'sine 15 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 15 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*15*time))
 
-    ch_dict = {'label': 'sine 17 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 17 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*17*time))
 
-    ch_dict = {'label': 'sine 50 Hz', 'dimension': 'uV', 'sample_rate': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 50 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*50*time))
