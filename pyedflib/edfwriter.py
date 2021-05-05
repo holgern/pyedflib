@@ -723,15 +723,11 @@ class EdfWriter(object):
         dataRecord = np.array([], dtype=np.int32 if digital else None)
 
         while notAtEnd:
-            # dataOfOneSecondInd = 0
             del dataRecord
             dataRecord = np.array([], dtype=np.int32 if digital else None)
             for i in np.arange(len(data_list)):
-                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
                 dataRecord = np.append(dataRecord,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleFrequencies[i])])
-                # self.writePhysicalSamples(data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
                 ind[i] += sampleFrequencies[i]
-                # dataOfOneSecondInd += sampleRates[i]
             if digital:
                 success = self.blockWriteDigitalSamples(dataRecord)
             else:
@@ -745,15 +741,12 @@ class EdfWriter(object):
                     notAtEnd = False
 
 
-        # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
             lastSamples = np.zeros(sampleFrequencies[i], dtype=np.int32 if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd,sampleFrequencies[i])))
             if lastSampleInd > 0:
                 lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
-                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
-                # dataOfOneSecondInd += self.channels[i]['sample_rate']
                 if digital:
                     success = self.writeDigitalSamples(lastSamples)
                 else:
@@ -761,7 +754,6 @@ class EdfWriter(object):
 
                 if success<0:
                     raise IOError('Unknown error while calling writeSamples')
-        # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
