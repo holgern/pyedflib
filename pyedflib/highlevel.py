@@ -449,7 +449,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     # block_size sets the size of each writing block and should be a divisor
     # of the length of the signal. If it is not, the remainder of the file
     # will be filled with zeros.
-    signal_duration = len(signals[0]) // signal_headers[0]['sample_rate']
+    signal_duration = len(signals[0]) / signal_headers[0]['sample_rate']
     if block_size == -1:
         samplefrequencies = np.array([hdr["sample_rate"] for hdr in signal_headers])
         block_size = min(
