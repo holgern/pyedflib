@@ -235,7 +235,7 @@ class EdfWriter(object):
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
-        self.channels[edfsignal] = channel_info
+        self.channels[edfsignal].update(channel_info)
         self.update_header()
 
     def setSignalHeaders(self, signalHeaders):
@@ -262,7 +262,7 @@ class EdfWriter(object):
                          minimum digital value (-2**15 <= x < 2**15)
         """
         for edfsignal in np.arange(self.n_channels):
-            self.channels[edfsignal] = signalHeaders[edfsignal]
+            self.channels[edfsignal].update(signalHeaders[edfsignal])
         self.update_header()
 
     def setTechnician(self, technician):
@@ -682,7 +682,7 @@ class EdfWriter(object):
         is different, then sample_freq is a vector containing all the different
         samplefrequencys. The data is saved as list. Each list entry contains
         a vector with the data of one signal.
-        
+
         If digital is True, digital signals (as directly from the ADC) will be expected.
         (e.g. int16 from 0 to 2048)
 
