@@ -690,7 +690,7 @@ class EdfWriter(object):
         """
 
 
-        if (len(data_list) != len(self.channels)):
+        if (len(data_list) != len(self.channels)) or (len(data_list) == 0):
             raise WrongInputSize(len(data_list))
 
         if any([np.isfortran(s) for s in data_list if isinstance(s, np.ndarray)]) or \
