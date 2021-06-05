@@ -10,11 +10,6 @@ function repair_wheel {
     fi
 }
 
-# Install a system package required by our library
-yum install -y freetype-devel
-yum install -y libpng-devel
-
-
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
     "${PYBIN}/pip" install -r /io/dev-requirements.txt
