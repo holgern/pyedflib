@@ -690,7 +690,7 @@ class EdfWriter(object):
         """
 
 
-        if (len(data_list) == 0:
+        if (len(data_list)) == 0:
             raise WrongInputSize('Data list is empty') 
         if (len(data_list) != len(self.channels)):
             raise WrongInputSize('Number of channels ({}) \
