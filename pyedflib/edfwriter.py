@@ -769,6 +769,10 @@ class EdfWriter(object):
         """
         if self.file_type in [FILETYPE_EDF, FILETYPE_BDF]:
             raise TypeError('Trying to write annotation to EDF/BDF, must use EDF+/BDF+')
+
+        if isinstance(duration_in_seconds, bytes):
+            duration_in_seconds = float(duration_in_seconds)
+            
         if str_format == 'utf-8':
             if duration_in_seconds >= 0:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), du(description))

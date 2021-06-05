@@ -315,8 +315,20 @@ class TestHighLevel(unittest.TestCase):
                                    atol=0.0001)
 
 
-    # def test_rename_channels(self):
-        # raise NotImplementedError
+    def test_annotation_bytestring(self):
+        header = highlevel.make_header(technician='tech', recording_additional='radd',
+                                                patientname='name', patient_additional='padd',
+                                                patientcode='42', equipment='eeg', admincode='420',
+                                                gender='Male', birthdate='05.09.1980')
+        annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
+        header['annotations'] = annotations
+        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
+        signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
+        _,_,header2 = highlevel.read_edf(self.edfplus_data_file)
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
+        _,_,header3 = highlevel.read_edf(self.edfplus_data_file)
+        self.assertEqual(header2['annotations'], header3['annotations'])
 
 
 if __name__ == '__main__':

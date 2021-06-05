@@ -354,9 +354,11 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
         signal_headers = [f.getSignalHeaders()[c] for c in ch_nrs]
 
         # add annotations to header
-        annotations = f.read_annotation()
-        annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
+        annotations = f.readAnnotations()
+        annotations = [[s, d, a] for s,d,a in zip(*annotations)]
         header['annotations'] = annotations
+
+
         signals = []
         for i,c in enumerate(tqdm(ch_nrs, desc='Reading Channels',
                                   disable=not verbose)):
