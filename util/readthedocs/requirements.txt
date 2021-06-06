@@ -3,4 +3,3 @@ cython
 pytest
 wheel
 numpydoc
-matplotlib

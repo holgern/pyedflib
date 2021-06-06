@@ -6,7 +6,6 @@ nose
 coverage
 cython
 numpy
-matplotlib
 pytest
 dateparser
 tqdm

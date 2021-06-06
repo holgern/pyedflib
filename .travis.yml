@@ -15,20 +15,20 @@ matrix:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux1_x86_64
            PLAT=manylinux1_x86_64
-           MANYLINUX=1
+           MANYLINUX=0
     - sudo: required
       services:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_i686
            PRE_CMD=linux32
            PLAT=manylinux1_i686
-           MANYLINUX=1
+           MANYLINUX=0
     - sudo: required
       services:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
            PLAT=manylinux2010_x86_64
-           MANYLINUX=1
+           MANYLINUX=0
     - sudo: required
       arch: arm64-graviton2
       group: edge
@@ -37,12 +37,11 @@ matrix:
         - docker
       env: DOCKER_IMAGE=quay.io/pypa/manylinux2014_aarch64
            PLAT=manylinux2014_aarch64
-           MANYLINUX=1
+           MANYLINUX=0
     - os: linux
       python: 3.6
       env:
         - NUMPYSPEC=numpy
-        - MATPLOTLIBSPEC=matplotlib
         - CYTHONSPEC=cython
         - USE_WHEEL=1
         - LINUX_WHEEL=1
@@ -53,7 +52,6 @@ matrix:
       sudo: true
       env:
         - NUMPYSPEC=numpy
-        - MATPLOTLIBSPEC=matplotlib
         - CYTHONSPEC=cython
         - USE_SDIST=1
         - USE_SCIPY=1
@@ -65,7 +63,6 @@ matrix:
       sudo: true
       env:
         - NUMPYSPEC=numpy
-        - MATPLOTLIBSPEC=matplotlib
         - CYTHONSPEC=cython
         - MANYLINUX=0
     - os: linux
@@ -74,7 +71,6 @@ matrix:
       sudo: true
       env:
         - NUMPYSPEC=numpy
-        - MATPLOTLIBSPEC=matplotlib
         - CYTHONSPEC=cython
         - MANYLINUX=0
     - os: osx
@@ -127,7 +123,6 @@ before_install:
         pip install --upgrade pip
         pip install --upgrade wheel
         pip install $NUMPYSPEC
-        pip install $MATPLOTLIBSPEC
         pip install $CYTHONSPEC
         pip install pytest pytest-cov coverage codecov futures
         mkdir ${TRAVIS_BUILD_DIR}/wheelhouse

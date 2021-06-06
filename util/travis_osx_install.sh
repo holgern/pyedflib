@@ -1,5 +1,5 @@
 #!/bin/bash
-brew update
+#brew update
 brew install ccache
 
 # install pyenv

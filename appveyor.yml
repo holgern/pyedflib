@@ -32,7 +32,7 @@ install:
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install --upgrade pip"
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install --upgrade wheel"
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install
-     Cython nose coverage matplotlib dateparser tqdm --cache-dir c:\\tmp\\pip-cache"
+     Cython nose coverage numpy dateparser tqdm --cache-dir c:\\tmp\\pip-cache"
 
 test_script:
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe setup.py build --build-lib build\\lib\\"
