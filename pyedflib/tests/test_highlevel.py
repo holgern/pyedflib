@@ -78,13 +78,17 @@ class TestHighLevel(unittest.TestCase):
             self.assertTrue(os.path.isfile(file))
             self.assertGreater(os.path.getsize(file), 0)
             self.assertTrue(success)
-            
+
             signals2, signal_headers2, header2 = highlevel.read_edf(file)
-    
+
             self.assertEqual(len(signals2), 5)
             self.assertEqual(len(signals2), len(signal_headers2))
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1, shead2)
+                # When only 'sample_rate' is present, we use its value to write
+                # the file, ignoring 'sample_frequency', which means that when
+                # we read it back only the 'sample_rate' value is present.
+                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
+                                     shead2)
             np.testing.assert_allclose(signals, signals2, atol=0.01)
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -102,7 +106,11 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), len(signal_headers2))
             np.testing.assert_array_equal(signals, signals2)
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1, shead2)
+                # When only 'sample_rate' is present, we use its value to write
+                # the file, ignoring 'sample_frequency', which means that when
+                # we read it back only the 'sample_rate' value is present.
+                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
+                                     shead2)
             # EDF/BDF header writing does not correctly work yet
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)

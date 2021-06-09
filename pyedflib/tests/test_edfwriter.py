@@ -808,6 +808,71 @@ class TestEdfWriter(unittest.TestCase):
 
         del f
 
+    def test_sample_rate_backwards_compatibility(self):
+        channel_count = 4
+        record_duration_seconds = 1
+        record_duration = record_duration_seconds * 1000 * 100
+        # Choosing a weird sample rate to make sure it doesn't equal any defaults
+        sample_rate = 42
+        record_count = 10
+        sample_count_per_channel = sample_rate * record_count
+
+
+        physMax = 1
+        physMin = -physMax
+        digMax = 32767
+        digMin = -digMax
+
+        base_signal_header = lambda idx: {
+            'label': 'test_label{}'.format(idx),
+            'dimension': 'mV',
+            'physical_min': physMin,
+            'physical_max': physMax,
+            'digital_min': digMin,
+            'digital_max': digMax,
+            'transducer': 'trans{}'.format(idx),
+            'prefilter': 'pre{}'.format(idx)
+        }
+
+        with self.subTest("when 'sample_frequency' param is missing"):
+            f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+            f.setDatarecordDuration(record_duration)
+
+            f.setSignalHeaders([{
+                'sample_rate': sample_rate,
+                **base_signal_header(idx)
+            } for idx in range(channel_count)])
+
+            with self.assertWarnsRegex(DeprecationWarning, "'sample_rate' parameter is deprecated"):
+                f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+                del f
+
+            f = pyedflib.EdfReader(self.edf_data_file)
+
+            for signal_header in f.getSignalHeaders():
+                self.assertEqual(signal_header['sample_rate'], sample_rate)
+
+            del f
+
+        with self.subTest("when 'sample_frequency' param is present"):
+            f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+            f.setDatarecordDuration(record_duration)
+            f.setSignalHeaders([{
+                'sample_frequency': sample_rate,
+                **base_signal_header(idx)
+            } for idx in range(channel_count)])
+            f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+
+            del f
+
+            f = pyedflib.EdfReader(self.edf_data_file)
+            for signal_header in f.getSignalHeaders():
+                self.assertEqual(signal_header['sample_frequency'], sample_rate)
+
+            del f
+
+
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

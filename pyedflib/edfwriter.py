@@ -109,6 +109,7 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
+            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
             'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -135,13 +136,13 @@ class EdfWriter(object):
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                                      'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                                      'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
 
@@ -192,7 +193,7 @@ class EdfWriter(object):
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
-            set_samplefrequency(self.handle, i, self.channels[i]['sample_frequency'])
+            set_samplefrequency(self.handle, i, self._get_sample_frequency(i))
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
@@ -227,6 +228,7 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
+            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
             'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -250,6 +252,8 @@ class EdfWriter(object):
                           channel label (string, <= 16 characters, must be unique)
                 'dimension' : str
                           physical dimension (e.g., mV) (string, <= 8 characters)
+                'sample_rate' :
+                          sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
                 'sample_frequency' : int
                           number of samples per record
                 'physical_max' : float
@@ -464,6 +468,11 @@ class EdfWriter(object):
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
+
+        # Temporary double assignment while we deprecate 'sample_rate' as a channel attribute
+        # in favor of 'sample_frequency', supporting the use of either to give
+        # users time to switch to the new interface.
+        self.channels[edfsignal]['sample_rate'] = samplefrequency
         self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
@@ -682,13 +691,17 @@ class EdfWriter(object):
         is different, then sample_freq is a vector containing all the different
         samplefrequencys. The data is saved as list. Each list entry contains
         a vector with the data of one signal.
-        
+
         If digital is True, digital signals (as directly from the ADC) will be expected.
         (e.g. int16 from 0 to 2048)
 
         All parameters must be already written into the bdf/edf-file.
         """
-
+        there_are_blank_sample_frequencies = any([channel.get('sample_frequency') is None
+                                                 for channel in self.channels])
+        if there_are_blank_sample_frequencies:
+            warnings.warn("The 'sample_rate' parameter is deprecated. Please use "
+                          "'sample_frequency' instead.", DeprecationWarning)
 
         if (len(data_list) != len(self.channels)):
             raise WrongInputSize(len(data_list))
@@ -715,10 +728,10 @@ class EdfWriter(object):
         sampleLength = 0
         sampleFrequencies = np.zeros(len(data_list), dtype=np.int32)
         for i in np.arange(len(data_list)):
-            sampleFrequencies[i] = self.channels[i]['sample_frequency']
-            if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_frequency']):
+            sampleFrequencies[i] = self._get_sample_frequency(i)
+            if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                 notAtEnd = False
-            sampleLength += self.channels[i]['sample_frequency']
+            sampleLength += sampleFrequencies[i]
 
         dataRecord = np.array([], dtype=np.int32 if digital else None)
 
@@ -778,3 +791,11 @@ class EdfWriter(object):
         """
         close_file(self.handle)
         self.handle = -1
+
+    def _get_sample_frequency(self, channelIndex):
+        # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
+        # in favor of 'sample_frequency', supporting the use of either to give
+        # users time to switch to the new interface.
+        return (self.channels[channelIndex]['sample_rate']
+                if self.channels[channelIndex].get('sample_frequency') is None
+                else self.channels[channelIndex]['sample_frequency'])
