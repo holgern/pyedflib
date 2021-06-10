@@ -109,7 +109,8 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
+            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
+            'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -136,12 +137,12 @@ class EdfWriter(object):
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
                 self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
-                                      'physical_max': 1.0, 'physical_min': -1.0,
+                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
                 self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
-                                      'physical_max': 1.0, 'physical_min': -1.0,
+                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': 'pre1', 'transducer': 'trans1'})
 
@@ -192,7 +193,7 @@ class EdfWriter(object):
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
-            set_samplefrequency(self.handle, i, self.channels[i]['sample_rate'])
+            set_samplefrequency(self.handle, i, self._get_sample_frequency(i))
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
@@ -227,7 +228,8 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
+            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
+            'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -250,8 +252,10 @@ class EdfWriter(object):
                           channel label (string, <= 16 characters, must be unique)
                 'dimension' : str
                           physical dimension (e.g., mV) (string, <= 8 characters)
-                'sample_rate' : int
-                          sample frequency in hertz
+                'sample_rate' :
+                          sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
+                'sample_frequency' : int
+                          number of samples per record
                 'physical_max' : float
                           maximum physical value
                 'physical_min' : float
@@ -464,7 +468,12 @@ class EdfWriter(object):
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
+
+        # Temporary double assignment while we deprecate 'sample_rate' as a channel attribute
+        # in favor of 'sample_frequency', supporting the use of either to give
+        # users time to switch to the new interface.
         self.channels[edfsignal]['sample_rate'] = samplefrequency
+        self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
     def setPhysicalMaximum(self, edfsignal, physical_maximum):
@@ -688,7 +697,11 @@ class EdfWriter(object):
 
         All parameters must be already written into the bdf/edf-file.
         """
-
+        there_are_blank_sample_frequencies = any([channel.get('sample_frequency') is None
+                                                 for channel in self.channels])
+        if there_are_blank_sample_frequencies:
+            warnings.warn("The 'sample_rate' parameter is deprecated. Please use "
+                          "'sample_frequency' instead.", DeprecationWarning)
 
         if (len(data_list)) == 0:
             raise WrongInputSize('Data list is empty') 
@@ -716,47 +729,40 @@ class EdfWriter(object):
             ind.append(0)
 
         sampleLength = 0
-        sampleRates = np.zeros(len(data_list), dtype=np.int32)
+        sampleFrequencies = np.zeros(len(data_list), dtype=np.int32)
         for i in np.arange(len(data_list)):
-            sampleRates[i] = self.channels[i]['sample_rate']
-            if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+            sampleFrequencies[i] = self._get_sample_frequency(i)
+            if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                 notAtEnd = False
-            sampleLength += self.channels[i]['sample_rate']
+            sampleLength += sampleFrequencies[i]
 
-        dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
+        dataRecord = np.array([], dtype=np.int32 if digital else None)
 
         while notAtEnd:
-            # dataOfOneSecondInd = 0
-            del dataOfOneSecond
-            dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
+            del dataRecord
+            dataRecord = np.array([], dtype=np.int32 if digital else None)
             for i in np.arange(len(data_list)):
-                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
-                dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
-                # self.writePhysicalSamples(data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
-                ind[i] += sampleRates[i]
-                # dataOfOneSecondInd += sampleRates[i]
+                dataRecord = np.append(dataRecord,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleFrequencies[i])])
+                ind[i] += sampleFrequencies[i]
             if digital:
-                success = self.blockWriteDigitalSamples(dataOfOneSecond)
+                success = self.blockWriteDigitalSamples(dataRecord)
             else:
-                success = self.blockWritePhysicalSamples(dataOfOneSecond)
+                success = self.blockWritePhysicalSamples(dataRecord)
 
             if success<0:
                 raise IOError('Unknown error while calling blockWriteSamples')
 
             for i in np.arange(len(data_list)):
-                if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
+                if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                     notAtEnd = False
 
 
-        # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(sampleRates[i], dtype=np.int32 if digital else None)
+            lastSamples = np.zeros(sampleFrequencies[i], dtype=np.int32 if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
-            lastSampleInd = int(np.min((lastSampleInd,sampleRates[i])))
+            lastSampleInd = int(np.min((lastSampleInd,sampleFrequencies[i])))
             if lastSampleInd > 0:
                 lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
-                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
-                # dataOfOneSecondInd += self.channels[i]['sample_rate']
                 if digital:
                     success = self.writeDigitalSamples(lastSamples)
                 else:
@@ -764,7 +770,6 @@ class EdfWriter(object):
 
                 if success<0:
                     raise IOError('Unknown error while calling writeSamples')
-        # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
@@ -793,3 +798,11 @@ class EdfWriter(object):
         """
         close_file(self.handle)
         self.handle = -1
+
+    def _get_sample_frequency(self, channelIndex):
+        # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
+        # in favor of 'sample_frequency', supporting the use of either to give
+        # users time to switch to the new interface.
+        return (self.channels[channelIndex]['sample_rate']
+                if self.channels[channelIndex].get('sample_frequency') is None
+                else self.channels[channelIndex]['sample_frequency'])

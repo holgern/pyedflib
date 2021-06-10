@@ -78,13 +78,17 @@ class TestHighLevel(unittest.TestCase):
             self.assertTrue(os.path.isfile(file))
             self.assertGreater(os.path.getsize(file), 0)
             self.assertTrue(success)
-            
+
             signals2, signal_headers2, header2 = highlevel.read_edf(file)
-    
+
             self.assertEqual(len(signals2), 5)
             self.assertEqual(len(signals2), len(signal_headers2))
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1, shead2)
+                # When only 'sample_rate' is present, we use its value to write
+                # the file, ignoring 'sample_frequency', which means that when
+                # we read it back only the 'sample_rate' value is present.
+                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
+                                     shead2)
             np.testing.assert_allclose(signals, signals2, atol=0.01)
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -102,7 +106,11 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), len(signal_headers2))
             np.testing.assert_array_equal(signals, signals2)
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1, shead2)
+                # When only 'sample_rate' is present, we use its value to write
+                # the file, ignoring 'sample_frequency', which means that when
+                # we read it back only the 'sample_rate' value is present.
+                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
+                                     shead2)
             # EDF/BDF header writing does not correctly work yet
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -128,7 +136,7 @@ class TestHighLevel(unittest.TestCase):
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
 
 
-    def test_read_write_decimal_sample_rates(self):
+    def test_read_write_decimal_sample_frequencies(self):
         signals = np.random.randint(-2048, 2048, [3, 256*60])
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
@@ -138,13 +146,6 @@ class TestHighLevel(unittest.TestCase):
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=False, verbose=True)
         np.testing.assert_allclose(signals, signals2, atol=0.0001)
 
-    # def test_read_write_decimal_sample_rates_smaller_one(self):
-    #     signals = np.random.randint(-2048, 2048, [3, 256*60])
-    #     highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=1/3, digital=True)
-    #     signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
-    #     np.testing.assert_allclose(signals, signals2)
-
-
 
     def test_read_write_diff_sfreq(self):
         
@@ -153,7 +154,7 @@ class TestHighLevel(unittest.TestCase):
         sheaders = []
         for sfreq in sfreqs:
             signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
-            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_rate=sfreq)
+            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_frequency=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
         signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
@@ -164,7 +165,7 @@ class TestHighLevel(unittest.TestCase):
         
         # test digital and dmin wrong
         signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int32)]
-        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['digital_min'] = -128
         sheaders[0]['digital_max'] = 128
         with self.assertRaises(AssertionError):
@@ -172,7 +173,7 @@ class TestHighLevel(unittest.TestCase):
         
         # test pmin wrong
         signals = [np.random.randint(-2048, 2048, 256*60)]
-        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['physical_min'] = -200
         sheaders[0]['physical_max'] = 200
         with self.assertRaises(AssertionError):
@@ -290,7 +291,7 @@ class TestHighLevel(unittest.TestCase):
         siglen = 256* 155
         signals = np.random.rand(10, siglen)
         sheads = highlevel.make_signal_headers([str(x) for x in range(10)],
-                                              sample_rate=256, physical_max=1,
+                                              sample_frequency=256, physical_max=1,
                                               physical_min=-1)
 
         valid_block_sizes = [-1, 1, 5, 31]
