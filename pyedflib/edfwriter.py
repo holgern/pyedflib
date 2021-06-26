@@ -33,6 +33,78 @@ def check_is_ascii(string):
                       ' characters and no spaces: "{}"'.format(string))
 
 
+def check_signal_header_correct(channels, i, file_type):
+    """
+    helper function  to check if all entries in the channel dictionary are fine.
+
+    Will give a warning if label, transducer, dimension, prefilter are too long.
+
+    Will throw an exception if dmin, dmax, pmin, pmax are out of bounds or would
+    be truncated in such a way as that signal values would be completely off.
+    """
+    ch = channels[i]
+    label = ch['label']
+
+    if len(ch['label'])>16:
+        warnings.warn('Label of channel {} is longer than 16 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['label'][:16] ))
+    if len(ch['prefilter'])>80:
+        warnings.warn('prefilter of channel {} is longer than 80 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['prefilter'][:80] ))
+    if len(ch['transducer'])>80:
+        warnings.warn('transducer of channel {} is longer than 80 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['transducer'][:80] ))
+    if len(ch['dimension'])>80:
+        warnings.warn('dimension of channel {} is longer than 8 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['dimension'][:8] ))
+
+    # these ones actually raise an exception
+    dmin, dmax = (-8388608, 8388607) if file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF) else (-32768, 32767)
+    if ch['digital_min']<dmin:
+        raise ValueError('Digital minimum for channel {} ({}) is {},'\
+                         'but minimum allowed value is {}'.format(i, label,
+                                                                  ch['digital_min'],
+                                                                  dmin))
+    if ch['digital_max']>dmax:
+        raise ValueError('Digital maximum for channel {} ({}) is {},'\
+                         'but maximum allowed value is {}'.format(i, label,
+                                                                  ch['digital_max'],
+                                                                  dmax))
+
+
+    # if we truncate the physical min before the dot, we potentitally
+    # have all the signals incorrect by an order of magnitude.
+    if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+                         'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
+                                                                      ch['physical_min'],
+                                                                      len(str(ch['physical_min']))))
+    if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+                         'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
+                                                                      ch['physical_max'],
+                                                                      len(str(ch['physical_max']))))
+    # if we truncate the physical min behind the dot, we just lose precision,
+    # in this case only a warning is enough
+    if len(str(ch['physical_min']))>8:
+        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+                         'some loss of precision is to be expected'.format(i, label,
+                                                                      ch['physical_min'],
+                                                                      len(str(ch['physical_min'])),
+                                                                      str(ch['physical_min'])[:8]))
+    if len(str(ch['physical_max']))>8:
+        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+                         'some loss of precision is to be expected.'.format(i, label,
+                                                                      ch['physical_max'],
+                                                                      len(str(ch['physical_max'])),
+                                                                      str(ch['physical_max'])[:8]))
+
+
+
 def u(x):
     return x.decode("utf-8", "strict")
 
@@ -136,15 +208,15 @@ class EdfWriter(object):
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
-                                      'prefilter': 'pre1', 'transducer': 'trans1'})
+                                      'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
-                                      'prefilter': 'pre1', 'transducer': 'trans1'})
+                                      'prefilter': '', 'transducer': ''})
 
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
@@ -193,6 +265,9 @@ class EdfWriter(object):
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
+
+            check_signal_header_correct(self.channels, i, self.file_type)
+
             set_samplefrequency(self.handle, i, self._get_sample_frequency(i))
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
