@@ -19,9 +19,9 @@ class TestEdfReader(unittest.TestCase):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         cls.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         cls.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
-        cls.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
         cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
         cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
+        cls.tmp_edf_file = os.path.join(data_dir, u'test_tmp_file.edf')
 
     @classmethod
     def tearDownClass(cls):
@@ -148,7 +148,7 @@ class TestEdfReader(unittest.TestCase):
                         'sample_frequency': sample_frequency, 'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        f = pyedflib.EdfWriter(self.bdf_broken_file, 1,file_type=pyedflib.FILETYPE_BDFPLUS)
+        f = pyedflib.EdfWriter(self.bdf_broken_file, 1, file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         f.setTechnician('tec1')
         data = np.ones(100) * 0.1
@@ -216,6 +216,46 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getSignalHeader(0), expected_signal_header)
         np.testing.assert_equal(f.getSignalHeaders(), [expected_signal_header])
         del f
+
+
+    def test_read_incorrect_file(self):
+
+        # this should simply not be found and not trigger the UTF8 warning
+        with self.assertRaises(FileNotFoundError):
+            f = pyedflib.EdfReader('does_not_exist')
+
+        # this file is corrupted and should be found, but not be read
+        # so the Exception should be OSError and not FileNotFoundError
+        with self.assertRaises(OSError):
+            with open(self.tmp_edf_file, 'wb') as f:
+                f.write(b'0123456789')
+            f = pyedflib.EdfReader(self.tmp_edf_file)
+
+        # now we create a file that is not EDF/BDF compliant
+        # this should raise an OSError and not a FileNotFoundError
+        with self.assertRaises(OSError) as cm:
+            channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+                            'sample_frequency': 100, 'physical_max': 1.0, 'physical_min': -1.0,
+                            'digital_max': 8388607, 'digital_min': -8388608,
+                            'prefilter': 'pre1', 'transducer': 'trans1'}
+            with pyedflib.EdfWriter(self.bdf_accented_file, 1, file_type=pyedflib.FILETYPE_BDFPLUS) as f:
+                f.setSignalHeader(0,channel_info)
+                f.setTechnician('tec1')
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+    
+            with open(self.bdf_accented_file, 'rb') as f:
+                content = bytearray(f.read())
+                content[181] = 58
+            with open(self.bdf_accented_file, 'wb') as f:
+                f.write(content)
+
+            f = pyedflib.EdfReader(self.bdf_accented_file)
+        # However, the error before should not be a FileNotFoundError
+        assert not isinstance(cm.exception, FileNotFoundError)
+
+
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
