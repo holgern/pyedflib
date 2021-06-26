@@ -716,8 +716,9 @@ class TestEdfWriter(unittest.TestCase):
     def test_physical_range_inequality(self):
         # Prepare data
         channel_data1 = np.sin(np.arange(1,1001))
+
         channel_info1 = {'label': 'test_label_sin', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': max(channel_data1), 'physical_min': min(channel_data1),
+                        'physical_max': 1, 'physical_min': -1,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
 
@@ -882,11 +883,13 @@ class TestEdfWriter(unittest.TestCase):
                          'digital_min': -32768,
                          'prefilter': 'p'*100,
                          'transducer': 't'*100}
+
         # now 4 warnings should appear.
-        with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
-            f.setSignalHeader(0,channel_info1)
-            data = np.ones(100) * 0.1
-            f.writePhysicalSamples(data)
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
 
         with pyedflib.EdfReader(self.edf_data_file) as f:
             np.testing.assert_equal(f.getLabel(0), 'l'*16)
@@ -909,10 +912,11 @@ class TestEdfWriter(unittest.TestCase):
                          'transducer': 't'}
 
         # now a warning should appear.
-        with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
-            f.setSignalHeader(0,channel_info)
-            data = np.ones(100) * 0.1
-            f.writePhysicalSamples(data)
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
 
         with pyedflib.EdfReader(self.edf_data_file) as f:
             self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
