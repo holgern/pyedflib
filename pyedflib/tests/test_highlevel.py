@@ -130,7 +130,8 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
         np.testing.assert_allclose(signals, signals2)
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
@@ -141,7 +142,8 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
         np.testing.assert_allclose(signals, signals2)
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=8.5, digital=False)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=False, verbose=True)
         np.testing.assert_allclose(signals, signals2, atol=0.0001)
@@ -181,7 +183,8 @@ class TestHighLevel(unittest.TestCase):
             
 
     def test_read_write_accented(self):
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.test_accented, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.test_accented)
         
@@ -190,7 +193,8 @@ class TestHighLevel(unittest.TestCase):
         self.assertTrue(os.path.isfile(self.test_accented), 'File does not exist')
 
     def test_read_unicode(self):
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         success = highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         self.assertTrue(success)
         shutil.copy(self.edfplus_data_file, self.test_unicode)
@@ -225,6 +229,7 @@ class TestHighLevel(unittest.TestCase):
         header['annotations'] = annotations
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
         signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf(self.personalized, signals, signal_headers, header)
     
         
@@ -267,6 +272,7 @@ class TestHighLevel(unittest.TestCase):
     def test_drop_channel(self):
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
         signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf(self.drop_from, signals, signal_headers)
         
         dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'], verbose=True)

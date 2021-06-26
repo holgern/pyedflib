@@ -716,8 +716,9 @@ class TestEdfWriter(unittest.TestCase):
     def test_physical_range_inequality(self):
         # Prepare data
         channel_data1 = np.sin(np.arange(1,1001))
+
         channel_info1 = {'label': 'test_label_sin', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': max(channel_data1), 'physical_min': min(channel_data1),
+                        'physical_max': 1, 'physical_min': -1,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
 
@@ -872,6 +873,61 @@ class TestEdfWriter(unittest.TestCase):
             del f
 
 
+    def test_EdfWriter_more_than_80_chars(self):
+
+        channel_info1 = {'label': 'label',
+                         'dimension': 'dim',
+                         'sample_frequency': 100,
+                         'physical_max': 1,
+                         'physical_min': -1.0,
+                         'digital_max': 32767,
+                         'digital_min': -32768,
+                         'prefilter': 'pre',
+                         'transducer': 'trans'}
+
+        header = {'birthdate': '',
+                  'startdate': datetime(2021, 6, 26, 13, 16, 1),
+                  'gender': '',
+                  'admincode': '',
+                  'equipment': '',
+                  'patientcode': 'x'*40,
+                  'patient_additional': 'x'*30,
+                  'patientname': '',
+                  'recording_additional': '',
+                  'technician': ''}
+
+        # now 4 warnings should appear.
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDFPLUS) as f:
+                f.setHeader(header)
+                f.setSignalHeader(0, channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        header = {'birthdate': '',
+                  'startdate': datetime(2021, 6, 26, 13, 16, 1),
+                  'gender': '',
+                  'admincode': '',
+                  'equipment': 'e'*20,
+                  'patientcode': 'x',
+                  'patient_additional': 'x',
+                  'patientname': '',
+                  'recording_additional': 'r'*20,
+                  'technician': 't'*20}
+
+        # now 4 warnings should appear.
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDFPLUS) as f:
+                f.setHeader(header)
+                f.setSignalHeader(0, channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with pyedflib.EdfReader(self.edf_data_file) as f:
+            np.testing.assert_equal(f.getEquipment(), 'e'*20)
+            np.testing.assert_equal(f.getTechnician(), 't'*20)
+
+
     def test_EdfWriter_too_long_headers(self):
         channel_info1 = {'label': 'l'*100, # this should be too long
                          'dimension': 'd'*100,
@@ -882,11 +938,13 @@ class TestEdfWriter(unittest.TestCase):
                          'digital_min': -32768,
                          'prefilter': 'p'*100,
                          'transducer': 't'*100}
+
         # now 4 warnings should appear.
-        with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
-            f.setSignalHeader(0,channel_info1)
-            data = np.ones(100) * 0.1
-            f.writePhysicalSamples(data)
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
 
         with pyedflib.EdfReader(self.edf_data_file) as f:
             np.testing.assert_equal(f.getLabel(0), 'l'*16)
@@ -909,10 +967,11 @@ class TestEdfWriter(unittest.TestCase):
                          'transducer': 't'}
 
         # now a warning should appear.
-        with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
-            f.setSignalHeader(0,channel_info)
-            data = np.ones(100) * 0.1
-            f.writePhysicalSamples(data)
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
 
         with pyedflib.EdfReader(self.edf_data_file) as f:
             self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
