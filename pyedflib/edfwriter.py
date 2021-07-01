@@ -784,10 +784,16 @@ class EdfWriter(object):
             raise WrongInputSize('Number of channels ({}) \
              unequal to length of data ({})'.format(len(self.channels), len(data_list)))
 
-        if any([np.isfortran(s) for s in data_list if isinstance(s, np.ndarray)]) or \
-                (isinstance(data_list, np.ndarray) and np.isfortran(data_list)):
+        # Check for F-contiguous arrays
+        if any([s.flags.f_contiguous for s in data_list if isinstance(s, np.ndarray)]) or \
+                (isinstance(data_list, np.ndarray) and data_list.flags.f_contiguous):
            warnings.warn('signals are in Fortran order. Will automatically ' \
                          'transfer to C order for compatibility with edflib.')
+        if isinstance(data_list, list):
+            data_list = [s.copy(order='C') for s in data_list]
+        elif isinstance(data_list, np.ndarray) and data_list.flags.f_contiguous:
+            data_list = data_list.copy(order='C')
+        
         if digital:
             if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
                 raise TypeError('Digital = True requires all signals in int')

@@ -503,15 +503,6 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
 
-    if any([s.flags.f_contiguous for s in signals]) or \
-        (isinstance(signals, np.ndarray) and signals.flags.f_contiguous):
-           warnings.warn('signals are in Fortran order. Will automatically ' \
-                         'transfer to C order for compatibility with edflib.')
-    if isinstance(signals, list):
-        signals = [s.copy(order='C') for s in signals]
-    elif isinstance(signals, np.ndarray) and signals.flags.f_contiguous:
-        signals = signals.copy(order='C')
-
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:
         f.setDatarecordDuration(int(100000 * block_size))
         f.setSignalHeaders(signal_headers)
