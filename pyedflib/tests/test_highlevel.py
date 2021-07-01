@@ -147,7 +147,7 @@ class TestHighLevel(unittest.TestCase):
         np.testing.assert_allclose(signals, signals2)
 
         # Create Fortran contiguous list
-        signals = [np.random.randint(-2048,2048,(5000000,))]*4
+        signals = [np.random.randint(-2048,2048,(5000000,), dtype=np.int32)]*4
         # Write
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=250, digital=True)
         # Read and check
