@@ -817,14 +817,14 @@ class EdfWriter(object):
             del dataRecord
             dataRecord = np.array([], dtype=np.int32 if digital else None)
             for i in np.arange(len(data_list)):
-                dataRecord = np.append(dataRecord,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleFrequencies[i])])
+                dataRecord = np.append(dataRecord, data_list[i][int(ind[i]):int(ind[i]+sampleFrequencies[i])])
                 ind[i] += sampleFrequencies[i]
             if digital:
                 success = self.blockWriteDigitalSamples(dataRecord)
             else:
                 success = self.blockWritePhysicalSamples(dataRecord)
 
-            if success<0:
+            if success < 0:
                 raise IOError('Unknown error while calling blockWriteSamples')
 
             for i in np.arange(len(data_list)):
@@ -837,7 +837,7 @@ class EdfWriter(object):
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd,sampleFrequencies[i])))
             if lastSampleInd > 0:
-                lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
+                lastSamples[:lastSampleInd] = data_list[i][-lastSampleInd:]
                 if digital:
                     success = self.writeDigitalSamples(lastSamples)
                 else:
