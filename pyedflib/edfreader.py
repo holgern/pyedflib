@@ -702,7 +702,7 @@ class EdfReader(CyEdfReader):
         if n is not None and n < 0:
             return np.array([])
         nsamples = self.getNSamples()
-        if chn < len(nsamples):
+        if 0 <= chn < len(nsamples):
             if n is None:
                 n = nsamples[chn]
             elif n > nsamples[chn]:
