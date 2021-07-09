@@ -432,7 +432,8 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return np.round(self.samplefrequency(chn), decimals=3)
         else:
-            return 0
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
 
     def getSignalLabels(self):
         """
@@ -475,7 +476,8 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.signal_label(chn).rstrip())
         else:
-            return self._convert_string('')
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
 
     def getPrefilter(self,chn):
         """
@@ -498,7 +500,8 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.prefilter(chn).rstrip())
         else:
-            return self._convert_string('')
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
 
     def getPhysicalMaximum(self,chn=None):
         """
@@ -522,7 +525,8 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.physical_max(chn)
             else:
-                return 0
+                raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
         else:
             physMax = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
@@ -551,7 +555,8 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.physical_min(chn)
             else:
-                return 0
+                raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
         else:
             physMin = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
@@ -580,7 +585,8 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.digital_max(chn)
             else:
-                return 0
+                raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
         else:
             digMax = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
@@ -609,7 +615,8 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.digital_min(chn)
             else:
-                return 0
+                raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
         else:
             digMin = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
@@ -637,8 +644,8 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.transducer(chn).rstrip())
         else:
-            return self._convert_string('')
-
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
     def getPhysicalDimension(self, chn):
         """
         Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
@@ -660,7 +667,8 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.physical_dimension(chn).rstrip())
         else:
-            return self._convert_string('')
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
 
     def readSignal(self, chn, start=0, n=None, digital=False):
         """
@@ -694,7 +702,7 @@ class EdfReader(CyEdfReader):
         if n is not None and n < 0:
             return np.array([])
         nsamples = self.getNSamples()
-        if chn < len(nsamples):
+        if 0 <= chn < len(nsamples):
             if n is None:
                 n = nsamples[chn]
             elif n > nsamples[chn]:
@@ -707,7 +715,8 @@ class EdfReader(CyEdfReader):
                 self.readsignal(chn, start, n, x)
             return x
         else:
-            return np.array([])
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
 
     def file_info(self):
         print("file name:", self.file_name)

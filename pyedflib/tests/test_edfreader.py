@@ -54,6 +54,27 @@ class TestEdfReader(unittest.TestCase):
         f.close()
         np.testing.assert_equal(f.handle, -1)
 
+    def test_indexerrors_thrown(self):
+        try:
+            f = pyedflib.EdfReader(self.edf_data_file)
+        except IOError:
+            print('cannot open', self.edf_data_file)
+            return
+
+        funcs = ['getSampleFrequency', 'getLabel', 'getPrefilter', 'getPhysicalMaximum',
+                 'getPhysicalMinimum', 'getDigitalMaximum', 'getDigitalMinimum',
+                 'getTransducer', 'getPhysicalDimension', 'readSignal']
+        for i in range(10):
+            for func in funcs:
+                getattr(f, func)(i)
+            
+        for i in [-1, 11]:
+            for func in funcs:
+                with self.assertRaises(IndexError, msg="f.{}({})".format(func, i)):
+                    getattr(f, func)(i)
+            
+        f.close()
+
     def test_EdfReader_headerInfos(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
