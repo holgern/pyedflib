@@ -177,16 +177,12 @@ script:
     else
         CFLAGS="--coverage" python setup.py build --build-lib build/lib/ --build-temp build/tmp/
         CFLAGS="--coverage" pip install -e . -v
-        pushd demo
-        pytest --pyargs pyedflib --cov=pyedflib --cov-config=../.coveragerc
-        cp .coverage ..
-        popd
+        python -m pytest --pyargs pyedflib --cov=pyedflib --cov-config=.coveragerc --cov-report=xml --verbose
     fi
 
 after_success:
   - |
     if [ "${MANYLINUX}" == "0" ]; then
-        codecov
         # Travis CI has old gcov, needs object dir explicitly specified
         gcov --object-directory build/tmp/pyedflib/_extensions/c/ build/tmp/pyedflib/_extensions/c/*.o
         bash <(curl -s https://codecov.io/bash)
