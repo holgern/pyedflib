@@ -4,28 +4,36 @@ pyEDFlib
 .. contents::
 
 .. image:: https://codecov.io/gh/holgern/pyedflib/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/holgern/pyedflib
+   :target: https://codecov.io/gh/holgern/pyedflib
+   :alt: Test Coverage
 
 .. image:: https://travis-ci.com/holgern/pyedflib.svg?branch=master
-    :target: https://travis-ci.com/holgern/pyedflib
+   :target: https://travis-ci.com/holgern/pyedflib
+   :alt: Travis Build
     
 .. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
-  :target: https://ci.appveyor.com/project/holger80/pyedflib
+   :target: https://ci.appveyor.com/project/holger80/pyedflib
+   :alt: CircleCI Build
   
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
-  :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
+   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
+   :alt: Docs Build
 
 .. image:: https://api.codacy.com/project/badge/Grade/a80bc8bdb6a342be83b9d03138bfd078    
-    :target: https://www.codacy.com/app/holgern/pyedflib?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=holgern/pyedflib&amp;utm_campaign=Badge_Grade
+   :target: https://www.codacy.com/app/holgern/pyedflib?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=holgern/pyedflib&amp;utm_campaign=Badge_Grade
+   :alt: Code Quality
 
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/installer/conda.svg   
-    :target: https://conda.anaconda.org/conda-forge  
-  
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/version.svg   
-    :target: https://anaconda.org/conda-forge/pyedflib 
+.. image:: https://badge.fury.io/py/pyEDFlib.svg
+   :target: https://badge.fury.io/py/pyEDFlib
+   :alt: PyPI Version
+
+.. image:: https://img.shields.io/conda/vn/conda-forge/pyedflib.svg
+   :target: https://anaconda.org/conda-forge/pyedflib
+   :alt: Conda Version
   
 .. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   
-    :target: https://anaconda.org/conda-forge/pyedflib 
+   :target: https://anaconda.org/conda-forge/pyedflib 
+   :alt: Conda Downloads
 
 What is pyEDFlib
 ----------------
