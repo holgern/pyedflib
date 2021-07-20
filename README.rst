@@ -7,21 +7,13 @@ pyEDFlib
    :target: https://codecov.io/gh/holgern/pyedflib
    :alt: Test Coverage
 
-.. image:: https://travis-ci.com/holgern/pyedflib.svg?branch=master
-   :target: https://travis-ci.com/holgern/pyedflib
-   :alt: Travis Build
-    
 .. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
    :target: https://ci.appveyor.com/project/holger80/pyedflib
    :alt: CircleCI Build
-  
+
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
    :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
    :alt: Docs Build
-
-.. image:: https://api.codacy.com/project/badge/Grade/a80bc8bdb6a342be83b9d03138bfd078    
-   :target: https://www.codacy.com/app/holgern/pyedflib?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=holgern/pyedflib&amp;utm_campaign=Badge_Grade
-   :alt: Code Quality
 
 .. image:: https://badge.fury.io/py/pyEDFlib.svg
    :target: https://badge.fury.io/py/pyEDFlib
