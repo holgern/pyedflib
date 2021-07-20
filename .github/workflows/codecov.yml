@@ -21,7 +21,7 @@ jobs:
         pip install pytest-cov
         pip install -e .
         pip install -r requirements-test.txt
-        pytest --cov=./ --cov-report=xml
+        pytest --cov=./pyedflib/ --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
