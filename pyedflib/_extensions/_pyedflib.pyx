@@ -501,7 +501,7 @@ cpdef int set_patientname(int handle, char *name):
     return c_edf.edf_set_patientname(handle, name)
 
 cpdef int set_physical_minimum(int handle, int edfsignal, double phys_min):
-    c_edf.edf_set_physical_minimum(handle, edfsignal, phys_min)
+    return c_edf.edf_set_physical_minimum(handle, edfsignal, phys_min)
 
 cpdef int read_physical_samples(int handle, int edfsignal, int n,
                                 np.ndarray[np.float64_t] buf):
