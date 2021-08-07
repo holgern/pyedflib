@@ -39,7 +39,7 @@ was introduces by the compony `BioSemi`_.
 
 The definition of the EDF/EDF+/BDF/BDF+ format can be found under `edfplus.info`_.
 
-This python toolbox is a fork of the `toolbox from Christopher Lee-Messer`_
+This Python toolbox is a fork of the `toolbox from Christopher Lee-Messer`_
 and uses the `EDFlib`_ from Teunis van Beelen.
 The EDFlib is able to read and write EDF/EDF+/BDF/BDF+ files.
 
@@ -135,5 +135,5 @@ Releases can be cited via Zenodo.
 .. _Kemp2003: https://www.ncbi.nlm.nih.gov/pubmed/12948806?dopt=Citation
 .. _Kemp1992: https://www.ncbi.nlm.nih.gov/pubmed/1374708?dopt=Abstract
 .. _BioSemi: http://www.biosemi.com/faq/file_format.htm
-.. _toolbox from Christopher Lee-Messer: https://bitbucket.org/cleemesser/python-edf/
+.. _toolbox from Christopher Lee-Messer: https://github.com/cleemesser/python-edf
 .. _EDFlib: http://www.teuniz.net/edflib/
