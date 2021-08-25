@@ -33,6 +33,78 @@ def check_is_ascii(string):
                       ' characters and no spaces: "{}"'.format(string))
 
 
+def check_signal_header_correct(channels, i, file_type):
+    """
+    helper function  to check if all entries in the channel dictionary are fine.
+
+    Will give a warning if label, transducer, dimension, prefilter are too long.
+
+    Will throw an exception if dmin, dmax, pmin, pmax are out of bounds or would
+    be truncated in such a way as that signal values would be completely off.
+    """
+    ch = channels[i]
+    label = ch['label']
+
+    if len(ch['label'])>16:
+        warnings.warn('Label of channel {} is longer than 16 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['label'][:16] ))
+    if len(ch['prefilter'])>80:
+        warnings.warn('prefilter of channel {} is longer than 80 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['prefilter'][:80] ))
+    if len(ch['transducer'])>80:
+        warnings.warn('transducer of channel {} is longer than 80 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['transducer'][:80] ))
+    if len(ch['dimension'])>80:
+        warnings.warn('dimension of channel {} is longer than 8 ASCII chars.'\
+                      'The label will be truncated to "{}"'.format(i, ch['dimension'][:8] ))
+
+    # these ones actually raise an exception
+    dmin, dmax = (-8388608, 8388607) if file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF) else (-32768, 32767)
+    if ch['digital_min']<dmin:
+        raise ValueError('Digital minimum for channel {} ({}) is {},'\
+                         'but minimum allowed value is {}'.format(i, label,
+                                                                  ch['digital_min'],
+                                                                  dmin))
+    if ch['digital_max']>dmax:
+        raise ValueError('Digital maximum for channel {} ({}) is {},'\
+                         'but maximum allowed value is {}'.format(i, label,
+                                                                  ch['digital_max'],
+                                                                  dmax))
+
+
+    # if we truncate the physical min before the dot, we potentitally
+    # have all the signals incorrect by an order of magnitude.
+    if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+                         'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
+                                                                      ch['physical_min'],
+                                                                      len(str(ch['physical_min']))))
+    if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+                         'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
+                                                                      ch['physical_max'],
+                                                                      len(str(ch['physical_max']))))
+    # if we truncate the physical min behind the dot, we just lose precision,
+    # in this case only a warning is enough
+    if len(str(ch['physical_min']))>8:
+        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+                         'some loss of precision is to be expected'.format(i, label,
+                                                                      ch['physical_min'],
+                                                                      len(str(ch['physical_min'])),
+                                                                      str(ch['physical_min'])[:8]))
+    if len(str(ch['physical_max']))>8:
+        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+                         'some loss of precision is to be expected.'.format(i, label,
+                                                                      ch['physical_max'],
+                                                                      len(str(ch['physical_max'])),
+                                                                      str(ch['physical_max'])[:8]))
+
+
+
 def u(x):
     return x.decode("utf-8", "strict")
 
@@ -109,7 +181,8 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
+            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
+            'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -135,15 +208,15 @@ class EdfWriter(object):
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
-                                      'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
-                                      'prefilter': 'pre1', 'transducer': 'trans1'})
+                                      'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
-                                      'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
-                                      'prefilter': 'pre1', 'transducer': 'trans1'})
+                                      'prefilter': '', 'transducer': ''})
 
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
@@ -192,7 +265,10 @@ class EdfWriter(object):
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
-            set_samplefrequency(self.handle, i, self.channels[i]['sample_rate'])
+
+            check_signal_header_correct(self.channels, i, self.file_type)
+
+            set_samplefrequency(self.handle, i, self._get_sample_frequency(i))
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
@@ -227,7 +303,8 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int)
+            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
+            'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -235,7 +312,7 @@ class EdfWriter(object):
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
-        self.channels[edfsignal] = channel_info
+        self.channels[edfsignal].update(channel_info)
         self.update_header()
 
     def setSignalHeaders(self, signalHeaders):
@@ -250,8 +327,10 @@ class EdfWriter(object):
                           channel label (string, <= 16 characters, must be unique)
                 'dimension' : str
                           physical dimension (e.g., mV) (string, <= 8 characters)
-                'sample_rate' : int
-                          sample frequency in hertz
+                'sample_rate' :
+                          sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
+                'sample_frequency' : int
+                          number of samples per record
                 'physical_max' : float
                           maximum physical value
                 'physical_min' : float
@@ -262,7 +341,7 @@ class EdfWriter(object):
                          minimum digital value (-2**15 <= x < 2**15)
         """
         for edfsignal in np.arange(self.n_channels):
-            self.channels[edfsignal] = signalHeaders[edfsignal]
+            self.channels[edfsignal].update(signalHeaders[edfsignal])
         self.update_header()
 
     def setTechnician(self, technician):
@@ -464,7 +543,12 @@ class EdfWriter(object):
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
+
+        # Temporary double assignment while we deprecate 'sample_rate' as a channel attribute
+        # in favor of 'sample_frequency', supporting the use of either to give
+        # users time to switch to the new interface.
         self.channels[edfsignal]['sample_rate'] = samplefrequency
+        self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
     def setPhysicalMaximum(self, edfsignal, physical_maximum):
@@ -682,21 +766,34 @@ class EdfWriter(object):
         is different, then sample_freq is a vector containing all the different
         samplefrequencys. The data is saved as list. Each list entry contains
         a vector with the data of one signal.
-        
+
         If digital is True, digital signals (as directly from the ADC) will be expected.
         (e.g. int16 from 0 to 2048)
 
         All parameters must be already written into the bdf/edf-file.
         """
+        there_are_blank_sample_frequencies = any([channel.get('sample_frequency') is None
+                                                 for channel in self.channels])
+        if there_are_blank_sample_frequencies:
+            warnings.warn("The 'sample_rate' parameter is deprecated. Please use "
+                          "'sample_frequency' instead.", DeprecationWarning)
 
-
+        if (len(data_list)) == 0:
+            raise WrongInputSize('Data list is empty') 
         if (len(data_list) != len(self.channels)):
-            raise WrongInputSize(len(data_list))
+            raise WrongInputSize('Number of channels ({}) \
+             unequal to length of data ({})'.format(len(self.channels), len(data_list)))
 
-        if any([np.isfortran(s) for s in data_list if isinstance(s, np.ndarray)]) or \
-                (isinstance(data_list, np.ndarray) and np.isfortran(data_list)):
+        # Check for F-contiguous arrays
+        if any([s.flags.f_contiguous for s in data_list if isinstance(s, np.ndarray)]) or \
+                (isinstance(data_list, np.ndarray) and data_list.flags.f_contiguous):
            warnings.warn('signals are in Fortran order. Will automatically ' \
                          'transfer to C order for compatibility with edflib.')
+        if isinstance(data_list, list):
+            data_list = [s.copy(order='C') for s in data_list]
+        elif isinstance(data_list, np.ndarray) and data_list.flags.f_contiguous:
+            data_list = data_list.copy(order='C')
+        
         if digital:
             if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
                 raise TypeError('Digital = True requires all signals in int')
@@ -713,47 +810,40 @@ class EdfWriter(object):
             ind.append(0)
 
         sampleLength = 0
-        sampleRates = np.zeros(len(data_list), dtype=np.int32)
+        sampleFrequencies = np.zeros(len(data_list), dtype=np.int32)
         for i in np.arange(len(data_list)):
-            sampleRates[i] = self.channels[i]['sample_rate']
-            if (np.size(data_list[i]) < ind[i] + self.channels[i]['sample_rate']):
+            sampleFrequencies[i] = self._get_sample_frequency(i)
+            if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                 notAtEnd = False
-            sampleLength += self.channels[i]['sample_rate']
+            sampleLength += sampleFrequencies[i]
 
-        dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
+        dataRecord = np.array([], dtype=np.int32 if digital else None)
 
         while notAtEnd:
-            # dataOfOneSecondInd = 0
-            del dataOfOneSecond
-            dataOfOneSecond = np.array([], dtype=np.int32 if digital else None)
+            del dataRecord
+            dataRecord = np.array([], dtype=np.int32 if digital else None)
             for i in np.arange(len(data_list)):
-                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])]
-                dataOfOneSecond = np.append(dataOfOneSecond,data_list[i].ravel()[int(ind[i]):int(ind[i]+sampleRates[i])])
-                # self.writePhysicalSamples(data_list[i].ravel()[int(ind[i]):int(ind[i]+self.channels[i]['sample_rate'])])
-                ind[i] += sampleRates[i]
-                # dataOfOneSecondInd += sampleRates[i]
+                dataRecord = np.append(dataRecord, data_list[i][int(ind[i]):int(ind[i]+sampleFrequencies[i])])
+                ind[i] += sampleFrequencies[i]
             if digital:
-                success = self.blockWriteDigitalSamples(dataOfOneSecond)
+                success = self.blockWriteDigitalSamples(dataRecord)
             else:
-                success = self.blockWritePhysicalSamples(dataOfOneSecond)
+                success = self.blockWritePhysicalSamples(dataRecord)
 
-            if success<0:
+            if success < 0:
                 raise IOError('Unknown error while calling blockWriteSamples')
 
             for i in np.arange(len(data_list)):
-                if (np.size(data_list[i]) < ind[i] + sampleRates[i]):
+                if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                     notAtEnd = False
 
 
-        # dataOfOneSecondInd = 0
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(sampleRates[i], dtype=np.int32 if digital else None)
+            lastSamples = np.zeros(sampleFrequencies[i], dtype=np.int32 if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
-            lastSampleInd = int(np.min((lastSampleInd,sampleRates[i])))
+            lastSampleInd = int(np.min((lastSampleInd,sampleFrequencies[i])))
             if lastSampleInd > 0:
-                lastSamples[:lastSampleInd] = data_list[i].ravel()[-lastSampleInd:]
-                # dataOfOneSecond[dataOfOneSecondInd:dataOfOneSecondInd+self.channels[i]['sample_rate']] = lastSamples
-                # dataOfOneSecondInd += self.channels[i]['sample_rate']
+                lastSamples[:lastSampleInd] = data_list[i][-lastSampleInd:]
                 if digital:
                     success = self.writeDigitalSamples(lastSamples)
                 else:
@@ -761,7 +851,6 @@ class EdfWriter(object):
 
                 if success<0:
                     raise IOError('Unknown error while calling writeSamples')
-        # self.blockWritePhysicalSamples(dataOfOneSecond)
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
@@ -769,6 +858,10 @@ class EdfWriter(object):
         """
         if self.file_type in [FILETYPE_EDF, FILETYPE_BDF]:
             raise TypeError('Trying to write annotation to EDF/BDF, must use EDF+/BDF+')
+
+        if isinstance(duration_in_seconds, bytes):
+            duration_in_seconds = float(duration_in_seconds)
+            
         if str_format == 'utf-8':
             if duration_in_seconds >= 0:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(int), np.round(duration_in_seconds*10000).astype(int), du(description))
@@ -786,3 +879,11 @@ class EdfWriter(object):
         """
         close_file(self.handle)
         self.handle = -1
+
+    def _get_sample_frequency(self, channelIndex):
+        # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
+        # in favor of 'sample_frequency', supporting the use of either to give
+        # users time to switch to the new interface.
+        return (self.channels[channelIndex]['sample_rate']
+                if self.channels[channelIndex].get('sample_frequency') is None
+                else self.channels[channelIndex]['sample_frequency'])

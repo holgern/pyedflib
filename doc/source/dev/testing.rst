@@ -3,19 +3,7 @@
 Testing
 =======
 
-Continous integration with Travis-CI
-------------------------------------
-
-The project is using `Travis-CI <https://travis-ci.org/holgern/pyedflib/>`_ service
-for continous integration and testing.
-
-Current build status is:
-
-.. image::
-    https://secure.travis-ci.org/holgern/pyedflib.png?branch=master
-    :alt: Build Status
-    :target: https://secure.travis-ci.org/holgern/pyedflib
-
+We are currently using AppVeyor and CircleCI for continuous integration.
 
 If you are submitting a patch or pull request please make sure it
 does not break the build.

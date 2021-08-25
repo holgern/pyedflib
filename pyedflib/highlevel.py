@@ -30,6 +30,16 @@ from datetime import datetime
 # from . import EdfWriter
 # from . import EdfReader
 
+
+def _get_sample_frequency(signal_header):
+    # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
+    # in favor of 'sample_frequency', supporting the use of either to give
+    # users time to switch to the new interface.
+    return (signal_header['sample_rate']
+            if signal_header.get('sample_frequency') is None
+            else signal_header['sample_frequency'])
+
+
 def tqdm(iteratable, *args, **kwargs):
     """
     These is an optional dependecies that shows a progress bar for some
@@ -193,7 +203,7 @@ def make_header(technician='', recording_additional='', patientname='',
     return header
 
 
-def make_signal_header(label, dimension='uV', sample_rate=256,
+def make_signal_header(label, dimension='uV', sample_rate=256, sample_frequency=None,
                        physical_min=-200, physical_max=200, digital_min=-32768,
                        digital_max=32767, transducer='', prefiler=''):
     """
@@ -209,6 +219,8 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
     dimension : str, optional
         dimension, eg mV. The default is 'uV'.
     sample_rate : int, optional
+        sampling frequency. The default is 256. Deprecated: use 'sample_frequency' instead.
+    sample_frequency : int, optional
         sampling frequency. The default is 256.
     physical_min : float, optional
         minimum value in dimension. The default is -200.
@@ -233,6 +245,7 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
     signal_header = {'label': label,
                'dimension': dimension,
                'sample_rate': sample_rate,
+               'sample_frequency': sample_frequency,
                'physical_min': physical_min,
                'physical_max': physical_max,
                'digital_min':  digital_min,
@@ -243,7 +256,7 @@ def make_signal_header(label, dimension='uV', sample_rate=256,
 
 
 def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
-                       physical_min=-200.0, physical_max=200.0,
+                       sample_frequency=None, physical_min=-200.0, physical_max=200.0,
                        digital_min=-32768, digital_max=32767,
                        transducer='', prefiler=''):
     """
@@ -257,6 +270,8 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
     dimension : str, optional
         dimension, eg mV. The default is 'uV'.
     sample_rate : int, optional
+        sampling frequency. The default is 256.  Deprecated: use 'sample_frequency' instead.
+    sample_frequency : int, optional
         sampling frequency. The default is 256.
     physical_min : float, optional
         minimum value in dimension. The default is -200.
@@ -280,6 +295,7 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
     signal_headers = []
     for label in list_of_labels:
         header = make_signal_header(label, dimension=dimension, sample_rate=sample_rate,
+                                    sample_frequency=sample_frequency,
                                     physical_min=physical_min, physical_max=physical_max,
                                     digital_min=digital_min, digital_max=digital_max,
                                     transducer=transducer, prefiler=prefiler)
@@ -354,9 +370,11 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
         signal_headers = [f.getSignalHeaders()[c] for c in ch_nrs]
 
         # add annotations to header
-        annotations = f.read_annotation()
-        annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
+        annotations = f.readAnnotations()
+        annotations = [[s, d, a] for s,d,a in zip(*annotations)]
         header['annotations'] = annotations
+
+
         signals = []
         for i,c in enumerate(tqdm(ch_nrs, desc='Reading Channels',
                                   disable=not verbose)):
@@ -364,7 +382,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
             signals.append(signal)
 
         # we can only return a np.array if all signals have the same samplefreq
-        sfreqs = [shead['sample_rate'] for shead in signal_headers]
+        sfreqs = [_get_sample_frequency(shead) for shead in signal_headers]
         all_sfreq_same = sfreqs[1:]==sfreqs[:-1]
         if all_sfreq_same:
             dtype = np.int32 if digital else np.float
@@ -449,7 +467,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     # block_size sets the size of each writing block and should be a divisor
     # of the length of the signal. If it is not, the remainder of the file
     # will be filled with zeros.
-    signal_duration = len(signals[0]) / signal_headers[0]['sample_rate']
+    signal_duration = len(signals[0]) // _get_sample_frequency(signal_headers[0])
     if block_size == -1:
         samplefrequencies = np.array([hdr["sample_rate"] for hdr in signal_headers])
         block_size = min(
@@ -479,19 +497,13 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
             assert pmax>=sig.max(), \
             'phys_max is {}, but signal_max is {} ' \
             'for channel {}'.format(pmax, sig.max(), label)
-        shead['sample_rate'] *= block_size
+
+
+        frequency_key = 'sample_rate' if shead.get('sample_frequency') is None else 'sample_frequency'
+        shead[frequency_key] *= block_size
 
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
-
-    if any([np.isfortran(s) for s in signals]) or \
-        (isinstance(signals, np.ndarray) and np.isfortran(signals)):
-           warnings.warn('signals are in Fortran order. Will automatically ' \
-                         'transfer to C order for compatibility with edflib.')
-    if isinstance(signals, list):
-        signals = [s.copy(order='C') if np.isfortran(s) else s for s in signals]
-    elif isinstance(signals, np.ndarray) and np.isfortran(signals):
-        signals = signals.copy(order='C')
 
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:
         f.setDatarecordDuration(int(100000 * block_size))
@@ -532,7 +544,7 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     header = make_header(technician='pyedflib-quickwrite')
     labels = ['CH_{}'.format(i) for i in range(len(signals))]
     pmin, pmax = signals.min(), signals.max()
-    signal_headers = make_signal_headers(labels, sample_rate = sfreq,
+    signal_headers = make_signal_headers(labels, sample_frequency=sfreq,
                                          physical_min=pmin, physical_max=pmax)
     return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 

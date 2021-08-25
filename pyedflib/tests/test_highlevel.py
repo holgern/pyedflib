@@ -78,13 +78,17 @@ class TestHighLevel(unittest.TestCase):
             self.assertTrue(os.path.isfile(file))
             self.assertGreater(os.path.getsize(file), 0)
             self.assertTrue(success)
-            
+
             signals2, signal_headers2, header2 = highlevel.read_edf(file)
-    
+
             self.assertEqual(len(signals2), 5)
             self.assertEqual(len(signals2), len(signal_headers2))
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1, shead2)
+                # When only 'sample_rate' is present, we use its value to write
+                # the file, ignoring 'sample_frequency', which means that when
+                # we read it back only the 'sample_rate' value is present.
+                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
+                                     shead2)
             np.testing.assert_allclose(signals, signals2, atol=0.01)
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -102,7 +106,11 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), len(signal_headers2))
             np.testing.assert_array_equal(signals, signals2)
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1, shead2)
+                # When only 'sample_rate' is present, we use its value to write
+                # the file, ignoring 'sample_frequency', which means that when
+                # we read it back only the 'sample_rate' value is present.
+                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
+                                     shead2)
             # EDF/BDF header writing does not correctly work yet
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -122,28 +130,41 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
         np.testing.assert_allclose(signals, signals2)
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
 
+    def test_fortran_write(self):
+        # Create Fortran contiguous array
+        signals = np.random.randint(-2048,2048,[4, 5000000])
+        signals = np.asfortranarray(signals)
+        # Write
+        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=250, digital=True)
+        # Read and check
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        np.testing.assert_allclose(signals, signals2)
 
-    def test_read_write_decimal_sample_rates(self):
+        # Create Fortran contiguous list
+        signals = [np.random.randint(-2048,2048,(5000000,), dtype=np.int32)]*4
+        # Write
+        highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=250, digital=True)
+        # Read and check
+        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        np.testing.assert_allclose(signals, signals2)
+
+
+    def test_read_write_decimal_sample_frequencies(self):
         signals = np.random.randint(-2048, 2048, [3, 256*60])
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
         np.testing.assert_allclose(signals, signals2)
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=8.5, digital=False)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=False, verbose=True)
         np.testing.assert_allclose(signals, signals2, atol=0.0001)
-
-    # def test_read_write_decimal_sample_rates_smaller_one(self):
-    #     signals = np.random.randint(-2048, 2048, [3, 256*60])
-    #     highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=1/3, digital=True)
-    #     signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
-    #     np.testing.assert_allclose(signals, signals2)
-
 
 
     def test_read_write_diff_sfreq(self):
@@ -153,7 +174,7 @@ class TestHighLevel(unittest.TestCase):
         sheaders = []
         for sfreq in sfreqs:
             signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
-            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_rate=sfreq)
+            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_frequency=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
         signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
@@ -164,7 +185,7 @@ class TestHighLevel(unittest.TestCase):
         
         # test digital and dmin wrong
         signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int32)]
-        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['digital_min'] = -128
         sheaders[0]['digital_max'] = 128
         with self.assertRaises(AssertionError):
@@ -172,7 +193,7 @@ class TestHighLevel(unittest.TestCase):
         
         # test pmin wrong
         signals = [np.random.randint(-2048, 2048, 256*60)]
-        sheaders = [highlevel.make_signal_header('ch1', sample_rate=256)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['physical_min'] = -200
         sheaders[0]['physical_max'] = 200
         with self.assertRaises(AssertionError):
@@ -180,7 +201,8 @@ class TestHighLevel(unittest.TestCase):
             
 
     def test_read_write_accented(self):
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.test_accented, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.test_accented)
         
@@ -189,7 +211,8 @@ class TestHighLevel(unittest.TestCase):
         self.assertTrue(os.path.isfile(self.test_accented), 'File does not exist')
 
     def test_read_unicode(self):
-        signals = np.random.rand(3, 256*60)
+        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         success = highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         self.assertTrue(success)
         shutil.copy(self.edfplus_data_file, self.test_unicode)
@@ -224,6 +247,7 @@ class TestHighLevel(unittest.TestCase):
         header['annotations'] = annotations
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
         signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf(self.personalized, signals, signal_headers, header)
     
         
@@ -266,6 +290,7 @@ class TestHighLevel(unittest.TestCase):
     def test_drop_channel(self):
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
         signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf(self.drop_from, signals, signal_headers)
         
         dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'], verbose=True)
@@ -290,7 +315,7 @@ class TestHighLevel(unittest.TestCase):
         siglen = 256* 155
         signals = np.random.rand(10, siglen)
         sheads = highlevel.make_signal_headers([str(x) for x in range(10)],
-                                              sample_rate=256, physical_max=1,
+                                              sample_frequency=256, physical_max=1,
                                               physical_min=-1)
 
         valid_block_sizes = [-1, 1, 5, 31]
@@ -315,8 +340,20 @@ class TestHighLevel(unittest.TestCase):
                                    atol=0.0001)
 
 
-    # def test_rename_channels(self):
-        # raise NotImplementedError
+    def test_annotation_bytestring(self):
+        header = highlevel.make_header(technician='tech', recording_additional='radd',
+                                                patientname='name', patient_additional='padd',
+                                                patientcode='42', equipment='eeg', admincode='420',
+                                                gender='Male', birthdate='05.09.1980')
+        annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
+        header['annotations'] = annotations
+        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
+        signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
+        _,_,header2 = highlevel.read_edf(self.edfplus_data_file)
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
+        _,_,header3 = highlevel.read_edf(self.edfplus_data_file)
+        self.assertEqual(header2['annotations'], header3['annotations'])
 
 
 if __name__ == '__main__':

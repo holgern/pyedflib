@@ -4,28 +4,28 @@ pyEDFlib
 .. contents::
 
 .. image:: https://codecov.io/gh/holgern/pyedflib/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/holgern/pyedflib
+   :target: https://codecov.io/gh/holgern/pyedflib
+   :alt: Test Coverage
 
-.. image:: https://travis-ci.com/holgern/pyedflib.svg?branch=master
-    :target: https://travis-ci.com/holgern/pyedflib
-    
 .. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
-  :target: https://ci.appveyor.com/project/holger80/pyedflib
-  
+   :target: https://ci.appveyor.com/project/holger80/pyedflib
+   :alt: CircleCI Build
+
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
-  :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
+   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
+   :alt: Docs Build
 
-.. image:: https://api.codacy.com/project/badge/Grade/a80bc8bdb6a342be83b9d03138bfd078    
-    :target: https://www.codacy.com/app/holgern/pyedflib?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=holgern/pyedflib&amp;utm_campaign=Badge_Grade
+.. image:: https://badge.fury.io/py/pyEDFlib.svg
+   :target: https://badge.fury.io/py/pyEDFlib
+   :alt: PyPI Version
 
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/installer/conda.svg   
-    :target: https://conda.anaconda.org/conda-forge  
-  
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/version.svg   
-    :target: https://anaconda.org/conda-forge/pyedflib 
+.. image:: https://img.shields.io/conda/vn/conda-forge/pyedflib.svg
+   :target: https://anaconda.org/conda-forge/pyedflib
+   :alt: Conda Version
   
 .. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   
-    :target: https://anaconda.org/conda-forge/pyedflib 
+   :target: https://anaconda.org/conda-forge/pyedflib 
+   :alt: Conda Downloads
 
 What is pyEDFlib
 ----------------
@@ -39,7 +39,7 @@ was introduces by the compony `BioSemi`_.
 
 The definition of the EDF/EDF+/BDF/BDF+ format can be found under `edfplus.info`_.
 
-This python toolbox is a fork of the `toolbox from Christopher Lee-Messer`_
+This Python toolbox is a fork of the `toolbox from Christopher Lee-Messer`_
 and uses the `EDFlib`_ from Teunis van Beelen.
 The EDFlib is able to read and write EDF/EDF+/BDF/BDF+ files.
 
@@ -90,13 +90,13 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     # write an edf file
     signals = np.random.rand(5, 256*300)*200 # 5 minutes of random signal
     channel_names = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5']
-    signal_headers = highlevel.make_signal_headers(channel_names, sample_rate=256)
+    signal_headers = highlevel.make_signal_headers(channel_names, sample_frequency=256)
     header = highlevel.make_header(patientname='patient_x', gender='Female')
     highlevel.write_edf('edf_file.edf', signals, signal_headers, header)
-	    
+
     # read an edf file
     signals, signal_headers, header = highlevel.read_edf('edf_file.edf')
-    print(signal_headers[0]['sample_rate']) # prints 256
+    print(signal_headers[0]['sample_frequency']) # prints 256
 
     # drop a channel from the file or anonymize edf
     highlevel.drop_channels('edf_file.edf', to_drop=['ch2', 'ch4'])
@@ -135,5 +135,5 @@ Releases can be cited via Zenodo.
 .. _Kemp2003: https://www.ncbi.nlm.nih.gov/pubmed/12948806?dopt=Citation
 .. _Kemp1992: https://www.ncbi.nlm.nih.gov/pubmed/1374708?dopt=Abstract
 .. _BioSemi: http://www.biosemi.com/faq/file_format.htm
-.. _toolbox from Christopher Lee-Messer: https://bitbucket.org/cleemesser/python-edf/
+.. _toolbox from Christopher Lee-Messer: https://github.com/cleemesser/python-edf
 .. _EDFlib: http://www.teuniz.net/edflib/

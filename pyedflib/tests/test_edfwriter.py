@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019 - 2020 Simon Kern
+# Copyright (c) 2019 - 2021 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
 import os
@@ -33,11 +33,11 @@ class TestEdfWriter(unittest.TestCase):
                 print(e)
 
     def test_write_functions(self):
-        channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 32767, 'physical_min': -32768,
                         'digital_max': 32767, 'digital_min': -32768,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'label2', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'label2', 'dimension': 'mV', 'sample_frequency': 100,
                               'physical_max': 32767, 'physical_min': -32768,
                             'digital_max': 32767, 'digital_min': -32768,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -101,7 +101,7 @@ class TestEdfWriter(unittest.TestCase):
         f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
                                 file_type=pyedflib.FILETYPE_EDFPLUS)
 
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 32767, 'digital_min': -32768,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -124,7 +124,7 @@ class TestEdfWriter(unittest.TestCase):
 
 
     def test_subsecond_annotation(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -161,11 +161,11 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(ann_text[3][0:12], "annotation4_")
 
     def test_EdfWriter_BDFplus(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                               'physical_max': 1.0, 'physical_min': -1.0,
                             'digital_max': 8388607, 'digital_min': -8388608,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -230,11 +230,11 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
     def test_EdfWriter_BDFplus2(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                               'physical_max': 1.0, 'physical_min': -1.0,
                             'digital_max': 8388607, 'digital_min': -8388608,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -290,11 +290,11 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
     def test_EdfWriter_BDF(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                             'physical_max': 1.0, 'physical_min': -1.0,
                             'digital_max': 8388607, 'digital_min': -8388608,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -321,7 +321,7 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
     def test_EdfWriter_EDFplus(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 32767, 'digital_min': -32768,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -360,11 +360,11 @@ class TestEdfWriter(unittest.TestCase):
 
 
     def test_EdfWriter_EDF(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 32767, 'digital_min': -32768,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                               'physical_max': 1.0, 'physical_min': -1.0,
                             'digital_max': 32767, 'digital_min': -32768,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -391,11 +391,11 @@ class TestEdfWriter(unittest.TestCase):
 
 
     def test_SampleWriting(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_rate':100,
+        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre2','transducer':'trans2'}
@@ -423,11 +423,11 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
 
     def test_EdfWriter_EDF_contextmanager(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 32767, 'digital_min': -32768,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                               'physical_max': 1.0, 'physical_min': -1.0,
                             'digital_max': 32767, 'digital_min': -32768,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -447,11 +447,11 @@ class TestEdfWriter(unittest.TestCase):
             self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
 
     def test_SampleWritingContextManager(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_rate':100,
+        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre2','transducer':'trans2'}
@@ -483,11 +483,11 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data2, data2_read)
 
     def test_SampleWriting2(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_rate':100,
+        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre2','transducer':'trans2'}
@@ -514,16 +514,16 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(len(data2), len(data2_read))
         np.testing.assert_almost_equal(data1, data1_read)
         np.testing.assert_almost_equal(data2, data2_read)
-        
+
     def test_SampleWriting_digital(self):
 
         dmin, dmax = [0, 1024]
         pmin, pmax = [0, 1.0]
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':pmax,'physical_min':pmin,
                           'digital_max':dmax,'digital_min':dmin,
                           'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_rate':100,
+        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':pmax,'physical_min':pmin,
                           'digital_max':dmax,'digital_min':dmin,
                           'prefilter':'pre2','transducer':'trans2'}
@@ -562,14 +562,14 @@ class TestEdfWriter(unittest.TestCase):
         data2_read = (f.readSignal(1) - pmin)/((pmax-pmin)/(dmax-dmin)) # converting back to digital
         self.assertEqual(f.filetype, pyedflib.FILETYPE_EDFPLUS)
         del f
-    
+
         np.testing.assert_equal(len(data1), len(data1_read))
         np.testing.assert_equal(len(data2), len(data2_read))
         np.testing.assert_almost_equal(data1, data1_read)
         np.testing.assert_almost_equal(data2, data2_read)
 
     def test_TestRoundingEDF(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_rate':100,
+        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':32767,'digital_min':-32768,
                           'prefilter':'pre1','transducer':'trans1'}
@@ -609,7 +609,7 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data1_read, data2_read, decimal=4)
 
     def test_AnnotationWriting(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -645,7 +645,7 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(ann_text[3][0:12], "annotation4_")
 
     def test_AnnotationWritingUTF8(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': u'test', 'transducer': 'trans1'}
@@ -679,7 +679,7 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(ann_text[2], "abc")
 
     def test_BytesChars(self):
-        channel_info = {'label': b'test_label', 'dimension': b'mV', 'sample_rate': 100,
+        channel_info = {'label': b'test_label', 'dimension': b'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': b'      ', 'transducer': b'trans1'}
@@ -716,13 +716,14 @@ class TestEdfWriter(unittest.TestCase):
     def test_physical_range_inequality(self):
         # Prepare data
         channel_data1 = np.sin(np.arange(1,1001))
-        channel_info1 = {'label': 'test_label_sin', 'dimension': 'mV', 'sample_rate': 100,
-                        'physical_max': max(channel_data1), 'physical_min': min(channel_data1),
+
+        channel_info1 = {'label': 'test_label_sin', 'dimension': 'mV', 'sample_frequency': 100,
+                        'physical_max': 1, 'physical_min': -1,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
 
         channel_data2 = np.zeros((1000,))
-        channel_info2 = {'label': 'test_label_zero', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label_zero', 'dimension': 'mV', 'sample_frequency': 100,
                             'physical_max': max(channel_data2), 'physical_min': min(channel_data2),
                             'digital_max': 8388607, 'digital_min': -8388608,
                             'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -730,17 +731,17 @@ class TestEdfWriter(unittest.TestCase):
                                 file_type=pyedflib.FILETYPE_BDF)
         f.setSignalHeader(0,channel_info1)
         f.setSignalHeader(1,channel_info2)
-        
+
         # Test that assertion fails
         self.assertRaises(AssertionError, f.writeSamples, [channel_data1, channel_data2])
 
 
     def test_gender_setting_correctly(self):
-        channel_info1 = {'label': 'test_label1', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info1 = {'label': 'test_label1', 'dimension': 'mV', 'sample_frequency': 100,
                          'physical_max': 3.0, 'physical_min': -3.0,
                          'digital_max': 32767, 'digital_min': -32768,
                          'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label2', 'dimension': 'mV', 'sample_rate': 100,
+        channel_info2 = {'label': 'test_label2', 'dimension': 'mV', 'sample_frequency': 100,
                          'physical_max': 3.0, 'physical_min': -3.0,
                          'digital_max': 32767, 'digital_min': -32768,
                          'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -767,7 +768,269 @@ class TestEdfWriter(unittest.TestCase):
                              'set {}, but {}!={} '.format(gender, expected, f.getGender()))
             del f
 
+    def test_non_one_second_record_duration(self):
+        channel_count = 4
+        record_duration_seconds = 2
+        record_duration = record_duration_seconds * 1000 * 100
+        sample_frequency = 256
+        record_count = 10
+        sample_count_per_channel = sample_frequency * record_count
 
+        f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+        f.setDatarecordDuration(record_duration)
+
+        physMax = 1
+        physMin = -physMax
+        digMax = 32767
+        digMin = -digMax
+
+        f.setSignalHeaders([{
+            'label': 'test_label{}'.format(idx),
+            'sample_frequency': sample_frequency,
+            'dimension': 'mV',
+            'physical_min': physMin,
+            'physical_max': physMax,
+            'digital_min': digMin,
+            'digital_max': digMax,
+            'transducer': 'trans{}'.format(idx),
+            'prefilter': 'pre{}'.format(idx)
+        } for idx in range(channel_count)])
+
+        f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+        del f
+
+        f = pyedflib.EdfReader(self.edf_data_file)
+
+        for signal_header in f.getSignalHeaders():
+            self.assertEqual(signal_header['sample_frequency'], sample_frequency)
+
+        self.assertEqual(f.datarecord_duration, record_duration_seconds)
+        self.assertEqual(f.datarecords_in_file, record_count)
+
+        del f
+
+    def test_sample_rate_backwards_compatibility(self):
+        channel_count = 4
+        record_duration_seconds = 1
+        record_duration = record_duration_seconds * 1000 * 100
+        # Choosing a weird sample rate to make sure it doesn't equal any defaults
+        sample_rate = 42
+        record_count = 10
+        sample_count_per_channel = sample_rate * record_count
+
+
+        physMax = 1
+        physMin = -physMax
+        digMax = 32767
+        digMin = -digMax
+
+        base_signal_header = lambda idx: {
+            'label': 'test_label{}'.format(idx),
+            'dimension': 'mV',
+            'physical_min': physMin,
+            'physical_max': physMax,
+            'digital_min': digMin,
+            'digital_max': digMax,
+            'transducer': 'trans{}'.format(idx),
+            'prefilter': 'pre{}'.format(idx)
+        }
+
+        with self.subTest("when 'sample_frequency' param is missing"):
+            f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+            f.setDatarecordDuration(record_duration)
+
+            f.setSignalHeaders([{
+                'sample_rate': sample_rate,
+                **base_signal_header(idx)
+            } for idx in range(channel_count)])
+
+            with self.assertWarnsRegex(DeprecationWarning, "'sample_rate' parameter is deprecated"):
+                f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+                del f
+
+            f = pyedflib.EdfReader(self.edf_data_file)
+
+            for signal_header in f.getSignalHeaders():
+                self.assertEqual(signal_header['sample_rate'], sample_rate)
+
+            del f
+
+        with self.subTest("when 'sample_frequency' param is present"):
+            f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+            f.setDatarecordDuration(record_duration)
+            f.setSignalHeaders([{
+                'sample_frequency': sample_rate,
+                **base_signal_header(idx)
+            } for idx in range(channel_count)])
+            f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+
+            del f
+
+            f = pyedflib.EdfReader(self.edf_data_file)
+            for signal_header in f.getSignalHeaders():
+                self.assertEqual(signal_header['sample_frequency'], sample_rate)
+
+            del f
+
+
+    def test_EdfWriter_more_than_80_chars(self):
+
+        channel_info1 = {'label': 'label',
+                         'dimension': 'dim',
+                         'sample_frequency': 100,
+                         'physical_max': 1,
+                         'physical_min': -1.0,
+                         'digital_max': 32767,
+                         'digital_min': -32768,
+                         'prefilter': 'pre',
+                         'transducer': 'trans'}
+
+        header = {'birthdate': '',
+                  'startdate': datetime(2021, 6, 26, 13, 16, 1),
+                  'gender': '',
+                  'admincode': '',
+                  'equipment': '',
+                  'patientcode': 'x'*40,
+                  'patient_additional': 'x'*30,
+                  'patientname': '',
+                  'recording_additional': '',
+                  'technician': ''}
+
+        # now 4 warnings should appear.
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDFPLUS) as f:
+                f.setHeader(header)
+                f.setSignalHeader(0, channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        header = {'birthdate': '',
+                  'startdate': datetime(2021, 6, 26, 13, 16, 1),
+                  'gender': '',
+                  'admincode': '',
+                  'equipment': 'e'*20,
+                  'patientcode': 'x',
+                  'patient_additional': 'x',
+                  'patientname': '',
+                  'recording_additional': 'r'*20,
+                  'technician': 't'*20}
+
+        # now 4 warnings should appear.
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDFPLUS) as f:
+                f.setHeader(header)
+                f.setSignalHeader(0, channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with pyedflib.EdfReader(self.edf_data_file) as f:
+            np.testing.assert_equal(f.getEquipment(), 'e'*20)
+            np.testing.assert_equal(f.getTechnician(), 't'*20)
+
+
+    def test_EdfWriter_too_long_headers(self):
+        channel_info1 = {'label': 'l'*100, # this should be too long
+                         'dimension': 'd'*100,
+                         'sample_frequency': 100,
+                         'physical_max': 212345.523,
+                         'physical_min': -1.0,
+                         'digital_max': 32767,
+                         'digital_min': -32768,
+                         'prefilter': 'p'*100,
+                         'transducer': 't'*100}
+
+        # now 4 warnings should appear.
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with pyedflib.EdfReader(self.edf_data_file) as f:
+            np.testing.assert_equal(f.getLabel(0), 'l'*16)
+            np.testing.assert_equal(f.getPhysicalDimension(0), 'd'*8)
+            np.testing.assert_equal(f.getPrefilter(0), 'p'*80)
+            np.testing.assert_equal(f.getTransducer(0), 't'*80)
+            np.testing.assert_equal(f.getSampleFrequency(0), 100)
+            self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
+
+
+    def test_EdfWriter_out_of_bounds_pmin_pmax_dmin_dmax(self):
+        channel_info = {'label': 'l', # this should be too long
+                         'dimension': 'd',
+                         'sample_frequency': 100,
+                         'physical_max': 0.9999999999,
+                         'physical_min': -0.9999999999,
+                         'digital_max': 32767,
+                         'digital_min': -32768,
+                         'prefilter': 'p',
+                         'transducer': 't'}
+
+        # now a warning should appear.
+        with self.assertWarns(UserWarning):
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with pyedflib.EdfReader(self.edf_data_file) as f:
+            self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
+
+        with self.assertRaises(ValueError):
+            channel_info1 = channel_info.copy()
+            channel_info1['physical_max'] = 999999999999
+            # now a warning should appear.
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with self.assertRaises(ValueError):
+            channel_info1 = channel_info.copy()
+            channel_info1['physical_min'] = -999999999999
+            # now a warning should appear.
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        # test with DMIN/DMAX for EDF+
+        with self.assertRaises(ValueError):
+            channel_info1 = channel_info.copy()
+            channel_info1['digital_min'] = -32769
+            # now a warning should appear.
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with self.assertRaises(ValueError):
+            channel_info1 = channel_info.copy()
+            channel_info1['digital_max'] = 32768
+            # now a warning should appear.
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        # test with DMIN/DMAX for BDF+
+        with self.assertRaises(ValueError):
+            channel_info1 = channel_info.copy()
+            channel_info1['digital_min'] = -8388609
+            # now a warning should appear.
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_BDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+
+        with self.assertRaises(ValueError):
+            channel_info1 = channel_info.copy()
+            channel_info1['digital_max'] = 8388608
+            # now a warning should appear.
+            with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_BDF) as f:
+                f.setSignalHeader(0,channel_info1)
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

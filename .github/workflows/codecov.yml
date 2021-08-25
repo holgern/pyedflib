@@ -1,0 +1,35 @@
+name: Coverage report using Codecov
+on: [push]
+jobs:
+  run:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: '3.9'
+    steps:
+    - uses: actions/checkout@master
+    - name: Setup Python
+      uses: actions/setup-python@master
+      with:
+        python-version: 3.9
+    - name: Generate coverage report
+      run: |
+        pip install pytest
+        pip install pytest-cov
+        pip install -e .
+        pip install -r requirements-test.txt
+        pytest --cov=./pyedflib/ --cov-report=xml --cov-config=.coveragerc
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: .
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./coverage.xml
+        move_coverage_to_trash: true
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true

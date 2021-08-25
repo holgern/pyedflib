@@ -42,15 +42,15 @@ open_errors = {
     EDFLIB_NUMBER_OF_SIGNALS_INVALID   : "The number of signals is invalid",
     EDFLIB_FILE_IS_DISCONTINUOUS       : "The file is discontinous and cannot be read",
     EDFLIB_INVALID_READ_ANNOTS_VALUE   : "an annotation value could not be read",
-    EDFLIB_FILE_ERRORS_STARTDATE      : "the file is not EDF(+) or BDF(+) compliant (startdate)",
-    EDFLIB_FILE_ERRORS_STARTTIME      : "the file is not EDF(+) or BDF(+) compliant (starttime)",
+    EDFLIB_FILE_ERRORS_STARTDATE      : "the file is not EDF(+) or BDF(+) compliant, the startdate is incorrect, it might contain incorrect characters, such as ':' instead of '.'",
+    EDFLIB_FILE_ERRORS_STARTTIME      : "the file is not EDF(+) or BDF(+) compliant, the starttime is incorrect, it might contain incorrect characters, such as ':' instead of '.'",
     EDFLIB_FILE_ERRORS_NUMBER_SIGNALS : "the file is not EDF(+) or BDF(+) compliant (number of signals)",
     EDFLIB_FILE_ERRORS_BYTES_HEADER   : "the file is not EDF(+) or BDF(+) compliant (Bytes Header)",
     EDFLIB_FILE_ERRORS_RESERVED_FIELD : "the file is not EDF(+) or BDF(+) compliant (Reserved field)",
     EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS : "the file is not EDF(+) or BDF(+) compliant (Number of Datarecords)",
     EDFLIB_FILE_ERRORS_DURATION : "the file is not EDF(+) or BDF(+) compliant (Duration)",
-    EDFLIB_FILE_ERRORS_LABEL : "the file is not EDF(+) or BDF(+) compliant (Label)",
-    EDFLIB_FILE_ERRORS_TRANSDUCER : "the file is not EDF(+) or BDF(+) compliant (Transducer)",
+    EDFLIB_FILE_ERRORS_LABEL : "the file is not EDF(+) or BDF(+) compliant the label is incorrect",
+    EDFLIB_FILE_ERRORS_TRANSDUCER : "the file is not EDF(+) or BDF(+) compliant the transducer is incorrect",
     EDFLIB_FILE_ERRORS_PHYS_DIMENSION : "the file is not EDF(+) or BDF(+) compliant (Physical Dimension)",
     EDFLIB_FILE_ERRORS_PHYS_MAX : "the file is not EDF(+) or BDF(+) compliant (Physical Maximum)",
     EDFLIB_FILE_ERRORS_PHYS_MIN : "the file is not EDF(+) or BDF(+) compliant (Physical Minimum)",
@@ -144,7 +144,7 @@ cdef class CyEdfReader:
         self.hdr.handle = -1
         try:
             self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
-        except OSError as e:
+        except FileNotFoundError as e:
             # if files contain Unicode on Windows, and the locale is set incorrectly
             # there can be errors when creating the file.
             # in this case, we can use a workaround and work on the file
@@ -159,9 +159,9 @@ cdef class CyEdfReader:
                 file_name = get_short_path_name(file_name)
                 self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
             elif exists:
-                raise OSError('File {} was found but cant be accessed. ' \
+                raise OSError(123, 'File {} was found but can\'t be accessed. ' \
                               'Make sure it contains no special characters ' \
-                              'or change your locale to use UTF8.'.format(file_name))
+                              'or change your locale to use UTF8.'.format(file_name), None, 123)
             else:
                 raise e
 
@@ -176,7 +176,9 @@ cdef class CyEdfReader:
             return True
         else:
             msg = open_errors[self.hdr.filetype]
-            raise IOError, '{}: {}'.format(self.file_name, msg)
+            if 'no such file or directory' in msg:
+                raise FileNotFoundError, '{}: {}'.format(self.file_name, msg)
+            raise OSError, '{}: {}'.format(self.file_name, msg)
             # return False
             
     def make_buffer(self):
@@ -353,7 +355,7 @@ cdef class CyEdfReader:
 
     def samplefrequency(self, channel):
         try:
-            return (<double>self.hdr.signalparam[channel].smp_in_datarecord / self.hdr.datarecord_duration) * EDFLIB_TIME_DIMENSION
+            return <double>self.hdr.signalparam[channel].smp_in_datarecord
         except:
             return 0
     # def _tryoffset0(self):
@@ -499,7 +501,7 @@ cpdef int set_patientname(int handle, char *name):
     return c_edf.edf_set_patientname(handle, name)
 
 cpdef int set_physical_minimum(int handle, int edfsignal, double phys_min):
-    c_edf.edf_set_physical_minimum(handle, edfsignal, phys_min)
+    return c_edf.edf_set_physical_minimum(handle, edfsignal, phys_min)
 
 cpdef int read_physical_samples(int handle, int edfsignal, int n,
                                 np.ndarray[np.float64_t] buf):

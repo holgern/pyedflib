@@ -5,6 +5,8 @@ include =
 omit = 
     */version.py
     */pyedflib/tests/*
+    */pyedflib/data/*
     *.pyx
+    _*.py
     stringsource
 plugins = Cython.Coverage

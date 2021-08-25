@@ -19,9 +19,9 @@ class TestEdfReader(unittest.TestCase):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         cls.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         cls.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
-        cls.edf_broken_file = os.path.join(data_dir, 'tmp_broken_file.edf')
         cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
         cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
+        cls.tmp_edf_file = os.path.join(data_dir, u'test_tmp_file.edf')
 
     @classmethod
     def tearDownClass(cls):
@@ -53,6 +53,27 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.handle, 0)
         f.close()
         np.testing.assert_equal(f.handle, -1)
+
+    def test_indexerrors_thrown(self):
+        try:
+            f = pyedflib.EdfReader(self.edf_data_file)
+        except IOError:
+            print('cannot open', self.edf_data_file)
+            return
+
+        funcs = ['getSampleFrequency', 'getLabel', 'getPrefilter', 'getPhysicalMaximum',
+                 'getPhysicalMinimum', 'getDigitalMaximum', 'getDigitalMinimum',
+                 'getTransducer', 'getPhysicalDimension', 'readSignal']
+        for i in range(10):
+            for func in funcs:
+                getattr(f, func)(i)
+            
+        for i in [-1, 11]:
+            for func in funcs:
+                with self.assertRaises(IndexError, msg="f.{}({})".format(func, i)):
+                    getattr(f, func)(i)
+            
+        f.close()
 
     def test_EdfReader_headerInfos(self):
         try:
@@ -143,11 +164,12 @@ class TestEdfReader(unittest.TestCase):
         del f
 
     def test_EdfReader_Check_Size(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
+        sample_frequency = 100
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+                        'sample_frequency': sample_frequency, 'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
-        f = pyedflib.EdfWriter(self.bdf_broken_file, 1,file_type=pyedflib.FILETYPE_BDFPLUS)
+        f = pyedflib.EdfWriter(self.bdf_broken_file, 1, file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
         f.setTechnician('tec1')
         data = np.ones(100) * 0.1
@@ -162,9 +184,14 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
-        np.testing.assert_equal(f.getSampleFrequency(0), 100)
-        np.testing.assert_equal(f.getSignalHeader(0), channel_info)
-        np.testing.assert_equal(f.getSignalHeaders(), [channel_info])
+        np.testing.assert_equal(f.getSampleFrequency(0), sample_frequency)
+
+        # When both 'sample_rate' and 'sample_frequency' are present, we write
+        # the file using the latter, which means that when we read it back,
+        # only the 'sample_frequency' value is present.
+        expected_signal_header = {**channel_info, 'sample_rate': sample_frequency}
+        np.testing.assert_equal(f.getSignalHeader(0), expected_signal_header)
+        np.testing.assert_equal(f.getSignalHeaders(), [expected_signal_header])
         del f
 
     def test_EdfReader_Close_file(self):
@@ -183,8 +210,9 @@ class TestEdfReader(unittest.TestCase):
         del f, ff
 
     def test_BdfReader_Read_accented_file(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
+        sample_frequency = 100
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+                        'sample_frequency': sample_frequency, 'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdf_accented_file, 1,file_type=pyedflib.FILETYPE_BDFPLUS)
@@ -197,15 +225,58 @@ class TestEdfReader(unittest.TestCase):
 
         f = pyedflib.EdfReader(self.bdf_accented_file, pyedflib.READ_ALL_ANNOTATIONS, pyedflib.DO_NOT_CHECK_FILE_SIZE)
         np.testing.assert_equal(f.getTechnician(), 'tec1')
-
         np.testing.assert_equal(f.getLabel(0), 'test_label')
         np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
-        np.testing.assert_equal(f.getSampleFrequency(0), 100)
-        np.testing.assert_equal(f.getSignalHeader(0), channel_info)
-        np.testing.assert_equal(f.getSignalHeaders(), [channel_info])
+
+        # When both 'sample_rate' and 'sample_frequency' are present, we write
+        # the file using the latter, which means that when we read it back,
+        # only the 'sample_frequency' value is present.
+        expected_signal_header = {**channel_info, 'sample_rate': sample_frequency}
+        np.testing.assert_equal(f.getSignalHeader(0), expected_signal_header)
+        np.testing.assert_equal(f.getSignalHeaders(), [expected_signal_header])
         del f
+
+
+    def test_read_incorrect_file(self):
+
+        # this should simply not be found and not trigger the UTF8 warning
+        with self.assertRaises(FileNotFoundError):
+            f = pyedflib.EdfReader('does_not_exist')
+
+        # this file is corrupted and should be found, but not be read
+        # so the Exception should be OSError and not FileNotFoundError
+        with self.assertRaises(OSError):
+            with open(self.tmp_edf_file, 'wb') as f:
+                f.write(b'0123456789')
+            f = pyedflib.EdfReader(self.tmp_edf_file)
+
+        # now we create a file that is not EDF/BDF compliant
+        # this should raise an OSError and not a FileNotFoundError
+        with self.assertRaises(OSError) as cm:
+            channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+                            'sample_frequency': 100, 'physical_max': 1.0, 'physical_min': -1.0,
+                            'digital_max': 8388607, 'digital_min': -8388608,
+                            'prefilter': 'pre1', 'transducer': 'trans1'}
+            with pyedflib.EdfWriter(self.bdf_accented_file, 1, file_type=pyedflib.FILETYPE_BDFPLUS) as f:
+                f.setSignalHeader(0,channel_info)
+                f.setTechnician('tec1')
+                data = np.ones(100) * 0.1
+                f.writePhysicalSamples(data)
+    
+            with open(self.bdf_accented_file, 'rb') as f:
+                content = bytearray(f.read())
+                content[181] = 58
+            with open(self.bdf_accented_file, 'wb') as f:
+                f.write(content)
+
+            f = pyedflib.EdfReader(self.bdf_accented_file)
+        # However, the error before should not be a FileNotFoundError
+        assert not isinstance(cm.exception, FileNotFoundError)
+
+
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
