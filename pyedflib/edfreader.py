@@ -430,7 +430,7 @@ class EdfReader(CyEdfReader):
 
         """
         if 0 <= chn < self.signals_in_file:
-            return self.samplefrequency(chn)
+            return self.samplefrequency(chn)/self.datarecord_duration
         else:
             raise IndexError('Trying to access channel {}, but only {} ' \
                              'channels found'.format(chn, self.signals_in_file))
