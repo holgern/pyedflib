@@ -105,11 +105,20 @@ if __name__ == '__main__':
     time = np.linspace(0, file_duration, file_duration*200)
     data_list.append(np.sin(2*np.pi*17*time))
 
-    ch_dict = {'label': 'sine 50 Hz', 'dimension': 'uV', 'sample_frequency': 200, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
+    ch_dict = {'label': 'sine 50 Hz', 'dimension': 'uV', 'sample_frequency': 200.5, 'physical_max': 100, 'physical_min': -100, 'digital_max': 32767, 'digital_min': -32768, 'transducer': '', 'prefilter':''}
     channel_info.append(ch_dict)
-    time = np.linspace(0, file_duration, file_duration*200)
+    time = np.linspace(0, file_duration, int(file_duration*200.5))
     data_list.append(np.sin(2*np.pi*50*time))
 
+    signal_headers = channel_info
+    signal_duration = len(data_list[0]) / pyedflib.highlevel._get_sample_frequency(signal_headers[0])
+    samplefrequencies = np.array([hdr["sample_frequency"] for hdr in signal_headers])
+    block_size = min(
+        [d for d in range(1, 61) if ((signal_duration % d == 0) and np.all(((samplefrequencies * d) % 1) == 0))])
+
+    for n, shead in enumerate(channel_info):
+        channel_info[n]["sample_frequency"] *= block_size
+    f.setDatarecordDuration(int(100000 * block_size))
     f.setSignalHeaders(channel_info)
     f.writeSamples(data_list)
     f.writeAnnotation(0, -1, "Recording starts")
