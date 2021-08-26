@@ -343,19 +343,19 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
 
     with pyedflib.EdfReader(edf_file) as f:
         # see which channels we want to load
-        available_chs = f.getSignalLabels()
+        available_chs = [ch.upper() for ch in f.getSignalLabels()]
         n_chrs = f.signals_in_file
 
         # find out which number corresponds to which channel
         if ch_names is not None:
             ch_nrs = []
             for ch in ch_names:
-                if not ch in available_chs:
+                if not ch.upper() in available_chs:
                     warnings.warn('{} is not in source file (contains {})'\
                                   .format(ch, available_chs))
                     print('will be ignored.')
                 else:
-                    ch_nrs.append(available_chs.index(ch))
+                    ch_nrs.append(available_chs.index(ch.upper()))
 
         # if there ch_nrs is not given, load all channels
 
