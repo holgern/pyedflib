@@ -399,7 +399,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. EDF+/BDF+ is selected based on the filename extension,
-    but can be overwritten by setting filetype to pyedflib.FILETYPE_XXX
+    but can be overwritten by setting file_type to pyedflib.FILETYPE_XXX
 
     Parameters
     ----------
@@ -417,8 +417,8 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         If no header present, will create an empty header
     digital : bool, optional
         whether the signals are in digital format (ADC). The default is False.
-    filetype: int, optional
-        choose filetype for saving.
+    file_type: int, optional
+        choose file_type for saving.
         EDF = 0, EDF+ = 1, BDF = 2, BDF+ = 3, automatic from extension = -1
     block_size : int
         set the block size for writing. Should be divisor of signal length
@@ -438,7 +438,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     assert len(signal_headers)==len(signals), \
         'signals and signal_headers must be same length'
     assert file_type in [-1, 0, 1, 2, 3], \
-        'filetype must be in range -1, 3'
+        'file_type must be in range -1, 3'
     assert block_size<=60 and block_size>=-1 and block_size!=0, \
         'blocksize must be smaller or equal to 60'
 
