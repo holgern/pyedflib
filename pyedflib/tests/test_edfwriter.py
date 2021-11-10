@@ -534,8 +534,8 @@ class TestEdfWriter(unittest.TestCase):
         f.setSignalHeader(0,channel_info1)
         f.setSignalHeader(1,channel_info2)
 
-        data1 = np.arange(500, dtype=np.float)
-        data2 = np.arange(500, dtype=np.float)
+        data1 = np.arange(500, dtype=float)
+        data2 = np.arange(500, dtype=float)
         data_list = []
         data_list.append(data1)
         data_list.append(data2)
