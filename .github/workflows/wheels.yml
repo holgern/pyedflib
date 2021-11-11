@@ -3,8 +3,8 @@ on: [push]
 env:
   CIBW_BUILD_VERBOSITY: 1
   # Run the package tests using `pytest`
-  CIBW_TEST_REQUIRES: pytest
-  CIBW_TEST_COMMAND: pytest
+  # CIBW_TEST_REQUIRES: pytest
+  # CIBW_TEST_COMMAND: pytest
 jobs:
   make_sdist:
     name: Make SDist
