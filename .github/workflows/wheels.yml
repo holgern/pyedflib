@@ -47,8 +47,8 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          # Disable explicitly python 3.10 and building PyPy wheels
-          CIBW_SKIP: cp310-* pp*
+          # Disable explicitly python 3.11 and building PyPy wheels
+          CIBW_SKIP: cp311-* pp*
           CIBW_PRERELEASE_PYTHONS: False
 
       - uses: actions/upload-artifact@v2
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [36, 37, 38, 39]
+        python: [36, 37, 38, 39, 310]
         include:
           - os: ubuntu-latest
             arch: aarch64
