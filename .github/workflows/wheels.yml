@@ -1,5 +1,5 @@
 name: Build wheel
-on: [push]
+on: [tags]
 env:
   CIBW_BUILD_VERBOSITY: 1
   # Run the package tests using `pytest`
