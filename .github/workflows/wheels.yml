@@ -1,5 +1,9 @@
 name: Build wheel
-on: [tags]
+on:
+  push:
+    # Pattern matched against refs/tags
+    tags:
+      - '*'           # Push events to every tag not containing /
 env:
   CIBW_BUILD_VERBOSITY: 1
   # Run the package tests using `pytest`
