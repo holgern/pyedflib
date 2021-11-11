@@ -1,0 +1,87 @@
+name: Build wheel
+
+on:
+  push:
+    branches:
+    - main
+
+env:
+  CIBW_BUILD_VERBOSITY: 1
+  # Run the package tests using `pytest`
+  CIBW_TEST_REQUIRES: pytest
+  CIBW_TEST_COMMAND: pytest {project}/tests
+
+jobs:
+  make_sdist:
+    name: Make SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install deps
+      run: python -m pip install build twine
+    - name: Build SDist
+      run: python -m build --sdist
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist/*.tar.gz
+    - name: Check metadata
+      run: twine check dist/*
+      
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v2
+
+      # Used to host cibuildwheel
+      - uses: actions/setup-python@v2
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          # Disable explicitly python 3.10 and building PyPy wheels
+          CIBW_SKIP: cp310-* pp*
+          CIBW_PRERELEASE_PYTHONS: False
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: wheelhouse/*.whl
+
+  build_aarch64_wheels:
+    name: Build wheels manylinux_aarch64
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [36, 37, 38, 39]
+        include:
+          - os: ubuntu-latest
+            arch: aarch64
+            platform_id: manylinux_aarch64
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Install cibuildwheel
+        run: python -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: ${{matrix.arch}}
+          CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
+      - uses: actions/upload-artifact@v2
+        with:
+          path: wheelhouse/*.whl
