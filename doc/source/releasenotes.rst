@@ -16,3 +16,7 @@ Release Notes
    release.0.1.17
    release.0.1.18
    release.0.1.19
+   release.0.1.20
+   release.0.1.21
+   release.0.1.22
+   release.0.1.23

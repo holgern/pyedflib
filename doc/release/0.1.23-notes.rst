@@ -1,0 +1,38 @@
+=============================
+PyEDFlib 0.1.23 Release Notes
+=============================
+
+.. contents::
+
+- Use cibuildwheel for wheel building
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+* LucaCerina
+* wmvanvliet
+* cfranklin11
+* BlakeJC94
+
+
+Issues closed for v0.1.23
+-------------------------
+* #145 Typo in write_edf documentation
+* #142 set_physical_minimum return value is missing
+* #133 Trigger UTF8-filename warning only if it's really the case
+* #132 Add warning if header is too long or contains unrecognized header fields
+
+Pull requests for v0.1.23
+-------------------------
+* #124 updated edfWriter:setSignalHeaders to update default dicts instead of overwriting
+* #126 Fix annotation bytestring
+* #127 Cleanup travis buildscript
+* #125 non-empty data check in edfwriter to prevent unknown OS error
+* #121 Fix sample frequencies for record duration != 1
+* #134 add warnings if dmin/dmax/pmin/pmax is out of bounds 
+* #135 split up Errors in FileNotFoundError and OSError
+*  #136 suppress warnings in tests
+* #114 Be less strict about prefilter fields
+* #137 improved speedup write with F-contiguous arrays
