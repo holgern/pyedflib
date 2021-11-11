@@ -1,16 +1,10 @@
 name: Build wheel
-
-on:
-  push:
-    branches:
-    - main
-
+on: [push]
 env:
   CIBW_BUILD_VERBOSITY: 1
   # Run the package tests using `pytest`
   CIBW_TEST_REQUIRES: pytest
   CIBW_TEST_COMMAND: pytest {project}/tests
-
 jobs:
   make_sdist:
     name: Make SDist
@@ -31,7 +25,6 @@ jobs:
     - name: Check metadata
       run: twine check dist/*
       
-
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -57,7 +50,6 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: wheelhouse/*.whl
-
   build_aarch64_wheels:
     name: Build wheels manylinux_aarch64
     runs-on: ubuntu-latest
