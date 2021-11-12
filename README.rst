@@ -119,8 +119,8 @@ pyEDFlib is a free Open Source software released under the BSD 2-clause license.
   
 Releases can be cited via Zenodo.
 
-.. image:: https://zenodo.org/badge/5678481.svg
-   :target: https://zenodo.org/badge/latestdoi/5678481
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5678481.svg
+   :target: https://doi.org/10.5281/zenodo.5678481
   
 .. _Cython: http://cython.org/
 .. _Anaconda: https://www.continuum.io
