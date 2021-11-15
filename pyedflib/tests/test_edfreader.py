@@ -62,16 +62,18 @@ class TestEdfReader(unittest.TestCase):
             print('cannot open', self.bdf_data_file)
             return
 
+        datarecords = 30
+
         np.testing.assert_equal(f.signals_in_file, 5)
-        np.testing.assert_equal(f.datarecords_in_file, 30)
+        np.testing.assert_equal(f.datarecords_in_file, datarecords)
         
         sample_frequencies = [1000, 800, 500, 975, 999]
-        nsamples = [1000, 800, 500, 975, 999]
+        nsamples_per_datarecord = [1000, 800, 500, 975, 999]
 
         for i in np.arange(5):
             np.testing.assert_almost_equal(f.getSampleFrequencies()[i], sample_frequencies[i])
             np.testing.assert_almost_equal(f.getSampleFrequency(i), sample_frequencies[i])
-            np.testing.assert_equal(f.getNSamples()[i], nsamples[i])
+            np.testing.assert_equal(f.getNSamples()[i], int(nsamples_per_datarecord[i] * datarecords))
         np.testing.assert_equal(f.handle, 0)
         f.close()
         np.testing.assert_equal(f.handle, -1)
