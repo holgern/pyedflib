@@ -63,9 +63,9 @@ class TestEdfReader(unittest.TestCase):
             return
 
         np.testing.assert_equal(f.signals_in_file, 5)
-        np.testing.assert_equal(f.datarecords_in_file, 60)
+        np.testing.assert_equal(f.datarecords_in_file, 30)
         
-        sample_frequencies = [2000, 1600, 1000, 1950, 1998]
+        sample_frequencies = [1000, 800, 500, 975, 999]
         nsamples = [1000, 800, 500, 975, 999]
 
         for i in np.arange(5):
