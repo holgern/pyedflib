@@ -57,9 +57,9 @@ class TestEdfReader(unittest.TestCase):
 
     def test_EdfReader_BDF(self):
         try:
-            f = pyedflib.EdfReader(self.edf_data_file)
+            f = pyedflib.EdfReader(self.bdf_data_file)
         except IOError:
-            print('cannot open', self.edf_data_file)
+            print('cannot open', self.bdf_data_file)
             return
 
         np.testing.assert_equal(f.signals_in_file, 5)
