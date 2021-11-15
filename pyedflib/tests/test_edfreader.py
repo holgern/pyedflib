@@ -19,6 +19,8 @@ class TestEdfReader(unittest.TestCase):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         cls.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         cls.bdf_data_file = os.path.join(data_dir, 'test_generator.bdf')
+        cls.bdf_data_file_datarec_2 = os.path.join(data_dir, 'test_generator_datarec_generator_2.bdf')
+        cls.bdf_data_file_datarec_0_5 = os.path.join(data_dir, 'test_generator_datarec_generator_0_5.bdf')
         cls.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
         cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
@@ -66,14 +68,71 @@ class TestEdfReader(unittest.TestCase):
 
         np.testing.assert_equal(f.signals_in_file, 5)
         np.testing.assert_equal(f.datarecords_in_file, datarecords)
+        np.testing.assert_equal(f.getFileDuration(), datarecords)
         
         sample_frequencies = [1000, 800, 500, 975, 999]
-        nsamples_per_datarecord = [1000, 800, 500, 975, 999]
 
         for i in np.arange(5):
             np.testing.assert_almost_equal(f.getSampleFrequencies()[i], sample_frequencies[i])
             np.testing.assert_almost_equal(f.getSampleFrequency(i), sample_frequencies[i])
-            np.testing.assert_equal(f.getNSamples()[i], int(nsamples_per_datarecord[i] * datarecords))
+            np.testing.assert_equal(f.getNSamples()[i], int(sample_frequencies[i] * datarecords))
+            np.testing.assert_almost_equal(f.getSignalHeader(i)["sample_frequency"], sample_frequencies[i])
+            np.testing.assert_almost_equal(f.getSignalHeaders()[i]["sample_frequency"], sample_frequencies[i])
+            
+        np.testing.assert_equal(f.handle, 0)
+        f.close()
+        np.testing.assert_equal(f.handle, -1)
+
+    def test_EdfReader_BDF_datarec_0_5(self):
+        try:
+            f = pyedflib.EdfReader(self.bdf_data_file_datarec_0_5)
+        except IOError:
+            print('cannot open', self.bdf_data_file_datarec_0_5)
+            return
+
+        datarecords = 30
+        datarecord_duration = 0.5
+
+        np.testing.assert_equal(f.signals_in_file, 5)
+        np.testing.assert_equal(f.datarecord_duration, datarecord_duration)
+        np.testing.assert_equal(f.datarecords_in_file, datarecords / datarecord_duration)
+        np.testing.assert_equal(f.getFileDuration(), datarecords)
+        
+        sample_frequencies = [1000, 800, 500, 975, 999]
+
+        for i in np.arange(5):
+            np.testing.assert_almost_equal(f.getSampleFrequencies()[i], sample_frequencies[i])
+            np.testing.assert_almost_equal(f.getSampleFrequency(i), sample_frequencies[i])
+            np.testing.assert_equal(f.getNSamples()[i], int(sample_frequencies[i] * datarecords / datarecord_duration))
+            np.testing.assert_almost_equal(f.getSignalHeader(i)["sample_frequency"], sample_frequencies[i])
+            np.testing.assert_almost_equal(f.getSignalHeaders()[i]["sample_frequency"], sample_frequencies[i])
+        np.testing.assert_equal(f.handle, 0)
+        f.close()
+        np.testing.assert_equal(f.handle, -1)
+
+    def test_EdfReader_BDF_datarec_2(self):
+        try:
+            f = pyedflib.EdfReader(self.bdf_data_file_datarec_2)
+        except IOError:
+            print('cannot open', self.bdf_data_file_datarec_2)
+            return
+
+        datarecords = 30
+        datarecord_duration = 2
+
+        np.testing.assert_equal(f.signals_in_file, 5)
+        np.testing.assert_equal(f.datarecord_duration, datarecord_duration)
+        np.testing.assert_equal(f.datarecords_in_file, datarecords / datarecord_duration)
+        np.testing.assert_equal(f.getFileDuration(), datarecords)
+        
+        sample_frequencies = [1000, 800, 500, 975, 999]
+
+        for i in np.arange(5):
+            np.testing.assert_almost_equal(f.getSampleFrequencies()[i], sample_frequencies[i])
+            np.testing.assert_almost_equal(f.getSampleFrequency(i), sample_frequencies[i])
+            np.testing.assert_equal(f.getNSamples()[i], int(sample_frequencies[i] * datarecords / datarecord_duration))
+            np.testing.assert_almost_equal(f.getSignalHeader(i)["sample_frequency"], sample_frequencies[i])
+            np.testing.assert_almost_equal(f.getSignalHeaders()[i]["sample_frequency"], sample_frequencies[i])
         np.testing.assert_equal(f.handle, 0)
         f.close()
         np.testing.assert_equal(f.handle, -1)
