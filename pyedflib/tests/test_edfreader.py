@@ -18,6 +18,7 @@ class TestEdfReader(unittest.TestCase):
         # data_dir = os.path.join(os.getcwd(), 'data')
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         cls.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
+        cls.bdf_data_file = os.path.join(data_dir, 'test_generator.bdf')
         cls.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
         cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
         cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
@@ -50,6 +51,27 @@ class TestEdfReader(unittest.TestCase):
         for i in np.arange(11):
             np.testing.assert_almost_equal(f.getSampleFrequencies()[i], 200)
             np.testing.assert_equal(f.getNSamples()[i], 120000)
+        np.testing.assert_equal(f.handle, 0)
+        f.close()
+        np.testing.assert_equal(f.handle, -1)
+
+    def test_EdfReader_BDF(self):
+        try:
+            f = pyedflib.EdfReader(self.edf_data_file)
+        except IOError:
+            print('cannot open', self.edf_data_file)
+            return
+
+        np.testing.assert_equal(f.signals_in_file, 5)
+        np.testing.assert_equal(f.datarecords_in_file, 60)
+        
+        sample_frequencies = [2000, 1600, 1000, 1950, 1998]
+        nsamples = [1000, 800, 500, 975, 999]
+
+        for i in np.arange(5):
+            np.testing.assert_almost_equal(f.getSampleFrequencies()[i], sample_frequencies[i])
+            np.testing.assert_almost_equal(f.getSampleFrequency(i), sample_frequencies[i])
+            np.testing.assert_equal(f.getNSamples()[i], nsamples[i])
         np.testing.assert_equal(f.handle, 0)
         f.close()
         np.testing.assert_equal(f.handle, -1)

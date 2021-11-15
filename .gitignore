@@ -38,4 +38,5 @@ build.log
 
 # Generated test files
 pyedflib/tests/data/tmp_*
+pyedflib/tests/data/test_tmp_*
 pyedflib/tests/data/tmp.*
