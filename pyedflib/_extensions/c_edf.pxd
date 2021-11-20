@@ -6,7 +6,7 @@
 # get constants
 include "edf.pxi"
 
-cdef extern from "c/edflib.h":
+cdef extern from "edflib.h":
     int edf_set_patientcode(int, char *)
     int edfwrite_annotation_latin1(int, long long int, long long int, char *)
     int edfwrite_annotation_utf8(int, long long int, long long int, char *)

@@ -20,6 +20,10 @@ except ImportError:
                "version of PyEDFlib")
         raise RuntimeError(msg)    
 
+SYSTEM_EDFLIB = {"": True, "1": True, "0": False}[
+    os.environ.get("SYSTEM_EDFLIB", "0")
+]
+
 
 MAJOR = 0
 MINOR = 1
@@ -175,11 +179,6 @@ if sys.platform == "darwin":
 
 make_ext_path = partial(os.path.join, "pyedflib", "_extensions")
 
-sources = ["c/edflib.c"]
-sources = list(map(make_ext_path, sources))
-headers = ["c/edflib.h"]
-headers = list(map(make_ext_path, headers))
-
 cython_modules = ['_pyedflib']
 cython_sources = [('{0}.pyx' if USE_CYTHON else '{0}.c').format(module)
                   for module in cython_modules]
@@ -192,21 +191,36 @@ if os.environ.get("CYTHON_TRACE"):
     cythonize_opts['linetrace'] = True
     cython_macros.append(("CYTHON_TRACE_NOGIL", 1))
 
-# By default C object files are rebuilt for every extension
-# C files must be built once only for coverage to work
-c_lib = ('c_edf',{'sources': sources,
-                 'depends': headers,
-                 'include_dirs': [make_ext_path("c"), get_python_inc()],
-                 'macros': c_macros,})
+ext_fixed_keys = dict(define_macros=c_macros + cython_macros)
+if not SYSTEM_EDFLIB:
+    sources = ["c/edflib.c"]
+    sources = list(map(make_ext_path, sources))
+    headers = ["c/edflib.h"]
+    headers = list(map(make_ext_path, headers))
+
+    # By default C object files are rebuilt for every extension
+    # C files must be built once only for coverage to work
+    c_lib = ('c_edf',{'sources': sources,
+                     'depends': headers,
+                     'include_dirs': [make_ext_path("c"), get_python_inc()],
+                     'macros': c_macros,})
+
+    ext_fixed_keys.update(
+              # Doesn't automatically rebuild if library changes
+              depends=c_lib[1]['sources'] + c_lib[1]['depends'],
+              include_dirs=[make_ext_path("c"), get_numpy_include()],
+              libraries=[c_lib[0]])
+    setup_libraries = [c_lib]
+else:
+    ext_fixed_keys.update(
+              include_dirs=[get_numpy_include()],
+              libraries=['edf'])
+    setup_libraries = []
 
 ext_modules = [
     NumpyExtension('pyedflib._extensions.{0}'.format(module),
               sources=[make_ext_path(source)],
-              # Doesn't automatically rebuild if library changes
-              depends=c_lib[1]['sources'] + c_lib[1]['depends'],
-              include_dirs=[make_ext_path("c"), get_numpy_include()],
-              define_macros=c_macros + cython_macros,
-              libraries=[c_lib[0]])
+              **ext_fixed_keys)
     for module, source, in zip(cython_modules, cython_sources)
 ]
 
@@ -295,7 +309,7 @@ if __name__ == '__main__':
         packages=['pyedflib','pyedflib._extensions','pyedflib.data', 'pyedflib.tests', 'pyedflib.tests.data'],
         package_data={'pyedflib.data': ['*.edf', '*.bdf'], 'pyedflib.tests.data': ['*.edf', '*.bdf'], },
         ext_modules=ext_modules,
-        libraries=[c_lib],
+        libraries=setup_libraries,
         cmdclass={'develop': develop_build_clib},
         install_requires=[REQUIRED_NUMPY],
     )
