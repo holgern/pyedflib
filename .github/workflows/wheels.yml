@@ -28,7 +28,7 @@ jobs:
         path: dist/*.tar.gz
     - name: Check metadata
       run: twine check dist/*
-      
+
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [36, 37, 38, 39]
+        python: [36, 37, 38, 39, 310]
         include:
           - os: ubuntu-latest
             arch: aarch64
