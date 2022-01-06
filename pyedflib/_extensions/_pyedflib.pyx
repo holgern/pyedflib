@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#cython: language_level=3
 # Copyright (c) 2015, Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # See LICENSE for license details.
@@ -192,7 +193,7 @@ cdef class CyEdfReader:
         print ("self.hdr.datarecords_in_file", self.hdr.datarecords_in_file)
         tmp =0
         for ii in range(self.signals_in_file):
-            tmp += self.samples_in_datarecord(ii)
+            tmp += self.samples_per_record(ii)
         self.nsamples_per_record = tmp 
         dbuffer = np.zeros(tmp, dtype='float64') # will get physical samples, not the orignal digital samples
         return dbuffer
@@ -252,7 +253,7 @@ cdef class CyEdfReader:
     property datarecord_duration:
         "datarecord duration in seconds (as a double)"
         def __get__(self):
-            return (<double>self.hdr.datarecord_duration) / EDFLIB_TIME_DIMENSION
+            return (<int>self.hdr.datarecord_duration) / EDFLIB_TIME_DIMENSION
 
     property annotations_in_file:
         def __get__(self):
@@ -329,8 +330,8 @@ cdef class CyEdfReader:
     def samples_in_file(self,channel):
         return self.hdr.signalparam[channel].smp_in_file
 
-    def samples_in_datarecord(self, channel):
-        return self.hdr.signalparam[channel].smp_in_datarecord
+    def samples_per_record(self, channel):
+        return self.hdr.signalparam[channel].smp_per_record
 
     def physical_dimension(self, channel):
         return self.hdr.signalparam[channel].physdimension
@@ -355,9 +356,18 @@ cdef class CyEdfReader:
 
     def samplefrequency(self, channel):
         try:
-            return <double>self.hdr.signalparam[channel].smp_in_datarecord
+            # the data record duration is the time span of one record block
+            # expressed in 10 ms as a unit (see EDF specs)
+            datarecord_duration = self.hdr.signalparam[channel].datarecord_duration
+            # smp per record is the number of samples that is stored within
+            # the record duration. 
+            smp_per_record = self.hdr.signalparam[channel].smp_per_record
+            # the sample frequency in samples/second is simply the two divided
+            sample_freq = smp_per_record/datarecord_duration
+            return <double>sample_freq
         except:
             return 0
+        
     # def _tryoffset0(self):
     #     """
     #     fooling around to find offset in file to allow shortcut mmap interface
@@ -404,11 +414,11 @@ cdef class CyEdfReader:
 
         if n < self.hdr.datarecords_in_file:
             for ii in range(self.signals_in_file):
-                c_edf.edfseek(self.hdr.handle, ii, n*self.samples_in_datarecord(ii), EDFSEEK_SET) # just a guess
-                readn = c_edf.edfread_physical_samples(self.hdr.handle, ii, self.samples_in_datarecord(ii),
+                c_edf.edfseek(self.hdr.handle, ii, n*self.samples_per_record(ii), EDFSEEK_SET) # just a guess
+                readn = c_edf.edfread_physical_samples(self.hdr.handle, ii, self.samples_per_record(ii),
                                                  (<double*>db.data)+offset)
                 print ("readn this many samples", readn)
-                offset += self.samples_in_datarecord(ii)
+                offset += self.samples_per_record(ii)
 
 
 ###############################    
@@ -575,9 +585,11 @@ def set_equipment(handle, equipment):
     """int edf_set_equipment(int handle, const char *equipment)"""
     return c_edf.edf_set_equipment(handle, equipment)
 
-def set_samplefrequency(handle, edfsignal, samplefrequency):
-    """int edf_set_samplefrequency(int handle, int edfsignal, int samplefrequency)"""
-    return c_edf.edf_set_samplefrequency(handle, edfsignal, samplefrequency)
+def set_samples_per_record(handle, edfsignal, smp_per_record):
+    """int edf_set_samplefrequency(int handle, int edfsignal, int smp_per_record)"""
+    # EDF does not store the sample frequency exactly, but computes
+    # it depending on the record duration, i.e. the time span of one data block.
+    return c_edf.edf_set_samplefrequency(handle, edfsignal, smp_per_record)
 
 def set_admincode(handle, admincode):
     """int edf_set_admincode(int handle, const char *admincode)"""

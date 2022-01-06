@@ -489,7 +489,6 @@ int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int r
     edfhdr->signalparam[i].phys_min = hdr->edfparam[channel].phys_min;
     edfhdr->signalparam[i].dig_max = hdr->edfparam[channel].dig_max;
     edfhdr->signalparam[i].dig_min = hdr->edfparam[channel].dig_min;
-    edfhdr->signalparam[i].smp_in_datarecord = hdr->edfparam[channel].smp_per_record;
   }
 
   return 0;

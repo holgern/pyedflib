@@ -41,7 +41,7 @@ def _debug_parse_header(filename):
         header['n_bytes'] = f.read(8).decode()
         header['reserved'] = f.read(44).decode().strip()
         header['n_records'] = f.read(8).decode()
-        header['duration'] = f.read(8).decode()
+        header['record_duration'] = f.read(8).decode()
         header['n_signals'] = f.read(4).decode()
 
         print('\n## Header')
@@ -394,6 +394,7 @@ class EdfReader(CyEdfReader):
     def getSampleFrequencies(self):
         """
         Returns  samplefrequencies of all signals.
+        The sample frequency is defined as samples per second (Hz).
 
         Parameters
         ----------
@@ -408,12 +409,13 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
-        return np.array([round(self.samplefrequency(chn))
-                         for chn in np.arange(self.signals_in_file)])
+        return np.array([self.getSampleFrequency(chn)
+                         for chn in range(self.signals_in_file)])
 
     def getSampleFrequency(self,chn):
         """
         Returns the samplefrequency of signal edfsignal.
+        The sample frequency is the number of samples per second
 
         Parameters
         ----------
@@ -430,7 +432,24 @@ class EdfReader(CyEdfReader):
 
         """
         if 0 <= chn < self.signals_in_file:
-            return np.round(self.samplefrequency(chn), decimals=3)
+            return np.round(self.samplefrequency(chn), decimals=4)
+        else:
+            raise IndexError('Trying to access channel {}, but only {} ' \
+                             'channels found'.format(chn, self.signals_in_file))
+    def getRecordDuration(self,chn):
+        """
+        Returns the time duration of one record.
+        
+        The EDF format saves chunks of data per signal, so called records.
+        The time span of one record is called the record duration.
+        
+        Parameters
+        ----------
+        chn : int
+            channel number
+        """
+        if 0 <= chn < self.signals_in_file:
+            return self.datarecord_duration
         else:
             raise IndexError('Trying to access channel {}, but only {} ' \
                              'channels found'.format(chn, self.signals_in_file))
@@ -729,5 +748,5 @@ class EdfReader(CyEdfReader):
         self.file_info()
         for ii in np.arange(self.signals_in_file):
             print("label:", self.getSignalLabels()[ii], "fs:",
-                  self.getSampleFrequencies()[ii], "nsamples",
+                  self.getSampleFrequency(ii), "nsamples",
                   self.getNSamples()[ii])

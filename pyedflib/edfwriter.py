@@ -14,7 +14,7 @@ from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
 from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration, set_number_of_annotation_signals
-from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samplefrequency, set_physical_minimum, set_label, set_physical_dimension
+from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samples_per_record, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
 
@@ -181,8 +181,8 @@ class EdfWriter(object):
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
-            'sample_frequency' : number of samples per record (int)
+            'sample_rate' : sample frequency in Hertz (int).
+            'sample_frequency' :sample frequency in Hertz (int).
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
@@ -265,10 +265,8 @@ class EdfWriter(object):
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
         for i in np.arange(self.n_channels):
-
             check_signal_header_correct(self.channels, i, self.file_type)
-
-            set_samplefrequency(self.handle, i, self._get_sample_frequency(i))
+            set_samples_per_record(self.handle, i, self._get_sample_frequency(i))
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
@@ -450,12 +448,17 @@ class EdfWriter(object):
 
     def setDatarecordDuration(self, duration):
         """
-        Sets the datarecord duration. The default value is 100000 which is 1 second.
-        ATTENTION: the argument "duration" is expressed in units of 10 microSeconds!
-        So, if you want to set the datarecord duration to 0.1 second, you must give
-        the argument "duration" a value of "10000".
+        Sets the datarecord duration. This is the time span of one record block. 
+        
+        The record duration is expressed in seconds, however, internally it is
+        stored in units of 10 microSeconds, i.e. one second is saved as 100000.
+
+        The default value ish 1 second.
+
         This function is optional, normally you don't need to change
-        the default value. The datarecord duration must be in the range 0.001 to 60  seconds.
+        the default value. The datarecord duration must be in 
+        the range 0.001 to 60  seconds.  
+
         Returns 0 on success, otherwise -1.
 
         Parameters
@@ -472,6 +475,8 @@ class EdfWriter(object):
         the datarecord duration to 10 seconds. Do not use this function,
         except when absolutely necessary!
         """
+        assert 0.001<=duration<=60
+        duration = int(duration*100000)
         self.duration = duration
         self.update_header()
 
@@ -875,6 +880,9 @@ class EdfWriter(object):
         """
         close_file(self.handle)
         self.handle = -1
+        
+    def calculate_samples_per_record(self, ch, sfreq):
+        pass
 
     def _get_sample_frequency(self, channelIndex):
         # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
