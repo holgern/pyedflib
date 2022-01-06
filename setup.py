@@ -187,7 +187,7 @@ cython_sources = [('{0}.pyx' if USE_CYTHON else '{0}.c').format(module)
 c_macros = [("PY_EXTENSION", None), ("_LARGEFILE64_SOURCE", None), ("_LARGEFILE_SOURCE", None)]
 
 cython_macros = []
-cythonize_opts = {}
+cythonize_opts = {'language_level' : "3"}
 if os.environ.get("CYTHON_TRACE"):
     cythonize_opts['linetrace'] = True
     cython_macros.append(("CYTHON_TRACE_NOGIL", 1))

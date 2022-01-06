@@ -19,11 +19,11 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
            'get_handle', 'is_file_used', 'blockwrite_digital_short_samples', 'write_digital_short_samples']
 
 
-#from c_edf cimport *
+from . cimport c_edf
 import locale
 import os
 import warnings
-cimport c_edf
+# cimport c_edf
 cimport cpython
 import numpy as np
 cimport numpy as np
