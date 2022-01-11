@@ -25,6 +25,12 @@ environment:
     - PYTHON: "C:\\Python39-x64"
       ARCHITECTURE: x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    - PYTHON: "C:\\Python310"
+      ARCHITECTURE: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    - PYTHON: "C:\\Python310-x64"
+      ARCHITECTURE: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 build: off
 
