@@ -25,6 +25,12 @@ environment:
     - PYTHON: "C:\\Python39-x64"
       ARCHITECTURE: x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    - PYTHON: "C:\\Python310"
+      ARCHITECTURE: x86
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    - PYTHON: "C:\\Python310-x64"
+      ARCHITECTURE: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 build: off
 
@@ -32,11 +38,11 @@ install:
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install --upgrade pip"
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install --upgrade wheel"
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install
-     Cython nose coverage numpy dateparser tqdm --cache-dir c:\\tmp\\pip-cache"
+     Cython pytest coverage numpy dateparser tqdm --cache-dir c:\\tmp\\pip-cache"
 
 test_script:
-  - "util\\appveyor\\build.cmd %PYTHON%\\python.exe setup.py build --build-lib build\\lib\\"
-  - "%PYTHON%\\Scripts\\nosetests build\\lib --tests pyedflib\\tests"
+  - "util\\appveyor\\build.cmd %PYTHON%\\python.exe -m pip install ."
+  - "%PYTHON%\\Scripts\\pytest"
 
 after_test:
   - "util\\appveyor\\build.cmd %PYTHON%\\python.exe setup.py bdist_wheel"
