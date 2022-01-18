@@ -200,7 +200,7 @@ class EdfWriter(object):
         self.recording_start_time = datetime.now().replace(microsecond=0)
 
         self.birthdate = ''
-        self.duration = 1
+        self.record_duration = 1
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
         self.channels = []
@@ -252,7 +252,7 @@ class EdfWriter(object):
         set_admincode(self.handle, du(self.admincode))
         set_gender(self.handle, gender2int(self.gender))
 
-        set_datarecord_duration(self.handle, self.duration)
+        set_datarecord_duration(self.handle, self.record_duration)
         set_number_of_annotation_signals(self.handle, self.number_of_annotations)
         set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
                           self.recording_start_time.day, self.recording_start_time.hour,
@@ -453,7 +453,7 @@ class EdfWriter(object):
         self.gender = gender2int(gender)
         self.update_header()
 
-    def setDatarecordDuration(self, duration):
+    def setDatarecordDuration(self, record_duration):
         """
         Sets the datarecord duration. The default value is 1 second.
         The datarecord duration must be in the range 0.001 to 60  seconds.
@@ -466,7 +466,7 @@ class EdfWriter(object):
 
         Parameters
         ----------
-        duration : integer
+        record_duration : integer
             Sets the datarecord duration in units of seconds
 
         Notes
@@ -479,7 +479,7 @@ class EdfWriter(object):
         except when absolutely necessary!
         """
         self._enforce_record_duration = True
-        self.duration = duration
+        self.record_duration = record_duration
         self.update_header()
 
     def set_number_of_annotation_signals(self, number_of_annotations):
@@ -898,13 +898,13 @@ class EdfWriter(object):
         fs = self._get_sample_frequency(ch_idx)
         if fs is None: return None
         
-        duration = self.duration
-        smp_per_record = fs*duration
+        record_duration = self.record_duration
+        smp_per_record = fs*record_duration
 
         if not np.isclose(np.round(smp_per_record), np.round(smp_per_record, 6)):
             warnings.warn(f'Sample frequency {fs} can not be represented accurately. \n' + 
-                          f'smp_per_record={smp_per_record}, record_duration={duration} seconds,' +
-                          f'calculated sample_frequency will be {np.round(smp_per_record)/duration}')
+                          f'smp_per_record={smp_per_record}, record_duration={record_duration} seconds,' +
+                          f'calculated sample_frequency will be {np.round(smp_per_record)/record_duration}')
         return int(np.round(smp_per_record))
 
     
@@ -925,14 +925,14 @@ class EdfWriter(object):
         # in one data record can be represented by an int (smp_per_record)
         # if all sampling frequencies are ints, this will be simply 1
 
-        duration = 0
+        record_duration = 0
         for i in range(1, 60):
             if allint([x*i for x in all_fs]):
-                duration = i
+                record_duration = i
                 break
-        assert duration>0, f'cannot accurately represent sampling frequencies with data record durations between 1-60s: {all_fs}'
-        assert duration<=60, 'record duration must be below 60 seconds'
-        self.duration = duration
+        assert record_duration>0, f'cannot accurately represent sampling frequencies with data record durations between 1-60s: {all_fs}'
+        assert record_duration<=60, 'record duration must be below 60 seconds'
+        self.record_duration = record_duration
 
     def _get_sample_frequency(self, channelIndex):
         # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
