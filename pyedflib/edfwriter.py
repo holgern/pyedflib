@@ -924,12 +924,15 @@ class EdfWriter(object):
         # this is achieved when fs*duration=int, i.e. the number of samples
         # in one data record can be represented by an int (smp_per_record)
         # if all sampling frequencies are ints, this will be simply 1
-        # duration is
+
+        duration = 0
         for i in range(1, 60):
             if allint([x*i for x in all_fs]):
-                self.duration = i
+                duration = i
                 break
-        assert self.duration<=60, 'record duration must be below 60 seconds'
+        assert duration>0, f'cannot accurately represent sampling frequencies with data record durations between 1-60s: {all_fs}'
+        assert duration<=60, 'record duration must be below 60 seconds'
+        self.duration = duration
 
     def _get_sample_frequency(self, channelIndex):
         # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
