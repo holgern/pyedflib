@@ -8,7 +8,7 @@ import numpy as np
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
 import pyedflib
-from pyedflib.edfwriter import EdfWriter
+from pyedflib.edfwriter import EdfWriter, ChannelDoesNotExist, WrongInputSize
 from pyedflib.edfreader import EdfReader
 from datetime import datetime, date
 
