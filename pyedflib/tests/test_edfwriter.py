@@ -3,11 +3,14 @@
 # Copyright (c) 2015 Holger Nahrstaedt
 
 import os
+import gc
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
 import pyedflib
+from pyedflib.edfwriter import EdfWriter
+from pyedflib.edfreader import EdfReader
 from datetime import datetime, date
 
 
@@ -31,6 +34,13 @@ class TestEdfWriter(unittest.TestCase):
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
+                
+    def tearDown(self):
+        # small hack to close handles in case of tests throwing an exception
+        for obj in gc.get_objects():
+            if isinstance(obj, (EdfWriter, EdfReader)):
+                obj.close()
+                del obj
 
     def test_write_functions(self):
         channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_frequency': 100,
@@ -770,11 +780,10 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_non_one_second_record_duration(self):
         channel_count = 4
-        record_duration_seconds = 2
-        record_duration = record_duration_seconds * 1000 * 100
-        sample_frequency = 256
-        record_count = 10
-        sample_count_per_channel = sample_frequency * record_count
+        record_duration = 2
+        samples_per_record = 256
+        sample_frequency = samples_per_record/record_duration
+        record_count = 4
 
         f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
         f.setDatarecordDuration(record_duration)
@@ -796,7 +805,8 @@ class TestEdfWriter(unittest.TestCase):
             'prefilter': 'pre{}'.format(idx)
         } for idx in range(channel_count)])
 
-        f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
+        f.writeSamples(np.random.rand(channel_count, samples_per_record*4))
+        f.close()
         del f
 
         f = pyedflib.EdfReader(self.edf_data_file)
@@ -804,15 +814,14 @@ class TestEdfWriter(unittest.TestCase):
         for signal_header in f.getSignalHeaders():
             self.assertEqual(signal_header['sample_frequency'], sample_frequency)
 
-        self.assertEqual(f.datarecord_duration, record_duration_seconds)
+        self.assertEqual(f.datarecord_duration, record_duration)
         self.assertEqual(f.datarecords_in_file, record_count)
-
+        f.close()
         del f
 
     def test_sample_rate_backwards_compatibility(self):
         channel_count = 4
-        record_duration_seconds = 1
-        record_duration = record_duration_seconds * 1000 * 100
+        record_duration = 1
         # Choosing a weird sample rate to make sure it doesn't equal any defaults
         sample_rate = 42
         record_count = 10
@@ -955,6 +964,9 @@ class TestEdfWriter(unittest.TestCase):
             self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
 
 
+
+
+
     def test_EdfWriter_out_of_bounds_pmin_pmax_dmin_dmax(self):
         channel_info = {'label': 'l', # this should be too long
                          'dimension': 'd',
@@ -1031,7 +1043,35 @@ class TestEdfWriter(unittest.TestCase):
                 f.setSignalHeader(0,channel_info1)
                 data = np.ones(100) * 0.1
                 f.writePhysicalSamples(data)
+                
+                
+    def test_EdfWriter_float_sample_frequency(self):
+        
 
+        # create 4 channels with mixed sample frequencies
+        sfreqs = [256, 10, 5.5, 0.1, 19.8, 10000]
+        channel_info = [{'sample_frequency': fs} for fs in sfreqs]
+        f = pyedflib.EdfWriter(self.edfplus_data_file, len(sfreqs),
+                                file_type=pyedflib.FILETYPE_EDFPLUS)
+        
+        f.setSignalHeaders(channel_info)
+        data = [np.random.randint(-100, 100, int(fs*30))/100 for fs in sfreqs]
+
+        f.writeSamples(data)
+        f.close()
+        del f
+        
+        # read back data with mixed sfreq and check all data is correct
+        f = pyedflib.EdfReader(self.edfplus_data_file)
+        for i, (sig, fs) in enumerate(zip(data, sfreqs)):
+            d = f.readSignal(i)
+            np.testing.assert_almost_equal(sig, d, decimal=4)
+            np.testing.assert_equal(f.getSampleFrequency(i), fs)
+
+        f.close()
+        del f
+        
+        
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()

@@ -10,7 +10,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
            'set_recording_additional', 'write_physical_samples' ,'set_patientname', 'set_physical_minimum', 
            'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly', 
            'set_patient_additional', 'set_digital_maximum', 'set_birthdate', 'set_digital_minimum',
-           'write_digital_samples', 'set_equipment', 'set_samplefrequency','set_admincode', 'set_label',
+           'write_digital_samples', 'set_equipment', 'set_samples_per_record','set_admincode', 'set_label',
            'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
            'seek', 'set_startdatetime' ,'set_datarecord_duration', 'set_number_of_annotation_signals',
            'open_errors', 'FILETYPE_EDFPLUS',
@@ -354,10 +354,14 @@ cdef class CyEdfReader:
         return self.hdr.signalparam[channel].transducer
 
     def samplefrequency(self, channel):
-        try:
-            return <double>self.hdr.signalparam[channel].smp_in_datarecord
-        except:
-            return 0
+        smp_per_record = <double>self.smp_per_record(channel)
+        record_duration = self.datarecord_duration
+        return smp_per_record / record_duration
+
+
+    def smp_per_record(self, channel):
+        return <int>self.hdr.signalparam[channel].smp_in_datarecord
+
     # def _tryoffset0(self):
     #     """
     #     fooling around to find offset in file to allow shortcut mmap interface
@@ -575,9 +579,15 @@ def set_equipment(handle, equipment):
     """int edf_set_equipment(int handle, const char *equipment)"""
     return c_edf.edf_set_equipment(handle, equipment)
 
-def set_samplefrequency(handle, edfsignal, samplefrequency):
-    """int edf_set_samplefrequency(int handle, int edfsignal, int samplefrequency)"""
-    return c_edf.edf_set_samplefrequency(handle, edfsignal, samplefrequency)
+def set_samples_per_record(handle, edfsignal, smp_per_record ):
+    """
+    int set_samples_per_record(int handle, int edfsignal, int smp_per_record )
+    
+    sets how many samples are in the record for this signal.
+    this is not the sampling frequency (Hz), (which is calculated by
+    by smp_per_record/record_duration). 
+    """
+    return c_edf.edf_set_samplefrequency(handle, edfsignal, smp_per_record)
 
 def set_admincode(handle, admincode):
     """int edf_set_admincode(int handle, const char *admincode)"""
@@ -631,6 +641,7 @@ def set_starttime_subsecond(handle, subsecond):
 
 def set_datarecord_duration(handle, duration):
     """int edf_set_datarecord_duration(int handle, int duration)"""
+    duration *= EDFLIB_TIME_DIMENSION/100
     return c_edf.edf_set_datarecord_duration(handle, duration)
 
 def set_number_of_annotation_signals(handle, annot_signals):

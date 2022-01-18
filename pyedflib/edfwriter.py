@@ -14,7 +14,7 @@ from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
 from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration, set_number_of_annotation_signals
-from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samplefrequency, set_physical_minimum, set_label, set_physical_dimension
+from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samples_per_record, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
 
@@ -162,7 +162,6 @@ class EdfWriter(object):
 
     def __enter__(self):
         return self
-        # return self
 
     def __del__(self):
         self.close()
@@ -222,6 +221,7 @@ class EdfWriter(object):
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
         if (self.handle < 0):
             raise IOError(write_errors[self.handle])
+        self._enforce_record_duration = False
 
     def update_header(self):
         """
@@ -240,6 +240,8 @@ class EdfWriter(object):
         if record_ident>80:
             warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
                           'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(record_ident))
+        
+        self._calculate_optimal_record_duration()
 
         set_technician(self.handle, du(self.technician))
         set_recording_additional(self.handle, du(self.recording_additional))
@@ -264,11 +266,14 @@ class EdfWriter(object):
                 set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
         else:
             set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
+        
+        # calculate optimal record_duration for all current sampling frequencies
+
         for i in np.arange(self.n_channels):
 
             check_signal_header_correct(self.channels, i, self.file_type)
-
-            set_samplefrequency(self.handle, i, self._get_sample_frequency(i))
+            
+            set_samples_per_record(self.handle, i, self.get_smp_per_record(i))
             set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
             set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
             set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
@@ -450,18 +455,19 @@ class EdfWriter(object):
 
     def setDatarecordDuration(self, duration):
         """
-        Sets the datarecord duration. The default value is 100000 which is 1 second.
-        ATTENTION: the argument "duration" is expressed in units of 10 microSeconds!
-        So, if you want to set the datarecord duration to 0.1 second, you must give
-        the argument "duration" a value of "10000".
-        This function is optional, normally you don't need to change
-        the default value. The datarecord duration must be in the range 0.001 to 60  seconds.
+        Sets the datarecord duration. The default value is 1 second.
+        The datarecord duration must be in the range 0.001 to 60  seconds.
+        Usually, the datarecord duration is calculated automatically to
+        ensure that all sample frequencies are representable, nevertheless,
+        you can overwrite the datarecord duration manually. This can, however,
+        lead to unexpected side-effects in the sample frequency calculations.
+        
         Returns 0 on success, otherwise -1.
 
         Parameters
         ----------
         duration : integer
-            Sets the datarecord duration in units of 10 microSeconds
+            Sets the datarecord duration in units of seconds
 
         Notes
         -----
@@ -472,6 +478,7 @@ class EdfWriter(object):
         the datarecord duration to 10 seconds. Do not use this function,
         except when absolutely necessary!
         """
+        self._enforce_record_duration = True
         self.duration = duration
         self.update_header()
 
@@ -536,6 +543,15 @@ class EdfWriter(object):
     def setSamplefrequency(self, edfsignal, samplefrequency):
         """
         Sets the samplefrequency of signal edfsignal.
+        
+        Parameters
+        ----------
+        edfsignal: index number of signal  
+        samplefrequency: int or float stating the sampling frequency in Hz.
+                        internally, EDF stores the sampling frequency by
+                        setting the smp_per_record and the record_duration.
+                        That means, the sampling frequency is not stored 
+                        explicitly.
 
         Notes
         -----
@@ -544,10 +560,6 @@ class EdfWriter(object):
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
 
-        # Temporary double assignment while we deprecate 'sample_rate' as a channel attribute
-        # in favor of 'sample_frequency', supporting the use of either to give
-        # users time to switch to the new interface.
-        self.channels[edfsignal]['sample_rate'] = samplefrequency
         self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
@@ -809,6 +821,8 @@ class EdfWriter(object):
         sampleFrequencies = np.zeros(len(data_list), dtype=np.int32)
         for i in np.arange(len(data_list)):
             sampleFrequencies[i] = self._get_sample_frequency(i)
+            sampleFrequencies[i] = self.get_smp_per_record(i)
+
             if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
                 notAtEnd = False
             sampleLength += sampleFrequencies[i]
@@ -827,7 +841,7 @@ class EdfWriter(object):
                 success = self.blockWritePhysicalSamples(dataRecord)
 
             if success < 0:
-                raise IOError('Unknown error while calling blockWriteSamples')
+                raise IOError(f'Unknown error while calling blockWriteSamples: {success}')
 
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + sampleFrequencies[i]):
@@ -846,7 +860,7 @@ class EdfWriter(object):
                     success = self.writePhysicalSamples(lastSamples)
 
                 if success<0:
-                    raise IOError('Unknown error while calling writeSamples')
+                    raise IOError(f'Unknown error while calling writeSamples: {success}')
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """
@@ -875,6 +889,47 @@ class EdfWriter(object):
         """
         close_file(self.handle)
         self.handle = -1
+        
+    def get_smp_per_record(self, ch_idx):
+        """
+        gets the calculated number of samples that need to be fit into one
+        record (i.e. window/block of data) with the given record duration.
+        """
+        fs = self._get_sample_frequency(ch_idx)
+        if fs is None: return None
+        
+        duration = self.duration
+        smp_per_record = fs*duration
+
+        if not np.isclose(np.round(smp_per_record), np.round(smp_per_record, 6)):
+            warnings.warn(f'Sample frequency {fs} can not be represented accurately. \n' + 
+                          f'smp_per_record={smp_per_record}, record_duration={duration} seconds,' +
+                          f'calculated sample_frequency will be {np.round(smp_per_record)/duration}')
+        return int(np.round(smp_per_record))
+
+    
+    def _calculate_optimal_record_duration(self):
+        """
+        calculate optimal denominator (record duration in seconds) 
+        for all sample frequencies such that smp_per_record is an integer
+        for all channels. 
+        
+        If all sampling frequencies are integers, this will simply be 1.
+        """
+        if self._enforce_record_duration: return
+        allint =lambda int_list: all([n==int(n) for n in int_list])
+        all_fs = [self._get_sample_frequency(i) for i,_ in enumerate(self.channels)]
+        
+        # calculate the optimal record duration to represent all frequencies.
+        # this is achieved when fs*duration=int, i.e. the number of samples
+        # in one data record can be represented by an int (smp_per_record)
+        # if all sampling frequencies are ints, this will be simply 1
+        # duration is
+        for i in range(1, 60):
+            if allint([x*i for x in all_fs]):
+                self.duration = i
+                break
+        assert self.duration<=60, 'record duration must be below 60 seconds'
 
     def _get_sample_frequency(self, channelIndex):
         # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
