@@ -8,6 +8,8 @@ import numpy as np
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
 import pyedflib
+from pyedflib.edfwriter import EdfWriter, ChannelDoesNotExist, WrongInputSize
+from pyedflib.edfreader import EdfReader
 from datetime import datetime, date
 
 
@@ -31,7 +33,29 @@ class TestEdfWriter(unittest.TestCase):
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
-
+        
+    def test_exceptions_raised(self):
+        
+        n_channels = 5
+        f = pyedflib.EdfWriter(self.edfplus_data_file, n_channels,
+                              file_type=pyedflib.FILETYPE_EDFPLUS)
+        
+        
+        functions_ch = [f.setSamplefrequency,
+                        f.setSignalHeader,
+                        f.setPhysicalMaximum,
+                        f.setPhysicalMinimum,
+                        f.setDigitalMaximum,
+                        f.setDigitalMinimum,
+                        f.setLabel,
+                        f.setTransducer,
+                        f.setPrefilter]
+        for func in functions_ch:
+            with self.assertRaises(ChannelDoesNotExist):
+                func(-1, None)
+            with self.assertRaises(ChannelDoesNotExist):
+                f.setSignalHeader(n_channels+1, None)    
+                
     def test_write_functions(self):
         channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 32767, 'physical_min': -32768,
