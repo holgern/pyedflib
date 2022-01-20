@@ -7,10 +7,6 @@ pyEDFlib
    :target: https://codecov.io/gh/holgern/pyedflib
    :alt: Test Coverage
 
-.. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
-   :target: https://ci.appveyor.com/project/holger80/pyedflib
-   :alt: CircleCI Build
-
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
    :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
    :alt: Docs Build
