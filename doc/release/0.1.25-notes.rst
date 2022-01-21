@@ -1,0 +1,35 @@
+=============================
+PyEDFlib 0.1.24 Release Notes
+=============================
+
+.. contents::
+
+- Add support for python 3.10
+- Remove version limit for numpy
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+* hofaflo
+* jcbsv
+* cbrnr
+
+Issues closed for v0.1.24
+-------------------------
+* #149 Support building with a system copy of edflib?
+* #152 Error installing pyEDFlib 0.1.23 with python3.10
+* #157 Problem loading EDF+ Patientname with Subfields starting with 'X' e.g. PatientCode='XYZ'
+
+Pull requests for v0.1.24
+-------------------------
+* #147 np.float is deprecated
+* #151 Fix false positive fortran order warning
+* #153 Remove limit on numpy version
+* #154 Build Python 3.10 wheels for aarch64
+* #155 Run tests on Python 3.10
+* #158 replace lines in accordance with edflib
+* #160 Add tests for ChannelDoesNotExist Exception
+* #162 Cleanup CIs 
+* #163 Remove appveyor, tox & add windows-2016
