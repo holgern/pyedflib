@@ -1,0 +1,20 @@
+=============================
+PyEDFlib 0.1.25 Release Notes
+=============================
+
+.. contents::
+
+- use  oldest-supported-numpy
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* hofaflo
+
+Issues closed for v0.1.25
+-------------------------
+
+Pull requests for v0.1.25
+-------------------------
+* #164 use oldest-supported-numpy to build

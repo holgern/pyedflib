@@ -22,8 +22,8 @@ except ImportError:
 
 
 MAJOR = 0
-MINOR = 1
-MICRO = 24
+MINOR = 2
+MICRO = 0
 ISRELEASED = False
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -129,8 +129,8 @@ def get_version_info():
     elif os.path.exists('pyedflib/version.py'):
         # must be a source distribution, use existing version file
         # load it as a separate module to not load pywt/__init__.py
-        import imp
-        version = imp.load_source('pyedflib.version', 'pyedflib/version.py')
+        import importlib
+        version = importlib.import_module('pyedflib.version', 'pyedflib/version.py')
         GIT_REVISION = version.git_revision
     else:
         GIT_REVISION = "Unknown"
