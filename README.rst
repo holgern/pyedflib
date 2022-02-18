@@ -91,7 +91,7 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     highlevel.write_edf('edf_file.edf', signals, signal_headers, header)
 
     # read an edf file
-    signals, signal_headers, header = highlevel.read_edf('edf_file.edf')
+    signals, signal_headers, header = highlevel.read_edf('edf_file.edf', ch_names=['ch1', 'ch2'])
     print(signal_headers[0]['sample_frequency']) # prints 256
 
     # drop a channel from the file or anonymize edf
