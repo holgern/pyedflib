@@ -22,9 +22,9 @@ except ImportError:
 
 
 MAJOR = 0
-MINOR = 2
-MICRO = 0
-ISRELEASED = False
+MINOR = 1
+MICRO = 27
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 # Version of Numpy required for setup
