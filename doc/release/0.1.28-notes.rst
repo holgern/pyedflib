@@ -1,0 +1,18 @@
+=============================
+PyEDFlib 0.1.28 Release Notes
+=============================
+
+.. contents::
+
+- fix importlib
+
+Authors
+=======
+
+* Holger Nahrstaedt
+
+Issues closed for v0.1.28
+-------------------------
+
+Pull requests for v0.1.28
+-------------------------
