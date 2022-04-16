@@ -31,7 +31,7 @@ EDF means `European Data Format`_ and was firstly published `Kemp1992`_.
 In 2003, an improved version of the file protocol  named EDF+ has been published and can be found at `Kemp2003`_.
 
 The EDF/EDF+ format saves all data with 16 Bit. A version which saves all data with 24 Bit,
-was introduces by the compony `BioSemi`_.
+was introduces by the company `BioSemi`_.
 
 The definition of the EDF/EDF+/BDF/BDF+ format can be found under `edfplus.info`_.
 
