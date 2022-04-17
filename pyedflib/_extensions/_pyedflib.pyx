@@ -143,7 +143,7 @@ cdef class CyEdfReader:
         """
         self.hdr.handle = -1
         try:
-            self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+            self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
         except FileNotFoundError as e:
             # if files contain Unicode on Windows, and the locale is set incorrectly
             # there can be errors when creating the file.
@@ -157,7 +157,7 @@ cdef class CyEdfReader:
                               'Please consider changing your locale to support UTF8. Attempting to ' 
                               'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
                 file_name = get_short_path_name(file_name)
-                self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+                self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
             elif exists:
                 raise OSError(123, 'File {} was found but can\'t be accessed. ' \
                               'Make sure it contains no special characters ' \
@@ -197,7 +197,7 @@ cdef class CyEdfReader:
         dbuffer = np.zeros(tmp, dtype='float64') # will get physical samples, not the orignal digital samples
         return dbuffer
     
-    def open(self, file_name, mode='r', annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):
+    def open(self, file_name, annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):
         """
         open(file_name, annotations_mode, check_file_size)
         """
