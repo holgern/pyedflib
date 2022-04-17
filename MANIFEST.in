@@ -1,0 +1,27 @@
+include setup.py
+include README.rst
+include README-edflib.md
+include LICENSE
+include *.txt
+include setup.cfg
+include pyproject.toml
+include MANIFEST.in
+
+# All source files
+recursive-include pyedflib *
+# All documentation
+recursive-include doc *
+recursive-include demo *
+
+# Add build and testing tools
+include pytest.ini
+
+# Exclude what we don't want to include
+prune build
+prune dist
+prune doc/build
+prune util
+prune */__pycache__
+
+global-exclude *.py[cod] *.egg *.egg-info
+global-exclude *~ *.bak *.swp _pyedflib.c
