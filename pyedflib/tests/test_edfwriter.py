@@ -1058,7 +1058,7 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_write_annotations_long_long(self):
         """check that very long recordings can store annotations"""
-        # 5 channels for one week, write annotation at 4th day
+        # 2 channels for one week, write annotation every two hours
         fs = 5
         data = np.random.normal(size=(2,7*24*60*60*fs))
         ch_names = ['EEG1', 'EEG2']
@@ -1093,6 +1093,8 @@ class TestEdfWriter(unittest.TestCase):
             annotations = f.readAnnotations()
             self.assertEqual( len(annotations[0]), 48)
             np.testing.assert_array_equal(annotations[0], np.arange(0, 342000, 3600*2))
+
+
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()
