@@ -1056,6 +1056,45 @@ class TestEdfWriter(unittest.TestCase):
                 data = np.ones(100) * 0.1
                 f.writePhysicalSamples(data)
 
+    def test_write_annotations_long_long(self):
+        """check that very long recordings can store annotations"""
+        # 2 channels for one week, write annotation every two hours
+        fs = 5
+        data = np.random.normal(size=(2,7*24*60*60*fs))
+        ch_names = ['EEG1', 'EEG2']
+        
+        with EdfWriter(self.edf_data_file, len(ch_names)) as f:
+            f.setSignalHeaders([{'label': 'EEG1',
+              'dimension': 'uV',
+              'sample_rate': 256,
+              'sample_frequency': None,
+              'physical_min': -200.0,
+              'physical_max': 200.0,
+              'digital_min': -32768,
+              'digital_max': 32767,
+              'transducer': '',
+              'prefilter': ''},
+             {'label': 'EEG2',
+              'dimension': 'uV',
+              'sample_rate': 256,
+              'sample_frequency': None,
+              'physical_min': -200.0,
+              'physical_max': 200.0,
+              'digital_min': -32768,
+              'digital_max': 32767,
+              'transducer': '',
+              'prefilter': ''}])
+
+            f.writeSamples(data)
+            for h in range(0, 4*24, 2):
+                f.writeAnnotation(h*3600, -1, f"{h} hour after start")
+                
+        with pyedflib.EdfReader(self.edf_data_file) as f:
+            annotations = f.readAnnotations()
+            self.assertEqual( len(annotations[0]), 48)
+            np.testing.assert_array_equal(annotations[0], np.arange(0, 342000, 3600*2))
+
+
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
     unittest.main()
