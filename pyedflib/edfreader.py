@@ -23,7 +23,7 @@ CHECK_FILE_SIZE = 0
 DO_NOT_CHECK_FILE_SIZE = 1
 REPAIR_FILE_SIZE_IF_WRONG = 2
 
-def _debug_parse_header(filename):
+def _debug_parse_header(filename): #pragma: no cover
     """
     A debug function that reads a header and outputs everything that
     is contained in the header
