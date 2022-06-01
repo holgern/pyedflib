@@ -1,0 +1,25 @@
+=============================
+PyEDFlib 0.1.29 Release Notes
+=============================
+
+.. contents::
+
+- fix long duration
+- remove deprecated "mode" parameter
+
+Authors
+=======
+
+* skjerns
+
+Issues closed for v0.1.29
+-------------------------
+* #170 Spell Error in README?
+* #171 unused parameter 'mode' in CyEdfReader.open function
+* #175 Cannot write annotations for long recordings
+
+Pull requests for v0.1.29
+-------------------------
+* #172 remove deprecated "mode" parameter
+* #173 change win2016 to win2019 as its deprecated
+* #176 Fix writing of annotations in very long records
