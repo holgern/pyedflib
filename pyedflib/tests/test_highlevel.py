@@ -24,6 +24,7 @@ class TestHighLevel(unittest.TestCase):
         cls.anonymized = os.path.join(data_dir, "tmp_anonymized.edf")
         cls.personalized = os.path.join(data_dir, "tmp_personalized.edf")
         cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
+        cls.renamed = os.path.join(data_dir, 'tmp_renamed.edf')
         cls.tmp_testfile = os.path.join(data_dir, 'tmp')
 
     @classmethod
@@ -372,6 +373,33 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
         _,_,header3 = highlevel.read_edf(self.edfplus_data_file)
         self.assertEqual(header2['annotations'], header3['annotations'])
+        
+    def test_rename_channel(self):
+        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
+        signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
+        signals = (signals - signals.min()) / (signals.max() - signals.min())
+        highlevel.write_edf(self.renamed, signals, signal_headers)
+        
+        mapping = {'ch1':'channel1', 'ch2':'channel2'}
+        renamed = highlevel.rename_channels(self.renamed, mapping=mapping, 
+                                            verbose=True)
+        signals2, signal_headers, header = highlevel.read_edf(renamed)
+        chs = highlevel.read_edf_header(renamed)['channels']
+        self.assertSetEqual(set(chs), set(['channel1', 'channel2', 'ch3', 'ch4', 'ch0']))
+        
+        np.testing.assert_allclose(signals, signals2, atol=0.01)
+        
+        other_edf = self.renamed[:-4]+'2.edf'
+        highlevel.rename_channels(self.renamed, new_file=other_edf,  mapping=mapping)
+        signals2, signal_headers, header = highlevel.read_edf(other_edf)
+        chs = highlevel.read_edf_header(other_edf)['channels']
+        self.assertSetEqual(set(chs), set(['channel1', 'channel2', 'ch3', 'ch4', 'ch0']))
+
+        np.testing.assert_allclose(signals, signals2, atol=0.01)
+        
+        with self.assertRaises(AssertionError):
+            highlevel.rename_channels(self.renamed, mapping={'doesnotexist':'test'})
+
 
 
 if __name__ == '__main__':
