@@ -778,7 +778,7 @@ def anonymize_edf(edf_file, new_file=None,
     write_edf(new_file, signals, signal_headers, header, digital=True)
     if verify:
         compare_edf(edf_file, new_file, verbose=verbose)
-    return True
+    return new_file
 
 
 def rename_channels(edf_file, mapping, new_file=None, verbose=False):
@@ -804,28 +804,21 @@ def rename_channels(edf_file, mapping, new_file=None, verbose=False):
         True if successful, False if failed.
 
     """
-    header = read_edf_header(edf_file)
-    channels = header['channels']
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
         new_file = file + '_renamed' + ext
+        
+    signals, signal_headers, header = read_edf(edf_file, digital=True)
+    channels = [shead['label'] for shead in signal_headers]
 
-    signal_headers = []
-    signals = []
-    for ch_nr in tqdm(range(len(channels)), disable=not verbose):
-        signal, signal_header, _ = read_edf(edf_file, digital=True,
-                                            ch_nrs=ch_nr, verbose=verbose)
-        ch = signal_header[0]['label']
-        if ch in mapping :
-            if verbose: print('{} to {}'.format(ch, mapping[ch]))
-            ch = mapping[ch]
-            signal_header[0]['label']=ch
-        else:
-            if verbose: print('no mapping for {}, leave as it is'.format(ch))
-        signal_headers.append(signal_header[0])
-        signals.append(signal.squeeze())
+    for ch in mapping:
+        assert ch in channels, f'{ch} was not found in channels: {channels}'
 
-    return write_edf(new_file, signals, signal_headers, header, digital=True)
+    for shead in signal_headers:
+        if shead['label'] in mapping:
+            shead['label'] = mapping[shead['label']]
+    write_edf(new_file, signals, signal_headers, header, digital=True)
+    return new_file
 
 
 def change_polarity(edf_file, channels, new_file=None, verify=True,
@@ -869,4 +862,4 @@ def change_polarity(edf_file, channels, new_file=None, verify=True,
     write_edf(new_file, signals, signal_headers, header,
               digital=True, correct=False, verbose=verbose)
     if verify: compare_edf(edf_file, new_file)
-    return True
+    return new_file
