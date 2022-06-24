@@ -479,6 +479,9 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         dmin, dmax = shead['digital_min'], shead['digital_max']
         pmin, pmax = shead['physical_min'], shead['physical_max']
         label = shead['label']
+        # physical resolution, acceptable rounding error if within this range
+        sig_res = abs((dmax-dmin)/(pmax-pmin)) 
+        
         if digital: # exception as it will lead to clipping
             assert dmin<=sig.min(), \
             'digital_min is {}, but signal_min is {}' \
@@ -489,12 +492,12 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
             assert pmin != pmax, \
             'physical_min {} should be different from physical_max {}'.format(pmin,pmax)
         else: # only warning, as this will not lead to clipping
-            assert pmin<=sig.min(), \
-            'phys_min is {}, but signal_min is {} ' \
-            'for channel {}'.format(pmin, sig.min(), label)
-            assert pmax>=sig.max(), \
-            'phys_max is {}, but signal_max is {} ' \
-            'for channel {}'.format(pmax, sig.max(), label)
+            if pmin>=(sig.min()+sig_res):
+                warnings.warn('phys_min is {}, but signal_min is {} ' \
+                              'for channel {}'.format(pmin, sig.min(), label))
+            if pmax<=(sig.max()-sig_res):
+                warnings.warn('phys_max is {}, but signal_max is {} ' \
+                              'for channel {}'.format(pmax, sig.max(), label))
 
 
         frequency_key = 'sample_rate' if shead.get('sample_frequency') is None else 'sample_frequency'

@@ -182,7 +182,7 @@ class TestHighLevel(unittest.TestCase):
             np.testing.assert_allclose(s1, s2)
         
     def test_assertion_dmindmax(self):
-        
+        import warnings
         # test digital and dmin wrong
         signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int32)]
         sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
@@ -196,9 +196,27 @@ class TestHighLevel(unittest.TestCase):
         sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['physical_min'] = -200
         sheaders[0]['physical_max'] = 200
-        with self.assertRaises(AssertionError):
+        with self.assertWarns(UserWarning):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
             
+        signals = [np.random.randint(-2048, 2048, 256*60)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
+        sheaders[0]['physical_min'] = np.min(signals)
+        sheaders[0]['physical_max'] = np.max(signals)
+        # should not give a warning as its within bounds
+        with self.assertRaises(AssertionError):
+            with self.assertWarns(UserWarning):
+                highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+                
+        signals = [np.random.randint(-2048, 2048, 256*60)]
+        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
+        sheaders[0]['physical_min'] = np.min(signals) - 0.01
+        sheaders[0]['physical_max'] = np.max(signals) + 0.01
+        # should not give a warning as its within bounds of resolution
+        with self.assertRaises(AssertionError):
+            with self.assertWarns(UserWarning):
+                highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+                                                    
 
     def test_read_write_accented(self):
         signals = np.random.rand(3, 256*60) # then rescale to 0-1
