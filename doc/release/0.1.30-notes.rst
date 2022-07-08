@@ -1,0 +1,22 @@
+=============================
+PyEDFlib 0.1.30 Release Notes
+=============================
+
+.. contents::
+
+- change assertion to warning
+- Fix rename channel function
+
+Authors
+=======
+
+* skjerns
+
+Issues closed for v0.1.30
+-------------------------
+
+
+Pull requests for v0.1.30
+-------------------------
+* #180 change assertion to warning
+* #181 Fix rename channel function
