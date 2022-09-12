@@ -644,7 +644,7 @@ def compare_edf(edf_file1, edf_file2, verbose=False):
 
 
 def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
-                  verbose=False):
+                  verbose=False, file_type=-1):
     """
     Remove channels from an edf file. Save the file.
     For safety reasons, no source files can be overwritten.
@@ -666,6 +666,9 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
         Strings will be interpreted as channel names. The default is None.
     verbose : bool, optional
         print progress or not. The default is False.
+    file_type: int, optional
+        choose file_type for saving.
+        EDF = 0, EDF+ = 1, BDF = 2, BDF+ = 3, automatic from extension = -1
 
     Returns
     -------
@@ -722,7 +725,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
                                                ch_nrs=load_channels,
                                                digital=True, verbose=verbose)
 
-    write_edf(edf_target, signals, signal_headers, header, digital=True)
+    write_edf(edf_target, signals, signal_headers, header, file_type, digital=True)
     return edf_target
 
 
