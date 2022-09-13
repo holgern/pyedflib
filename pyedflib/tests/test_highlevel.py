@@ -72,8 +72,13 @@ class TestHighLevel(unittest.TestCase):
                 header['annotations'] = []
             else:
                 header['annotations'] = annotations
-
-            file = '{}_{}_phys.edf'.format(self.tmp_testfile, file_type)
+                
+            if file_type in [-1,0,1]:
+                ext = 'edf'
+            else:
+                ext = 'bdf'
+                
+            file = '{}_{}_phys.{}'.format(self.tmp_testfile, file_type, ext)
             signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
             success = highlevel.write_edf(file, signals, signal_headers1, header, file_type=file_type)
             self.assertTrue(os.path.isfile(file))
