@@ -324,6 +324,17 @@ class TestHighLevel(unittest.TestCase):
 
         np.testing.assert_allclose(signals[3:,:], signals2, atol=0.01)
         
+        # test file_type option
+        highlevel.drop_channels(self.drop_from, self.drop_from[:-4]+'3.edf',
+                                to_keep=['ch0'], file_type=0)
+        signals2, signal_headers, header = highlevel.read_edf(self.drop_from[:-4]+'3.edf')
+        
+        self.assertEqual(header['patientname'], '') # plain EDF
+
+        with self.assertRaises(AssertionError):
+            highlevel.drop_channels(self.drop_from, self.drop_from[:-4]+'3.bdf',
+                                    to_keep=['ch0'], file_type=0)
+        
         with self.assertRaises(AssertionError):
             highlevel.drop_channels(self.drop_from, to_keep=['ch1'], to_drop=['ch3'])
 
