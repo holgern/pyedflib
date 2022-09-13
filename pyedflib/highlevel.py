@@ -441,6 +441,10 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         'file_type must be in range -1, 3'
     assert block_size<=60 and block_size>=-1 and block_size!=0, \
         'blocksize must be smaller or equal to 60'
+    if file_type != -1:
+        ext = os.path.splitext(edf_file)[-1]
+        assert ext == '.bdf' if file_type in [2, 3] else ext == '.edf',\
+            'file extension must match file_type (.bdf for file_type 2 or 3, otherwise .edf)'
 
     # copy objects to prevent accidential changes to mutable objects
     header = deepcopy(header)
@@ -654,7 +658,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
     edf_source : str
         The source edf file from which to drop channels.
     edf_target : str, optional
-        Where to save the file.If None, will be edf_source+'dropped.edf'.
+        Where to save the file.If None, will be edf_source+'dropped.(edf|bdf)'.
         The default is None.
     to_keep : list, optional
          A list of channel names or indices that will be kept.
@@ -691,10 +695,11 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
             'channels must be int or string'
     assert os.path.exists(edf_source), \
             'source file {} does not exist'.format(edf_source)
-    assert edf_source!=edf_target, 'For safet, target must not be source file.'
+    assert edf_source!=edf_target, 'For safety, target must not be source file.'
 
     if edf_target is None:
-        edf_target = os.path.splitext(edf_source)[0] + '_dropped.edf'
+        ext = '.bdf' if file_type in [2, 3] else '.edf'
+        edf_target = os.path.splitext(edf_source)[0] + '_dropped' + ext
     if os.path.exists(edf_target):
         warnings.warn('Target file will be overwritten')
 
@@ -725,7 +730,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
                                                ch_nrs=load_channels,
                                                digital=True, verbose=verbose)
 
-    write_edf(edf_target, signals, signal_headers, header, file_type, digital=True)
+    write_edf(edf_target, signals, signal_headers, header, file_type=file_type, digital=True)
     return edf_target
 
 
