@@ -25,6 +25,7 @@ class TestEdfReader(unittest.TestCase):
         cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
         cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
         cls.tmp_edf_file = os.path.join(data_dir, u'test_tmp_file.edf')
+        cls.edf_legacy = os.path.join(data_dir, 'test_legacy.edf')
 
     @classmethod
     def tearDownClass(cls):
@@ -358,8 +359,26 @@ class TestEdfReader(unittest.TestCase):
         # However, the error before should not be a FileNotFoundError
         assert not isinstance(cm.exception, FileNotFoundError)
 
+    def test_EdfReader_Legacy_Header_Info(self):
+        expected_header = {
+            # Legacy header fields
+            'patient': b'Legacy patient description',
+            'recording': b'Legacy recording description',
+            # All the rest must be empty
+            'technician': b'',
+            'recording_additional': b'',
+            'patientname': b'',
+            'patient_additional': b'',
+            'patientcode': b'',
+            'equipment': b'',
+            'admincode': b'',
+            'gender': b'',
+            'birthdate': b''
+        }
 
-
+        with pyedflib.EdfReader(self.edf_legacy) as f:
+            for attr_name, expected_value in expected_header.items():
+                self.assertEqual(getattr(f, attr_name), expected_value)
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
