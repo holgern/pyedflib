@@ -245,9 +245,14 @@ cdef class CyEdfReader:
             return self.hdr.filetype
 
     property patient:
-        "patient name?"
+        "patient info (legacy EDF format)"
         def __get__(self):
-            return self.hdr.patient
+            return self.hdr.patient.rstrip()
+
+    property recording:
+        "recording info (legacy EDF format)"
+        def __get__(self):
+            return self.hdr.recording.rstrip()
 
     property datarecord_duration:
         "datarecord duration in seconds (as a double)"
