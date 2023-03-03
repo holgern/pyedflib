@@ -41,14 +41,14 @@ class TestEdfWriter(unittest.TestCase):
             if isinstance(obj, (EdfWriter, EdfReader)):
                 obj.close()
                 del obj
-        
+
     def test_exceptions_raised(self):
-        
+
         n_channels = 5
         f = pyedflib.EdfWriter(self.edfplus_data_file, n_channels,
                               file_type=pyedflib.FILETYPE_EDFPLUS)
-        
-        
+
+
         functions_ch = [f.setSamplefrequency,
                         f.setSignalHeader,
                         f.setPhysicalMaximum,
@@ -62,8 +62,8 @@ class TestEdfWriter(unittest.TestCase):
             with self.assertRaises(ChannelDoesNotExist):
                 func(-1, None)
             with self.assertRaises(ChannelDoesNotExist):
-                f.setSignalHeader(n_channels+1, None)    
-                
+                f.setSignalHeader(n_channels+1, None)
+
     def test_write_functions(self):
         channel_info1 = {'label': 'label1', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 32767, 'physical_min': -32768,
@@ -487,8 +487,8 @@ class TestEdfWriter(unittest.TestCase):
                           'physical_max':1.0,'physical_min':-1.0,
                           'digital_max':8388607,'digital_min':-8388608,
                           'prefilter':'pre2','transducer':'trans2'}
-        
-        with pyedflib.EdfWriter(self.bdfplus_data_file, 2, file_type=pyedflib.FILETYPE_BDFPLUS) as f:       
+
+        with pyedflib.EdfWriter(self.bdfplus_data_file, 2, file_type=pyedflib.FILETYPE_BDFPLUS) as f:
 
             f.setSignalHeader(0,channel_info1)
             f.setSignalHeader(1,channel_info2)
@@ -791,7 +791,7 @@ class TestEdfWriter(unittest.TestCase):
             assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
             assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
             del f
-    
+
             f = pyedflib.EdfReader(self.edf_data_file)
             np.testing.assert_equal(f.getLabel(0), 'test_label1')
             np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
@@ -986,9 +986,6 @@ class TestEdfWriter(unittest.TestCase):
             self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
 
 
-
-
-
     def test_EdfWriter_out_of_bounds_pmin_pmax_dmin_dmax(self):
         channel_info = {'label': 'l', # this should be too long
                          'dimension': 'd',
@@ -1065,23 +1062,23 @@ class TestEdfWriter(unittest.TestCase):
                 f.setSignalHeader(0,channel_info1)
                 data = np.ones(100) * 0.1
                 f.writePhysicalSamples(data)
-                
-                
+
+
     def test_EdfWriter_float_sample_frequency(self):
-        
+
         # create 4 channels with mixed sample frequencies
         sfreqs = [256, 10, 5.5, 0.1, 19.8, 10000]
         channel_info = [{'sample_frequency': fs} for fs in sfreqs]
         f = pyedflib.EdfWriter(self.edfplus_data_file, len(sfreqs),
                                 file_type=pyedflib.FILETYPE_EDFPLUS)
-        
+
         f.setSignalHeaders(channel_info)
         data = [np.random.randint(-100, 100, int(fs*30))/100 for fs in sfreqs]
 
         f.writeSamples(data)
         f.close()
         del f
-        
+
         # read back data with mixed sfreq and check all data is correct
         f = pyedflib.EdfReader(self.edfplus_data_file)
         for i, (sig, fs) in enumerate(zip(data, sfreqs)):
@@ -1091,14 +1088,15 @@ class TestEdfWriter(unittest.TestCase):
 
         f.close()
         del f
-        
+
+
     def test_write_annotations_long_long(self):
         """check that very long recordings can store annotations"""
         # 2 channels for one week, write annotation every two hours
         fs = 5
         data = np.random.normal(size=(2,7*24*60*60*fs))
         ch_names = ['EEG1', 'EEG2']
-        
+
         with EdfWriter(self.edf_data_file, len(ch_names)) as f:
             f.setSignalHeaders([{'label': 'EEG1',
               'dimension': 'uV',
@@ -1124,7 +1122,7 @@ class TestEdfWriter(unittest.TestCase):
             f.writeSamples(data)
             for h in range(0, 4*24, 2):
                 f.writeAnnotation(h*3600, -1, f"{h} hour after start")
-                
+
         with pyedflib.EdfReader(self.edf_data_file) as f:
             annotations = f.readAnnotations()
             self.assertEqual( len(annotations[0]), 48)
