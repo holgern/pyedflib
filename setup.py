@@ -18,12 +18,12 @@ except ImportError:
     if not os.path.exists(os.path.join('pyedflib', '_extensions', '_pyedflib.c')):
         msg = ("Cython must be installed when working with a development "
                "version of PyEDFlib")
-        raise RuntimeError(msg)    
+        raise RuntimeError(msg)
 
 
 MAJOR = 0
 MINOR = 1
-MICRO = 28
+MICRO = 30
 ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -264,13 +264,13 @@ if __name__ == '__main__':
     write_version_py()
     if USE_CYTHON:
             ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
-            
+
     setup(
         name="pyEDFlib",
         maintainer="Holger Nahrstaedt",
         maintainer_email="nahrstaedt@gmail.com",
         author='Holger Nahrstaedt',
-        author_email='nahrstaedt@gmail.com',        
+        author_email='nahrstaedt@gmail.com',
         url="https://github.com/holgern/pyedflib",
         license="BSD",
         description="library to read/write EDF+/BDF+ files",
@@ -302,4 +302,3 @@ if __name__ == '__main__':
         cmdclass={'develop': develop_build_clib},
         install_requires=[REQUIRED_NUMPY],
     )
-

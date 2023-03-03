@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2015, Holger Nahrstaedt
+# Copyright (c) 2015-2023 Holger Nahrstaedt, Simon Kern
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # See LICENSE for license details.
 
