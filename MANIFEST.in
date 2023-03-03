@@ -1,9 +1,11 @@
 include setup.py
 include README.rst
+include README-edflib.md
 include LICENSE
 include *.txt
-include MANIFEST.in
+include setup.cfg
 include pyproject.toml
+include MANIFEST.in
 
 # All source files
 recursive-include pyedflib *
@@ -11,17 +13,15 @@ recursive-include pyedflib *
 recursive-include doc *
 recursive-include demo *
 
-# Cached Cython signatures
-include cythonize.dat
-
 # Add build and testing tools
-include tox.ini
-recursive-include util *
+include pytest.ini
 
 # Exclude what we don't want to include
 prune build
+prune dist
 prune doc/build
+prune util
 prune */__pycache__
 
 global-exclude *.py[cod] *.egg *.egg-info
-global-exclude *~ *.bak *.swp
+global-exclude *~ *.bak *.swp _pyedflib.c

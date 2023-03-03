@@ -40,8 +40,7 @@ except TypeError:
 extensions = ['sphinx.ext.doctest', 'sphinx.ext.autodoc', 'sphinx.ext.todo',
               'sphinx.ext.extlinks', 'sphinx.ext.mathjax',
               'sphinx.ext.autosummary', 'numpydoc',
-              'sphinx.ext.intersphinx', 'sphinx.ext.viewcode',
-              'matplotlib.sphinxext.plot_directive']
+              'sphinx.ext.intersphinx', 'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -59,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyEDFlib'
-copyright = u'2015 - 2021, Holger Nahrstaedt'
+copyright = u'2015 - 2022, Holger Nahrstaedt'
 author = u'Holger Nahrstaedt'
 
 # The version info for the project you're documenting, acts as replacement for

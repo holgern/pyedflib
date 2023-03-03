@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2015, Holger Nahrstaedt
+# Copyright (c) 2015-2023 Holger Nahrstaedt, Simon Kern
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # See LICENSE for license details.
 
@@ -7,10 +7,10 @@ __doc__ = """Cython wrapper for low-level C edflib implementation."""
 __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subsecond',
            'write_annotation_latin1', 'write_annotation_utf8', 'set_technician', 'EdfAnnotation',
            'get_annotation', 'read_int_samples', 'blockwrite_digital_samples', 'blockwrite_physical_samples',
-           'set_recording_additional', 'write_physical_samples' ,'set_patientname', 'set_physical_minimum', 
-           'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly', 
+           'set_recording_additional', 'write_physical_samples' ,'set_patientname', 'set_physical_minimum',
+           'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly',
            'set_patient_additional', 'set_digital_maximum', 'set_birthdate', 'set_digital_minimum',
-           'write_digital_samples', 'set_equipment', 'set_samplefrequency','set_admincode', 'set_label',
+           'write_digital_samples', 'set_equipment', 'set_samples_per_record','set_admincode', 'set_label',
            'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
            'seek', 'set_startdatetime' ,'set_datarecord_duration', 'set_number_of_annotation_signals',
            'open_errors', 'FILETYPE_EDFPLUS',
@@ -31,7 +31,7 @@ from cpython.version cimport PY_MAJOR_VERSION
 include "edf.pxi"
 
 open_errors = {
-    EDFLIB_MALLOC_ERROR : "malloc error",                                                
+    EDFLIB_MALLOC_ERROR : "malloc error",
     EDFLIB_NO_SUCH_FILE_OR_DIRECTORY   : "can not open file, no such file or directory",
     EDFLIB_FILE_CONTAINS_FORMAT_ERRORS : "the file is not EDF(+) or BDF(+) compliant (it contains format errors)",
     EDFLIB_MAXFILES_REACHED            : "to many files opened",
@@ -65,7 +65,7 @@ open_errors = {
     }
 
 write_errors = {
-    EDFLIB_MALLOC_ERROR                 : "malloc error",  
+    EDFLIB_MALLOC_ERROR                 : "malloc error",
     EDFLIB_NO_SUCH_FILE_OR_DIRECTORY    : "can not open file, no such file or directory",
     EDFLIB_MAXFILES_REACHED             : "to many files opened",
     EDFLIB_FILE_ALREADY_OPENED          : "file has already been opened",
@@ -143,7 +143,7 @@ cdef class CyEdfReader:
         """
         self.hdr.handle = -1
         try:
-            self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+            self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
         except FileNotFoundError as e:
             # if files contain Unicode on Windows, and the locale is set incorrectly
             # there can be errors when creating the file.
@@ -154,10 +154,10 @@ cdef class CyEdfReader:
             if exists and is_windows and contains_unicode(file_name):
                 # work-around to at least make Unicode files readable at all
                 warnings.warn('the filename {} contains Unicode, but Windows does not fully support this. ' \
-                              'Please consider changing your locale to support UTF8. Attempting to ' 
+                              'Please consider changing your locale to support UTF8. Attempting to '
                               'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
                 file_name = get_short_path_name(file_name)
-                self.open(file_name, mode='r', annotations_mode=annotations_mode, check_file_size=check_file_size)
+                self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
             elif exists:
                 raise OSError(123, 'File {} was found but can\'t be accessed. ' \
                               'Make sure it contains no special characters ' \
@@ -170,7 +170,7 @@ cdef class CyEdfReader:
         if self.hdr.handle >= 0:
             c_edf.edfclose_file(self.hdr.handle)
             self.hdr.handle = -1
-            
+
     def check_open_ok(self,result):
         if result == 0:
             return True
@@ -180,7 +180,7 @@ cdef class CyEdfReader:
                 raise FileNotFoundError, '{}: {}'.format(self.file_name, msg)
             raise OSError, '{}: {}'.format(self.file_name, msg)
             # return False
-            
+
     def make_buffer(self):
         """
         utilty function to make a buffer that can hold a single datarecord. This will
@@ -193,17 +193,17 @@ cdef class CyEdfReader:
         tmp =0
         for ii in range(self.signals_in_file):
             tmp += self.samples_in_datarecord(ii)
-        self.nsamples_per_record = tmp 
+        self.nsamples_per_record = tmp
         dbuffer = np.zeros(tmp, dtype='float64') # will get physical samples, not the orignal digital samples
         return dbuffer
-    
-    def open(self, file_name, mode='r', annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):
+
+    def open(self, file_name, annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):
         """
         open(file_name, annotations_mode, check_file_size)
         """
         file_name_str = file_name.encode('utf8','strict')
         result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, annotations_mode, check_file_size)
-        
+
         self.file_name = file_name
 
         return self.check_open_ok(result)
@@ -225,7 +225,7 @@ cdef class CyEdfReader:
         "edflib internal int handle"
         def __get__(self):
             return self.hdr.handle
-        
+
     property datarecords_in_file:
         "number of data records"
         def __get__(self):
@@ -238,6 +238,8 @@ cdef class CyEdfReader:
     property file_duration:
         "file duration in seconds"
         def __get__(self):
+            # duration is saved in resolution of 100 ns
+            # therefore multiplying with EDFLIB_TIME_DIMENSION
             return self.hdr.file_duration/EDFLIB_TIME_DIMENSION
 
     property filetype:
@@ -257,6 +259,8 @@ cdef class CyEdfReader:
     property datarecord_duration:
         "datarecord duration in seconds (as a double)"
         def __get__(self):
+            # duration is saved in resolution of 100 ns
+            # therefore multiplying with EDFLIB_TIME_DIMENSION
             return (<double>self.hdr.datarecord_duration) / EDFLIB_TIME_DIMENSION
 
     property annotations_in_file:
@@ -347,7 +351,7 @@ cdef class CyEdfReader:
         return self.hdr.signalparam[channel].phys_min
 
     def digital_max(self, channel):
-        return self.hdr.signalparam[channel].dig_max    
+        return self.hdr.signalparam[channel].dig_max
 
     def digital_min(self, channel):
         return self.hdr.signalparam[channel].dig_min
@@ -359,10 +363,14 @@ cdef class CyEdfReader:
         return self.hdr.signalparam[channel].transducer
 
     def samplefrequency(self, channel):
-        try:
-            return <double>self.hdr.signalparam[channel].smp_in_datarecord
-        except:
-            return 0
+        smp_per_record = <double>self.smp_per_record(channel)
+        record_duration = self.datarecord_duration
+        return smp_per_record / record_duration
+
+
+    def smp_per_record(self, channel):
+        return <int>self.hdr.signalparam[channel].smp_in_datarecord
+
     # def _tryoffset0(self):
     #     """
     #     fooling around to find offset in file to allow shortcut mmap interface
@@ -374,13 +382,13 @@ cdef class CyEdfReader:
     #     return 1,2
     #     # return offset, nrecords
     #     # print "offset via edftell:",  edftell(self.hdr.handle, 0)
-        
+
 
     def _close(self):   # should not be closed from python
         if self.hdr.handle >= 0:
             c_edf.edfclose_file(self.hdr.handle)
         self.hdr.handle = -1
-    
+
     def read_digital_signal(self, signalnum, start, n, np.ndarray[np.int32_t, ndim=1] sigbuf):
         """
         read_digital_signal(self, signalnum, start, n, np.ndarray[np.int32_t, ndim=1] sigbuf
@@ -397,13 +405,13 @@ cdef class CyEdfReader:
         """read @n number of samples from signal number @signum starting at
         @start into numpy float64 array @sigbuf sigbuf must be at least n long
         """
-        
+
         c_edf.edfseek(self.hdr.handle, signalnum, start, EDFSEEK_SET)
         readn = c_edf.edfread_physical_samples(self.hdr.handle, signalnum, n, <double*>sigbuf.data)
         # print "read %d samples" % readn
         if readn != n:
             print ("read %d, less than %d requested!!!" % (readn, n))
-        
+
     def load_datarecord(self, np.ndarray[np.float64_t, ndim=1] db, n=0):
         cdef size_t offset =0
 
@@ -416,7 +424,7 @@ cdef class CyEdfReader:
                 offset += self.samples_in_datarecord(ii)
 
 
-###############################    
+###############################
 # low level functions
 
 
@@ -435,7 +443,7 @@ cdef unicode _ustring(s):
         return unicode(s)
     else:
         raise TypeError()
-        
+
 # define a global name for whatever char type is used in the module
 ctypedef unsigned char char_type
 
@@ -552,7 +560,7 @@ def open_file_writeonly(path, filetype, number_of_signals):
     py_byte_string  = _ustring(path).encode('utf8','strict')
     cdef char* path_str = py_byte_string
     return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)
-    
+
 def set_patient_additional(handle, patient_additional):
     """int edf_set_patient_additional(int handle, const char *patient_additional)"""
     return c_edf.edf_set_patient_additional(handle, patient_additional)
@@ -560,7 +568,7 @@ def set_patient_additional(handle, patient_additional):
 def set_digital_maximum(handle, edfsignal, dig_max):
     "int edf_set_digital_maximum(int handle, int edfsignal, int dig_max)"
     return c_edf.edf_set_digital_maximum(handle, edfsignal, dig_max)
-        
+
 # see CyEdfreader() class
 # int edfopen_file_readonly(const char *path, struct edf_hdr_struct *edfhdr, int read_annotations)
 
@@ -580,9 +588,15 @@ def set_equipment(handle, equipment):
     """int edf_set_equipment(int handle, const char *equipment)"""
     return c_edf.edf_set_equipment(handle, equipment)
 
-def set_samplefrequency(handle, edfsignal, samplefrequency):
-    """int edf_set_samplefrequency(int handle, int edfsignal, int samplefrequency)"""
-    return c_edf.edf_set_samplefrequency(handle, edfsignal, samplefrequency)
+def set_samples_per_record(handle, edfsignal, smp_per_record ):
+    """
+    int set_samples_per_record(int handle, int edfsignal, int smp_per_record )
+
+    sets how many samples are in the record for this signal.
+    this is not the sampling frequency (Hz), (which is calculated by
+    by smp_per_record/record_duration).
+    """
+    return c_edf.edf_set_samplefrequency(handle, edfsignal, smp_per_record)
 
 def set_admincode(handle, admincode):
     """int edf_set_admincode(int handle, const char *admincode)"""
@@ -601,7 +615,7 @@ def tell(handle, edfsignal):
 def rewind(handle, edfsignal):
     """void edfrewind(int handle, int edfsignal)"""
     c_edf.edfrewind(handle, edfsignal)
-    
+
 def set_gender(handle, gender):
     """int edf_set_gender(int handle, int gender)"""
     if gender is None: return 0 #don't set gender at all to prevent default 'F'
@@ -635,8 +649,22 @@ def set_starttime_subsecond(handle, subsecond):
     return c_edf.edf_set_subsecond_starttime(handle, subsecond)
 
 def set_datarecord_duration(handle, duration):
-    """int edf_set_datarecord_duration(int handle, int duration)"""
-    return c_edf.edf_set_datarecord_duration(handle, duration)
+    """int edf_set_datarecord_duration(int handle, int duration)
+
+    duration in seconds
+    """
+    # from the pyedflib documentation:
+    # > To avoid rounding errors, the library stores some timevalues in variables
+    # > of type long long int. In order not to loose the subsecond precision, all
+    # > timevalues have been multiplied by 10000000. This will limit the
+    # > timeresolution to 100 nanoSeconds. To calculate the amount of seconds,
+    # > divide the timevalue by 10000000 or use the macro EDFLIB_TIME_DIMENSION
+    # > which is declared in edflib.h.
+    #
+    # therefore, we divide by 100, and edflib internally multiplies by 100.
+    # we could also change it in the C file, but better to leave that as is.
+    duration *= EDFLIB_TIME_DIMENSION/100
+    return c_edf.edf_set_datarecord_duration(handle, int(duration))
 
 def set_number_of_annotation_signals(handle, annot_signals):
     """int edf_set_number_of_annotation_signals(int handle, int annot_signals)"""

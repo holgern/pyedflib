@@ -2,12 +2,16 @@
 # Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
-import os, sys, shutil
+import os, sys
+import shutil
+import gc
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
 from pyedflib import highlevel
+from pyedflib.edfwriter import EdfWriter
+from pyedflib.edfreader import EdfReader
 from datetime import datetime, date
 
 class TestHighLevel(unittest.TestCase):
@@ -35,7 +39,13 @@ class TestHighLevel(unittest.TestCase):
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
-
+                
+    def tearDown(self):
+        # small hack to close handles in case of tests throwing an exception
+        for obj in gc.get_objects():
+            if isinstance(obj, (EdfWriter, EdfReader)):
+                obj.close()
+                del obj
 
     def test_dig2phys_calc(self):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
@@ -156,11 +166,14 @@ class TestHighLevel(unittest.TestCase):
 
 
     def test_read_write_decimal_sample_frequencies(self):
-        signals = np.random.randint(-2048, 2048, [3, 256*60])
+        # first test with digital signals
+        signals = np.random.randint(-2048, 2048, [3, 256*60+8])
         highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
         np.testing.assert_allclose(signals, signals2)
-        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        
+        # now with physical signals
+        signals = np.random.rand(3, 256*60+8) # then rescale to 0-1
         signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=8.5, digital=False)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=False, verbose=True)
@@ -307,37 +320,6 @@ class TestHighLevel(unittest.TestCase):
         
         with self.assertRaises(AssertionError):
             highlevel.drop_channels(self.drop_from, to_keep=['ch1'], to_drop=['ch3'])
-
-
-    def test_blocksize_auto(self):
-        """ test that the blocksize parameter works as intended"""
-        file = '{}.edf'.format(self.tmp_testfile)
-        siglen = 256* 155
-        signals = np.random.rand(10, siglen)
-        sheads = highlevel.make_signal_headers([str(x) for x in range(10)],
-                                              sample_frequency=256, physical_max=1,
-                                              physical_min=-1)
-
-        valid_block_sizes = [-1, 1, 5, 31]
-        for block_size in valid_block_sizes:
-            highlevel.write_edf(file, signals, sheads, block_size=block_size)
-            signals2, _, _ = highlevel.read_edf(file)
-            np.testing.assert_allclose(signals, signals2, atol=0.01)
-
-        with self.assertRaises(AssertionError):
-            highlevel.write_edf(file, signals, sheads, block_size=61)
-
-        with self.assertRaises(AssertionError):
-            highlevel.write_edf(file, signals, sheads, block_size=-2)
-
-        # now test non-divisor block_size
-        siglen = signals.shape[-1]
-        highlevel.write_edf(file, signals, sheads, block_size=60)
-        signals2, _, _ = highlevel.read_edf(file)
-        self.assertEqual(signals2.shape, (10, 256*60*3))
-        np.testing.assert_allclose(signals2[:,:siglen], signals, atol=0.01)
-        np.testing.assert_allclose(signals2[:,siglen:], np.zeros([10, 25*256]),
-                                   atol=0.0001)
 
 
     def test_annotation_bytestring(self):

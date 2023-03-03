@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019 - 2020 Simon Kern
-# Copyright (c) 2015 - 2020 Holger Nahrstaedt
+# Copyright (c) 2019 - 2023 Simon Kern
+# Copyright (c) 2015 - 2023 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # Copyright (c) 2016-2017 The pyedflib Developers
 #                         <https://github.com/holgern/pyedflib>
@@ -395,7 +395,7 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
 
 
 def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
-              file_type=-1, block_size=1):
+              file_type=-1):
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. EDF+/BDF+ is selected based on the filename extension,
@@ -420,11 +420,6 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     file_type: int, optional
         choose file_type for saving.
         EDF = 0, EDF+ = 1, BDF = 2, BDF+ = 3, automatic from extension = -1
-    block_size : int
-        set the block size for writing. Should be divisor of signal length
-        in seconds. Higher values mean faster writing speed, but if it
-        is not a divisor of the signal duration, it will append zeros.
-        Can be any value between 1=><=60, -1 will auto-infer the fastest value.
 
     Returns
     -------
@@ -439,8 +434,6 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         'signals and signal_headers must be same length'
     assert file_type in [-1, 0, 1, 2, 3], \
         'file_type must be in range -1, 3'
-    assert block_size<=60 and block_size>=-1 and block_size!=0, \
-        'blocksize must be smaller or equal to 60'
 
     # copy objects to prevent accidential changes to mutable objects
     header = deepcopy(header)
@@ -464,16 +457,6 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     default_header.update(header)
     header = default_header
 
-    # block_size sets the size of each writing block and should be a divisor
-    # of the length of the signal. If it is not, the remainder of the file
-    # will be filled with zeros.
-    signal_duration = len(signals[0]) // _get_sample_frequency(signal_headers[0])
-    if block_size == -1:
-        block_size = max([d for d in range(1, 61) if signal_duration % d == 0])
-    elif signal_duration % block_size != 0:
-            warnings.warn('Signal length is not dividable by block_size. '+
-                          'The file will have a zeros appended.')
-
     # check dmin, dmax and pmin, pmax dont exceed signal min/max
     for sig, shead in zip(signals, signal_headers):
         dmin, dmax = shead['digital_min'], shead['digital_max']
@@ -496,15 +479,10 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
             'phys_max is {}, but signal_max is {} ' \
             'for channel {}'.format(pmax, sig.max(), label)
 
-
-        frequency_key = 'sample_rate' if shead.get('sample_frequency') is None else 'sample_frequency'
-        shead[frequency_key] *= block_size
-
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
 
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:
-        f.setDatarecordDuration(int(100000 * block_size))
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)
         f.writeSamples(signals, digital=digital)

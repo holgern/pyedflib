@@ -7,10 +7,6 @@ pyEDFlib
    :target: https://codecov.io/gh/holgern/pyedflib
    :alt: Test Coverage
 
-.. image:: https://ci.appveyor.com/api/projects/status/49wwigslgtj288q1?svg=true
-   :target: https://ci.appveyor.com/project/holger80/pyedflib
-   :alt: CircleCI Build
-
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
    :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
    :alt: Docs Build
@@ -35,7 +31,7 @@ EDF means `European Data Format`_ and was firstly published `Kemp1992`_.
 In 2003, an improved version of the file protocol  named EDF+ has been published and can be found at `Kemp2003`_.
 
 The EDF/EDF+ format saves all data with 16 Bit. A version which saves all data with 24 Bit,
-was introduces by the compony `BioSemi`_.
+was introduces by the company `BioSemi`_.
 
 The definition of the EDF/EDF+/BDF/BDF+ format can be found under `edfplus.info`_.
 
@@ -95,7 +91,7 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     highlevel.write_edf('edf_file.edf', signals, signal_headers, header)
 
     # read an edf file
-    signals, signal_headers, header = highlevel.read_edf('edf_file.edf')
+    signals, signal_headers, header = highlevel.read_edf('edf_file.edf', ch_names=['ch1', 'ch2'])
     print(signal_headers[0]['sample_frequency']) # prints 256
 
     # drop a channel from the file or anonymize edf

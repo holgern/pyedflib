@@ -1,0 +1,18 @@
+=============================
+PyEDFlib 0.1.27 Release Notes
+=============================
+
+.. contents::
+
+- fix MANIFEST.in
+
+Authors
+=======
+
+* Holger Nahrstaedt
+
+Issues closed for v0.1.27
+-------------------------
+
+Pull requests for v0.1.27
+-------------------------

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019 - 2020 Simon Kern
-# Copyright (c) 2015 - 2020 Holger Nahrstaedt
+# Copyright (c) 2019 - 2023 Simon Kern
+# Copyright (c) 2015 - 2023 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # Copyright (c) 2016-2017 The pyedflib Developers
 #                         <https://github.com/holgern/pyedflib>
@@ -23,7 +23,7 @@ CHECK_FILE_SIZE = 0
 DO_NOT_CHECK_FILE_SIZE = 1
 REPAIR_FILE_SIZE_IF_WRONG = 2
 
-def _debug_parse_header(filename):
+def _debug_parse_header(filename): #pragma: no cover
     """
     A debug function that reads a header and outputs everything that
     is contained in the header
@@ -34,35 +34,36 @@ def _debug_parse_header(filename):
     with open(filename, 'rb') as f:
         f.seek(0)
         header['version'] = f.read(8).decode()
-        header['patient'] = f.read(80).decode().strip()
-        header['recording'] = f.read(80).decode().strip()
+        header['patient_id'] = f.read(80).decode().strip()
+        header['recording_id'] = f.read(80).decode().strip()
         header['startdate'] = f.read(8).decode()
         header['starttime'] = f.read(8).decode()
-        header['n_bytes'] = f.read(8).decode()
+        header['header_n_bytes'] = f.read(8).decode()
         header['reserved'] = f.read(44).decode().strip()
         header['n_records'] = f.read(8).decode()
-        header['duration'] = f.read(8).decode()
+        header['record_duration'] = f.read(8).decode()
         header['n_signals'] = f.read(4).decode()
 
-        print('\n## Header')
+        print('\n##### Header')
         print(json.dumps(header, indent=2))
 
-        ns = int(header['n_signals'])
-        label = [f.read(16).decode() for i in range(ns)]
-        transducer = [f.read(80).decode().strip() for i in range(ns)]
-        dimension = [f.read(8).decode().strip() for i in range(ns)]
-        pmin = [f.read(8).decode() for i in range(ns)]
-        pmax = [f.read(8).decode() for i in range(ns)]
-        dmin = [f.read(8).decode() for i in range(ns)]
-        dmax = [f.read(8).decode() for i in range(ns)]
-        prefilter = [f.read(80).decode().strip() for i in range(ns)]
-        n_samples = [f.read(8).decode() for i in range(ns)]
-        reserved = [f.read(32).decode() for i in range(ns)]
-        _ = zip(label, transducer, dimension, pmin, pmax, dmin, dmax, prefilter, n_samples, reserved)
-        fields = ['label', 'transducer', 'dimension', 'pmin', 'pmax', 'dmin', 'dmax', 'prefilter', 'n_samples', 'reserved']
-        sheaders = [{field:globals()[field][i] for field in fields} for i in range(ns)]
-        print('## Signal Headers')
-        print(json.dumps(sheaders, indent=2))
+        nsigs = int(header['n_signals'])
+        label = [f.read(16).decode() for i in range(nsigs)]
+        transducer = [f.read(80).decode().strip() for i in range(nsigs)]
+        dimension = [f.read(8).decode().strip() for i in range(nsigs)]
+        pmin = [f.read(8).decode() for i in range(nsigs)]
+        pmax = [f.read(8).decode() for i in range(nsigs)]
+        dmin = [f.read(8).decode() for i in range(nsigs)]
+        dmax = [f.read(8).decode() for i in range(nsigs)]
+        prefilter = [f.read(80).decode().strip() for i in range(nsigs)]
+        n_samples = [f.read(8).decode() for i in range(nsigs)]
+        reserved = [f.read(32).decode() for i in range(nsigs)]
+    _ = zip(label, transducer, dimension, pmin, pmax, dmin, dmax, prefilter, n_samples, reserved)
+    values = locals().copy()
+    fields = ['label', 'transducer', 'dimension', 'pmin', 'pmax', 'dmin', 'dmax', 'prefilter', 'n_samples', 'reserved']
+    sheaders = [{field:values[field][i] for field in fields} for i in range(nsigs)]
+    print('\n##### Signal Headers')
+    print(json.dumps(sheaders, indent=2))
 
 
 class EdfReader(CyEdfReader):
@@ -408,10 +409,10 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
-        return np.array([round(self.samplefrequency(chn))
+        return np.array([self.samplefrequency(chn)
                          for chn in np.arange(self.signals_in_file)])
 
-    def getSampleFrequency(self,chn):
+    def getSampleFrequency(self, chn):
         """
         Returns the samplefrequency of signal edfsignal.
 
@@ -430,7 +431,7 @@ class EdfReader(CyEdfReader):
 
         """
         if 0 <= chn < self.signals_in_file:
-            return np.round(self.samplefrequency(chn), decimals=3)
+            return self.samplefrequency(chn)
         else:
             raise IndexError('Trying to access channel {}, but only {} ' \
                              'channels found'.format(chn, self.signals_in_file))

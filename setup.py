@@ -18,13 +18,13 @@ except ImportError:
     if not os.path.exists(os.path.join('pyedflib', '_extensions', '_pyedflib.c')):
         msg = ("Cython must be installed when working with a development "
                "version of PyEDFlib")
-        raise RuntimeError(msg)    
+        raise RuntimeError(msg)
 
 
 MAJOR = 0
 MINOR = 1
-MICRO = 24
-ISRELEASED = False
+MICRO = 30
+ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 # Version of Numpy required for setup
@@ -128,9 +128,12 @@ def get_version_info():
         GIT_REVISION = git_version()
     elif os.path.exists('pyedflib/version.py'):
         # must be a source distribution, use existing version file
-        # load it as a separate module to not load pywt/__init__.py
-        import imp
-        version = imp.load_source('pyedflib.version', 'pyedflib/version.py')
+        # load it as a separate module to not load pyedflib/__init__.py
+        import types
+        from importlib.machinery import SourceFileLoader
+        loader = SourceFileLoader('pyedflib.version', 'pyedflib/version.py')
+        version = types.ModuleType(loader.name)
+        loader.exec_module(version)
         GIT_REVISION = version.git_revision
     else:
         GIT_REVISION = "Unknown"
@@ -261,13 +264,13 @@ if __name__ == '__main__':
     write_version_py()
     if USE_CYTHON:
             ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
-            
+
     setup(
         name="pyEDFlib",
         maintainer="Holger Nahrstaedt",
         maintainer_email="nahrstaedt@gmail.com",
         author='Holger Nahrstaedt',
-        author_email='nahrstaedt@gmail.com',        
+        author_email='nahrstaedt@gmail.com',
         url="https://github.com/holgern/pyedflib",
         license="BSD",
         description="library to read/write EDF+/BDF+ files",
@@ -299,4 +302,3 @@ if __name__ == '__main__':
         cmdclass={'develop': develop_build_clib},
         install_requires=[REQUIRED_NUMPY],
     )
-

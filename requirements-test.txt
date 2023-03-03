@@ -9,4 +9,3 @@ numpy
 pytest
 dateparser
 tqdm
-tox

@@ -1,0 +1,23 @@
+=============================
+PyEDFlib 0.1.26 Release Notes
+=============================
+
+.. contents::
+
+- replace imp with importlib
+- add missing MANIFEST.in
+
+Authors
+=======
+
+* Holger Nahrstaedt
+* skjerns
+
+Issues closed for v0.1.26
+-------------------------
+* #165 DeprecationWarning (imp)
+* #168 0.1.25 fails to configure: ValueError: 'pyedflib/_extensions/_pyedflib.pyx' doesn't match any files
+
+Pull requests for v0.1.26
+-------------------------
+* #166 replace imp with imporlib
