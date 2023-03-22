@@ -40,9 +40,9 @@ def _get_sample_frequency(signal_header):
             else signal_header['sample_frequency'])
 
 
-def tqdm(iteratable, *args, **kwargs):
+def tqdm(iterable, *args, **kwargs):
     """
-    These is an optional dependecies that shows a progress bar for some
+    These is an optional dependency that shows a progress bar for some
     of the functions, e.g. loading.
 
     install this dependency with `pip install tqdm`
@@ -51,9 +51,9 @@ def tqdm(iteratable, *args, **kwargs):
     """
     try:
         from tqdm import tqdm as iterator
-        return iterator(iteratable, *args, **kwargs)
+        return iterator(iterable, *args, **kwargs)
     except:
-        return iteratable
+        return iterable
 
 
 def _parse_date(string):
@@ -435,7 +435,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     assert file_type in [-1, 0, 1, 2, 3], \
         'file_type must be in range -1, 3'
 
-    # copy objects to prevent accidential changes to mutable objects
+    # copy objects to prevent accidental changes to mutable objects
     header = deepcopy(header)
     signal_headers = deepcopy(signal_headers)
 

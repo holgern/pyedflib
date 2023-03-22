@@ -38,9 +38,9 @@ open_errors = {
     EDFLIB_FILE_READ_ERROR             : "a read error occurred",
     EDFLIB_FILE_ALREADY_OPENED         : "file has already been opened",
     EDFLIB_FILETYPE_ERROR              : "Wrong file type",
-    EDFLIB_FILE_WRITE_ERROR            : "a write error occured",
+    EDFLIB_FILE_WRITE_ERROR            : "a write error occurred",
     EDFLIB_NUMBER_OF_SIGNALS_INVALID   : "The number of signals is invalid",
-    EDFLIB_FILE_IS_DISCONTINUOUS       : "The file is discontinous and cannot be read",
+    EDFLIB_FILE_IS_DISCONTINUOUS       : "The file is discontinuous and cannot be read",
     EDFLIB_INVALID_READ_ANNOTS_VALUE   : "an annotation value could not be read",
     EDFLIB_FILE_ERRORS_STARTDATE      : "the file is not EDF(+) or BDF(+) compliant, the startdate is incorrect, it might contain incorrect characters, such as ':' instead of '.'",
     EDFLIB_FILE_ERRORS_STARTTIME      : "the file is not EDF(+) or BDF(+) compliant, the starttime is incorrect, it might contain incorrect characters, such as ':' instead of '.'",
@@ -70,7 +70,7 @@ write_errors = {
     EDFLIB_MAXFILES_REACHED             : "to many files opened",
     EDFLIB_FILE_ALREADY_OPENED          : "file has already been opened",
     EDFLIB_FILETYPE_ERROR               : "Wrong file type",
-    EDFLIB_FILE_WRITE_ERROR             : "a write error occured",
+    EDFLIB_FILE_WRITE_ERROR             : "a write error occurred",
     EDFLIB_NUMBER_OF_SIGNALS_INVALID    : "The number of signals is invalid",
     EDFLIB_NO_SIGNALS                   : "no signals to write",
     EDFLIB_TOO_MANY_SIGNALS             : "too many signals",
@@ -183,7 +183,7 @@ cdef class CyEdfReader:
 
     def make_buffer(self):
         """
-        utilty function to make a buffer that can hold a single datarecord. This will
+        utility function to make a buffer that can hold a single datarecord. This will
         hold the physical samples for a single data record as a numpy tensor.
 
         -  might extend to provide for N datarecord size
@@ -194,7 +194,7 @@ cdef class CyEdfReader:
         for ii in range(self.signals_in_file):
             tmp += self.samples_in_datarecord(ii)
         self.nsamples_per_record = tmp
-        dbuffer = np.zeros(tmp, dtype='float64') # will get physical samples, not the orignal digital samples
+        dbuffer = np.zeros(tmp, dtype='float64') # will get physical samples, not the original digital samples
         return dbuffer
 
     def open(self, file_name, annotations_mode=EDFLIB_READ_ALL_ANNOTATIONS, check_file_size=EDFLIB_CHECK_FILE_SIZE):

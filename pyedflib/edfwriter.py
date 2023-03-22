@@ -412,7 +412,7 @@ class EdfWriter(object):
 
     def setEquipment(self, equipment):
         """
-        Sets the name of the param equipment used during the aquisition.
+        Sets the name of the param equipment used during the acquisition.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
 
         Parameters
