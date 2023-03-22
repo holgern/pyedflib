@@ -260,7 +260,7 @@ class develop_build_clib(develop):
 
 if __name__ == '__main__':
 
-    # Rewrite the version file everytime
+    # Rewrite the version file every time
     write_version_py()
     if USE_CYTHON:
             ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)

@@ -2,13 +2,13 @@ Guidelines for new releases for pyedflib
 ========================================
 vX.X.X refers to the release number
 
-Tag the release and trigger bulding of wheels in appvoyer
----------------------------------------------------------
+Tag the release and trigger building of wheels in appvoyer
+----------------------------------------------------------
 Change ISRELEASED in setup.py to True and commit.
 
 Appveyor will now build wheels for windows.
 
-Tag the relase with
+Tag the release with
 
 ```git tag -s vX.X.X```
 
