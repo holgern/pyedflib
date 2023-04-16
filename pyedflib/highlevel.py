@@ -17,6 +17,7 @@ Includes
     - Comparing EDFs
     - Renaming Channels from EDF files
     - Dropping Channels from EDF files
+    - Cropping EDFs
 
 @author: skjerns
 """
@@ -26,7 +27,7 @@ import numpy as np
 import warnings
 import pyedflib
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
 # from . import EdfWriter
 # from . import EdfReader
 
@@ -756,6 +757,80 @@ def anonymize_edf(edf_file, new_file=None,
     return True
 
 
+def crop_edf(edf_file, *, new_file=None, new_start=None, new_stop=None,
+             verbose=True):
+    """Crop an EDF file to desired start/stop times.
+
+    Parameters
+    ----------
+    edf_file : str
+        The path to the EDF file.
+    new_file : str | None
+         The path to the new cropped file. If None (default), the input
+         filename appended with '_cropped' is used.
+    new_start : datetime.datetime
+        The new start timestamp. Can be None to keep the original start time.
+    new_stop : datetime.datetime
+        The new stop timestamp. Can be None to keep the original stop time.
+    verbose : bool
+        If True (default), print some details about the original and cropped file.
+    """
+    # Check input
+    assert isinstance(new_start, (datetime, type(None)))
+    assert isinstance(new_stop, (datetime, type(None)))
+
+    # Open the original EDF file
+    edf = pyedflib.EdfReader(edf_file)
+    signals_headers = edf.getSignalHeaders()
+    header = edf.getHeader()
+
+    # Define new start time
+    current_start = edf.getStartdatetime()
+    if new_start is None:
+        new_start = current_start
+    start_diff_seconds = (new_start - current_start).total_seconds()
+    assert current_start <= new_start
+
+    # Define new stop time
+    current_stop = current_start + timedelta(seconds=edf.getFileDuration())
+    current_duration = current_stop - current_start
+    if new_stop is None:
+        new_stop = current_stop
+    assert new_stop <= current_stop
+    stop_diff_from_start = (new_stop - current_start).total_seconds()
+
+    # Crop each signal
+    signals = []
+    for i in range(len(edf.getSignalHeaders())):
+        # Question: should we use `_get_sample_frequency` instead?
+        sf = edf.getSampleFrequency(i)
+        start_idx = int(start_diff_seconds * sf)
+        stop_idx = int(stop_diff_from_start * sf)
+        signals.append(edf.readSignal(i, start=start_idx, n=stop_idx - start_idx))
+    edf.close()
+
+    # Update header startdate and save file
+    header["startdate"] = new_start
+    if new_file is None:
+        file, ext = os.path.splitext(edf_file)
+        new_file = file + '_cropped' + ext
+    write_edf(new_file, signals, signals_headers, header)
+
+    # Safety check: are we able to load the new EDF file?
+    # Get new EDF start, stop and duration
+    edf = pyedflib.EdfReader(new_file)
+    start = edf.getStartdatetime()
+    stop = start + timedelta(seconds=edf.getFileDuration())
+    duration = stop - start
+    edf.close()
+
+    # Verbose
+    if verbose:
+        print(f"Original: {current_start} to {current_stop} ({current_duration})")
+        print(f"Truncated: {start} to {stop} ({duration})")
+        print(f"Succesfully written file: {new_file}")
+
+
 def rename_channels(edf_file, mapping, new_file=None, verbose=False):
     """
     A convenience function to rename channels in an EDF file.
@@ -845,3 +920,5 @@ def change_polarity(edf_file, channels, new_file=None, verify=True,
               digital=True, correct=False, verbose=verbose)
     if verify: compare_edf(edf_file, new_file)
     return True
+
+
