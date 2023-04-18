@@ -88,29 +88,11 @@ jobs:
         with:
           path: wheelhouse/*.whl
 
-  upload_pypi_test:
-    name: Upload to PyPI (test)
-    needs: [build_wheels, build_aarch64_wheels, make_sdist]
-    runs-on: ubuntu-20.04
-    if: github.event_name == 'push' && !(startsWith(github.ref_name, 'master'))
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifact
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@v1.5.0
-        with:
-          user: __token__
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
-          skip_existing: true
-
   upload_pypi:
     name: Upload to PyPI (prod)
     needs: [build_wheels, build_aarch64_wheels, make_sdist]
     runs-on: ubuntu-20.04
-    if: github.event_name == 'push' && startsWith(github.ref_name, 'master')
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/download-artifact@v2
         with:
