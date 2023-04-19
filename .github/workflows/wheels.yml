@@ -3,7 +3,7 @@ on:
   push:
     # Pattern matched against refs/tags
     tags:
-      - '*'           # Push events to every tag not containing /
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 env:
   CIBW_BUILD_VERBOSITY: 1
   # Run the package tests using `pytest`
@@ -92,7 +92,6 @@ jobs:
     name: Upload to PyPI (prod)
     needs: [build_wheels, build_aarch64_wheels, make_sdist]
     runs-on: ubuntu-20.04
-    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/download-artifact@v2
         with:
