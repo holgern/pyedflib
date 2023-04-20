@@ -1,6 +1,7 @@
 *.py[co]
 *.pyd
 *.so
+.DS_Store
 
 # Packages
 *.egg
@@ -24,6 +25,7 @@ pip-log.txt
 .wpr
 *.wpu
 *.wpr
+*-checkpoint.ipynb
 .pypirc
 
 # Project working files
