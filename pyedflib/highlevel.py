@@ -806,7 +806,8 @@ def crop_edf(edf_file, *, new_file=None, new_start=None, new_stop=None,
         sf = edf.getSampleFrequency(i)
         start_idx = int(start_diff_seconds * sf)
         stop_idx = int(stop_diff_from_start * sf)
-        signals.append(edf.readSignal(i, start=start_idx, n=stop_idx - start_idx))
+        # We use digital=True in reading and writing to avoid precision loss
+        signals.append(edf.readSignal(i, start=start_idx, n=stop_idx - start_idx, digital=True))
     edf.close()
 
     # Update header startdate and save file
@@ -814,7 +815,7 @@ def crop_edf(edf_file, *, new_file=None, new_start=None, new_stop=None,
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
         new_file = file + '_cropped' + ext
-    write_edf(new_file, signals, signals_headers, header)
+    write_edf(new_file, signals, signals_headers, header, digital=True)
 
     # Safety check: are we able to load the new EDF file?
     # Get new EDF start, stop and duration
