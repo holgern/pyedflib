@@ -1,7 +1,7 @@
 PyEDFlib -EDF/BDF Toolbox in Python
 ===================================
 
-PyEDFlib is a free Open Source wavelet toolbox for reading / writing *EDF/EDF+/BDF* files.
+PyEDFlib is a free Open Source toolbox for reading / writing *EDF/EDF+/BDF* files.
 
 
   .. sourcecode:: python
