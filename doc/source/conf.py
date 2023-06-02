@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # PyEDFlib documentation build configuration file, created by
 # sphinx-quickstart on Sat Nov 14 17:04:56 2015.
 #

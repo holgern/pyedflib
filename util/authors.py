@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- encoding:utf-8 -*-
 """
 git-authors [OPTIONS] REV1..REV2
 
