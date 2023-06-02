@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 # -*- coding: utf-8 -*-
 #
 # PyEDFlib documentation build configuration file, created by
