@@ -46,9 +46,9 @@ def main():
 
         for issue in items:
             msg = "- `#{0} <{1}>`__: {2}"
-            title = re.sub("\s+", " ", issue.title.strip())
+            title = re.sub(r"\s+", " ", issue.title.strip())
             if len(title) > 60:
-                remainder = re.sub("\s.*$", "...", title[60:])
+                remainder = re.sub(r"\s.*$", "...", title[60:])
                 if len(remainder) > 20:
                     remainder = title[:80] + "..."
                 else:
