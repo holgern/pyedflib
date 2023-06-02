@@ -43,7 +43,7 @@ class NumpyExtension(Extension):
     #  care of calling it when needed.
     def __init__(self, *args, **kwargs):
         self._np_include_dirs = []
-        super(NumpyExtension, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def include_dirs(self):
