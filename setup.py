@@ -31,7 +31,7 @@ REQUIRED_NUMPY = 'numpy>=1.9.1'
 
 
 # from MDAnalysis setup.py (http://www.mdanalysis.org/)
-class NumpyExtension(Extension, object):
+class NumpyExtension(Extension):
     """Derived class to cleanly handle setup-time (numpy) dependencies.
     """
     # The only setup-time numpy dependency comes when setting up its

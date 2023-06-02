@@ -24,9 +24,9 @@ class TestEdfReader(unittest.TestCase):
         cls.bdf_data_file_datarec_2 = os.path.join(data_dir, 'test_generator_datarec_generator_2.bdf')
         cls.bdf_data_file_datarec_0_5 = os.path.join(data_dir, 'test_generator_datarec_generator_0_5.bdf')
         cls.bdf_broken_file = os.path.join(data_dir, 'tmp_broken_file.bdf')
-        cls.bdf_accented_file = os.path.join(data_dir, u'tmp_file_áä\'üöß.bdf')
-        cls.edf_subsecond = os.path.join(data_dir, u'test_subsecond.edf')
-        cls.tmp_edf_file = os.path.join(data_dir, u'test_tmp_file.edf')
+        cls.bdf_accented_file = os.path.join(data_dir, 'tmp_file_áä\'üöß.bdf')
+        cls.edf_subsecond = os.path.join(data_dir, 'test_subsecond.edf')
+        cls.tmp_edf_file = os.path.join(data_dir, 'test_tmp_file.edf')
         cls.edf_legacy = os.path.join(data_dir, 'test_legacy.edf')
 
     @classmethod

@@ -167,10 +167,10 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.writeAnnotation(1.23456, 0.2222, u"annotation1_ä")
-        f.writeAnnotation(0.2567, -1, u"annotation2_ü")
-        f.writeAnnotation(1.2567, 0, u"annotation3_ö")
-        f.writeAnnotation(1.3067, -1, u"annotation4_ß")
+        f.writeAnnotation(1.23456, 0.2222, "annotation1_ä")
+        f.writeAnnotation(0.2567, -1, "annotation2_ü")
+        f.writeAnnotation(1.2567, 0, "annotation3_ö")
+        f.writeAnnotation(1.3067, -1, "annotation4_ß")
         del f
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
@@ -652,10 +652,10 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.writeAnnotation(1.23, 0.2, u"annotation1_ä")
-        f.writeAnnotation(0.25, -1, u"annotation2_ü")
-        f.writeAnnotation(1.25, 0, u"annotation3_ö")
-        f.writeAnnotation(1.30, -1, u"annotation4_ß")
+        f.writeAnnotation(1.23, 0.2, "annotation1_ä")
+        f.writeAnnotation(0.25, -1, "annotation2_ü")
+        f.writeAnnotation(1.25, 0, "annotation3_ö")
+        f.writeAnnotation(1.30, -1, "annotation4_ß")
         del f
         f = pyedflib.EdfReader(self.bdfplus_data_file)
         self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
@@ -679,7 +679,7 @@ class TestEdfWriter(unittest.TestCase):
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': u'test', 'transducer': 'trans1'}
+                        'prefilter': 'test', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
                                 file_type=pyedflib.FILETYPE_BDFPLUS)
         f.setSignalHeader(0,channel_info)
@@ -688,9 +688,9 @@ class TestEdfWriter(unittest.TestCase):
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
-        f.writeAnnotation(1.23, 0.2, u"Zähne")
-        f.writeAnnotation(0.25, -1, u"Fuß")
-        f.writeAnnotation(1.25, 0, u"abc")
+        f.writeAnnotation(1.23, 0.2, "Zähne")
+        f.writeAnnotation(0.25, -1, "Fuß")
+        f.writeAnnotation(1.25, 0, "abc")
         del f
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
