@@ -81,7 +81,7 @@ class TestHighLevel(unittest.TestCase):
             else:
                 header['annotations'] = annotations
 
-            file = '{}_{}_phys.edf'.format(self.tmp_testfile, file_type)
+            file = f'{self.tmp_testfile}_{file_type}_phys.edf'
             signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
             success = highlevel.write_edf(file, signals, signal_headers1, header, file_type=file_type)
             self.assertTrue(os.path.isfile(file))
@@ -102,7 +102,7 @@ class TestHighLevel(unittest.TestCase):
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
 
-            file = '{}_{}_dig.edf'.format(self.tmp_testfile, file_type)
+            file = f'{self.tmp_testfile}_{file_type}_dig.edf'
             signals = (signals*100).astype(np.int8)
             success = highlevel.write_edf(file, signals,  signal_headers1, header, digital=True)
             self.assertTrue(os.path.isfile(file))
@@ -186,7 +186,7 @@ class TestHighLevel(unittest.TestCase):
         sheaders = []
         for sfreq in sfreqs:
             signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
-            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_frequency=sfreq)
+            shead = highlevel.make_signal_header(f'ch{sfreq}', sample_frequency=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
         signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)

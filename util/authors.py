@@ -74,12 +74,12 @@ def main():
 
     # Find all authors before the named range
     for line in git.pipe('log', '--pretty=@@@%an@@@%n@@@%cn@@@%n%b',
-                         '%s' % (rev1,)):
+                         f'{rev1}'):
         analyze_line(line, all_authors)
 
     # Find authors in the named range
     for line in git.pipe('log', '--pretty=@@@%an@@@%n@@@%cn@@@%n%b',
-                         '%s..%s' % (rev1, rev2)):
+                         f'{rev1}..{rev2}'):
         analyze_line(line, authors, disp=options.debug)
 
     # Sort

@@ -57,17 +57,17 @@ def main():
             print(msg)
         print()
 
-    msg = "Issues closed for {0}".format(args.milestone)
+    msg = f"Issues closed for {args.milestone}"
     print_list(msg, issues)
 
-    msg = "Pull requests for {0}".format(args.milestone)
+    msg = f"Pull requests for {args.milestone}"
     print_list(msg, prs)
 
     return 0
 
 
 def get_milestones(getter, project):
-    url = "https://api.github.com/repos/{project}/milestones".format(project=project)
+    url = f"https://api.github.com/repos/{project}/milestones"
     raw_data, info = getter.get(url)
     data = json.loads(raw_data)
 
@@ -111,7 +111,7 @@ class CachedGet:
     def __init__(self, filename):
         self.filename = filename
         if os.path.isfile(filename):
-            print("[gh_lists] using {0} as cache (remove it if you want fresh data)".format(filename),
+            print(f"[gh_lists] using {filename} as cache (remove it if you want fresh data)",
                   file=sys.stderr)
             with open(filename, 'rb') as f:
                 self.cache = json.load(f)

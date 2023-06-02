@@ -163,7 +163,7 @@ class TestEdfReader(unittest.TestCase):
             
         for i in [-1, 11]:
             for func in funcs:
-                with self.assertRaises(IndexError, msg="f.{}({})".format(func, i)):
+                with self.assertRaises(IndexError, msg=f"f.{func}({i})"):
                     getattr(f, func)(i)
             
         f.close()

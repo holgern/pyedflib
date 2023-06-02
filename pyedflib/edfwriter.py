@@ -136,7 +136,7 @@ def gender2int(gender):
     elif gender.lower() in  ["male", "man", "m"]:
         return 1
     else:
-        raise ValueError("Unknown gender: '{}'".format(gender))
+        raise ValueError(f"Unknown gender: '{gender}'")
 
 
 class ChannelDoesNotExist(Exception):
@@ -206,12 +206,12 @@ class EdfWriter:
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
@@ -235,10 +235,10 @@ class EdfWriter:
 
         if patient_ident>80:
             warnings.warn('Patient code, name, gender and birthdate combined must not be larger than 80 chars. ' +
-                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(patient_ident))
+                          f'Currently has len of {patient_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
         if record_ident>80:
             warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
-                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(record_ident))
+                          f'Currently has len of {record_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
 
         # all data records (i.e. blocks of data of a channel) have one singular
         # length in seconds. If there are different sampling frequencies for

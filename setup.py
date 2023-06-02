@@ -202,7 +202,7 @@ c_lib = ('c_edf',{'sources': sources,
                  'macros': c_macros,})
 
 ext_modules = [
-    NumpyExtension('pyedflib._extensions.{0}'.format(module),
+    NumpyExtension(f'pyedflib._extensions.{module}',
               sources=[make_ext_path(source)],
               # Doesn't automatically rebuild if library changes
               depends=c_lib[1]['sources'] + c_lib[1]['depends'],

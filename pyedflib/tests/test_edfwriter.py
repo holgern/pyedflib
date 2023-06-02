@@ -82,7 +82,7 @@ class TestEdfWriter(unittest.TestCase):
 
         # just looping through all write methods and see if they work
         for file_type in [0, 1, 2, 3]:
-            filename = os.path.join(self.data_dir, 'tmp_write_{}.edf'.format(file_type))
+            filename = os.path.join(self.data_dir, f'tmp_write_{file_type}.edf')
 
             with pyedflib.EdfWriter(filename, 2,
                                 file_type=file_type) as f:
@@ -94,22 +94,22 @@ class TestEdfWriter(unittest.TestCase):
                 for i in range(2):
                     res = f.writePhysicalSamples(data.astype(float))
                     if res<0:
-                        print(res, 'Error for filetype {} on writePhysicalSamples signal {}'.format(file_type, i))
+                        print(res, f'Error for filetype {file_type} on writePhysicalSamples signal {i}')
                         error = True
                 for i in range(2):
                     res = f.writeDigitalSamples(data.astype(np.int32))
                     if res<0:
-                        print(res, 'Error for filetype {} on writeDigitalSamples signal {}'.format(file_type, i))
+                        print(res, f'Error for filetype {file_type} on writeDigitalSamples signal {i}')
                         error = True
 
                 res = f.blockWritePhysicalSamples(np.hstack([data.astype(float)]*2))
                 if res<0:
-                    print(res, 'Error for filetype {} on blockWritePhysicalSamples signal {}'.format(file_type, i))
+                    print(res, f'Error for filetype {file_type} on blockWritePhysicalSamples signal {i}')
                     error = True
 
                 res = f.blockWriteDigitalSamples(np.hstack([data.astype(np.int32)]*2))
                 if res<0:
-                    print(res, 'Error for filetype {} on blockWriteDigitalSamples signal {}'.format(file_type, i))
+                    print(res, f'Error for filetype {file_type} on blockWriteDigitalSamples signal {i}')
                     error = True
 
             with pyedflib.EdfReader(filename) as f:
@@ -150,7 +150,7 @@ class TestEdfWriter(unittest.TestCase):
 
         f = pyedflib.EdfReader(self.edfplus_data_file)
         startdate2 = f.getStartdatetime()
-        assert startdate2==startdate, 'write {} != read {}'.format(startdate, startdate2)
+        assert startdate2==startdate, f'write {startdate} != read {startdate2}'
         del f
 
 
@@ -796,7 +796,7 @@ class TestEdfWriter(unittest.TestCase):
             np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
             np.testing.assert_equal(f.getSampleFrequency(0), 100)
             self.assertEqual(f.getGender(), expected,
-                             'set {}, but {}!={} '.format(gender, expected, f.getGender()))
+                             f'set {gender}, but {expected}!={f.getGender()} ')
             del f
 
     def test_non_one_second_record_duration(self):
@@ -815,15 +815,15 @@ class TestEdfWriter(unittest.TestCase):
         digMin = -digMax
 
         f.setSignalHeaders([{
-            'label': 'test_label{}'.format(idx),
+            'label': f'test_label{idx}',
             'sample_frequency': sample_frequency,
             'dimension': 'mV',
             'physical_min': physMin,
             'physical_max': physMax,
             'digital_min': digMin,
             'digital_max': digMax,
-            'transducer': 'trans{}'.format(idx),
-            'prefilter': 'pre{}'.format(idx)
+            'transducer': f'trans{idx}',
+            'prefilter': f'pre{idx}'
         } for idx in range(channel_count)])
 
         f.writeSamples(np.random.rand(channel_count, samples_per_record*4))
@@ -855,14 +855,14 @@ class TestEdfWriter(unittest.TestCase):
         digMin = -digMax
 
         base_signal_header = lambda idx: {
-            'label': 'test_label{}'.format(idx),
+            'label': f'test_label{idx}',
             'dimension': 'mV',
             'physical_min': physMin,
             'physical_max': physMax,
             'digital_min': digMin,
             'digital_max': digMax,
-            'transducer': 'trans{}'.format(idx),
-            'prefilter': 'pre{}'.format(idx)
+            'transducer': f'trans{idx}',
+            'prefilter': f'pre{idx}'
         }
 
         with self.subTest("when 'sample_frequency' param is missing"):
