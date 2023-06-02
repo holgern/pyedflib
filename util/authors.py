@@ -130,7 +130,7 @@ This list of names is automatically generated, and may not be fully complete.
 # Communicating with Git
 #------------------------------------------------------------------------------
 
-class Cmd(object):
+class Cmd:
     executable = None
 
     def __init__(self, executable):

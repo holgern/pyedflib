@@ -534,7 +534,7 @@ def _run_doctests(tests, full_name, verbose, doctest_warnings):
     def out(msg):
         output.append(msg)
 
-    class MyStderr(object):
+    class MyStderr:
         """Redirect stderr to the current stdout"""
         def write(self, msg):
             if doctest_warnings:

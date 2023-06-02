@@ -155,7 +155,7 @@ class WrongInputSize(Exception):
         return repr(self.parameter)
 
 
-class EdfWriter(object):
+class EdfWriter:
     def __exit__(self, exc_type, exc_val, ex_tb):
         self.close()
 

@@ -107,7 +107,7 @@ def get_issues(getter, project, milestone):
     return issues
 
 
-class CachedGet(object):
+class CachedGet:
     def __init__(self, filename):
         self.filename = filename
         if os.path.isfile(filename):
