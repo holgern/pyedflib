@@ -219,7 +219,7 @@ class EdfWriter(object):
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
         if (self.handle < 0):
-            raise IOError(write_errors[self.handle])
+            raise OSError(write_errors[self.handle])
         self._enforce_record_duration = False
 
     def update_header(self):
@@ -841,7 +841,7 @@ class EdfWriter(object):
                 success = self.blockWritePhysicalSamples(dataRecord)
 
             if success < 0:
-                raise IOError(f'Unknown error while calling blockWriteSamples: {success}')
+                raise OSError(f'Unknown error while calling blockWriteSamples: {success}')
 
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + smp_per_record[i]):
@@ -860,7 +860,7 @@ class EdfWriter(object):
                     success = self.writePhysicalSamples(lastSamples)
 
                 if success<0:
-                    raise IOError(f'Unknown error while calling writeSamples: {success}')
+                    raise OSError(f'Unknown error while calling writeSamples: {success}')
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """

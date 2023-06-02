@@ -49,7 +49,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
+        except OSError:
             print('cannot open', self.edf_data_file)
             return
 
@@ -70,7 +70,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader_BDF(self):
         try:
             f = pyedflib.EdfReader(self.bdf_data_file)
-        except IOError:
+        except OSError:
             print('cannot open', self.bdf_data_file)
             return
 
@@ -96,7 +96,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader_BDF_datarec_0_5(self):
         # try:
         f = pyedflib.EdfReader(self.bdf_data_file_datarec_0_5)
-        # except IOError:
+        # except OSError:
         #     print('cannot open', self.bdf_data_file_datarec_0_5)
         #     return
 
@@ -123,7 +123,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader_BDF_datarec_2(self):
         # try:
         f = pyedflib.EdfReader(self.bdf_data_file_datarec_2)
-        # except IOError:
+        # except OSError:
         #     print('cannot open', self.bdf_data_file_datarec_2)
         #     return
 
@@ -150,7 +150,7 @@ class TestEdfReader(unittest.TestCase):
     def test_indexerrors_thrown(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
+        except OSError:
             print('cannot open', self.edf_data_file)
             return
 
@@ -171,7 +171,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader_headerInfos(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
+        except OSError:
             print('cannot open', self.edf_data_file)
             return
         datetimeSoll = datetime(2011,4,4,12,57,2)
@@ -193,7 +193,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader_signalInfos(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
-        except IOError:
+        except OSError:
             print('cannot open', self.edf_data_file)
             return
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
@@ -228,7 +228,7 @@ class TestEdfReader(unittest.TestCase):
     def test_EdfReader_ReadAnnotations(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file, pyedflib.DO_NOT_READ_ANNOTATIONS)
-        except IOError:
+        except OSError:
             print('cannot open', self.edf_data_file)
             return
 
@@ -239,7 +239,7 @@ class TestEdfReader(unittest.TestCase):
 
         try:
             f = pyedflib.EdfReader(self.edf_data_file, pyedflib.READ_ALL_ANNOTATIONS)
-        except IOError:
+        except OSError:
             print('cannot open', self.edf_data_file)
             return
 
@@ -292,7 +292,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getSignalLabels()[0], 'squarewave')
 
         # Don't close the file but try to reopen it and verify that it fails.
-        with np.testing.assert_raises(IOError):
+        with np.testing.assert_raises(OSError):
             ff = pyedflib.EdfReader(self.edf_data_file)
         
         # Now close and verify it can be re-opened/read.

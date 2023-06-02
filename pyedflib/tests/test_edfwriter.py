@@ -124,7 +124,7 @@ class TestEdfWriter(unittest.TestCase):
                     error=True
 
         if error:
-            raise IOError('Writetests not successfully, see log for details')
+            raise OSError('Writetests not successfully, see log for details')
 
 
     def test_subsecond_starttime(self):
