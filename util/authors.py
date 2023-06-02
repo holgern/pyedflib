@@ -123,8 +123,8 @@ This list of names is automatically generated, and may not be fully complete.
 
 """ % dict(count=len(authors))).encode('utf-8'))
 
-    stdout_b.write(("\nNOTE: Check this list manually! It is automatically generated "
-                    "and some names\n      may be missing.\n").encode('utf-8'))
+    stdout_b.write("\nNOTE: Check this list manually! It is automatically generated "
+                   "and some names\n      may be missing.\n")
 
 #------------------------------------------------------------------------------
 # Communicating with Git

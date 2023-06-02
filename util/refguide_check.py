@@ -60,7 +60,7 @@ OTHER_MODULE_DOCS = {}
 
 # these names are known to fail doctesting and we like to keep it that way
 # e.g. sometimes pseudocode is acceptable etc
-DOCTEST_SKIPLIST = set([])
+DOCTEST_SKIPLIST = set()
 
 # these names are not required to be present in ALL despite being in
 # autosummary:: listing
