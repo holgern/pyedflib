@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2019 - 2023 Simon Kern
 # Copyright (c) 2015 - 2023 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
@@ -137,7 +136,7 @@ def gender2int(gender):
     elif gender.lower() in  ["male", "man", "m"]:
         return 1
     else:
-        raise ValueError("Unknown gender: '{}'".format(gender))
+        raise ValueError(f"Unknown gender: '{gender}'")
 
 
 class ChannelDoesNotExist(Exception):
@@ -156,7 +155,7 @@ class WrongInputSize(Exception):
         return repr(self.parameter)
 
 
-class EdfWriter(object):
+class EdfWriter:
     def __exit__(self, exc_type, exc_val, ex_tb):
         self.close()
 
@@ -207,12 +206,12 @@ class EdfWriter(object):
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
@@ -220,7 +219,7 @@ class EdfWriter(object):
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
         if (self.handle < 0):
-            raise IOError(write_errors[self.handle])
+            raise OSError(write_errors[self.handle])
         self._enforce_record_duration = False
 
     def update_header(self):
@@ -236,10 +235,10 @@ class EdfWriter(object):
 
         if patient_ident>80:
             warnings.warn('Patient code, name, gender and birthdate combined must not be larger than 80 chars. ' +
-                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(patient_ident))
+                          f'Currently has len of {patient_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
         if record_ident>80:
             warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
-                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(record_ident))
+                          f'Currently has len of {record_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
 
         # all data records (i.e. blocks of data of a channel) have one singular
         # length in seconds. If there are different sampling frequencies for
@@ -842,7 +841,7 @@ class EdfWriter(object):
                 success = self.blockWritePhysicalSamples(dataRecord)
 
             if success < 0:
-                raise IOError(f'Unknown error while calling blockWriteSamples: {success}')
+                raise OSError(f'Unknown error while calling blockWriteSamples: {success}')
 
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + smp_per_record[i]):
@@ -861,7 +860,7 @@ class EdfWriter(object):
                     success = self.writePhysicalSamples(lastSamples)
 
                 if success<0:
-                    raise IOError(f'Unknown error while calling writeSamples: {success}')
+                    raise OSError(f'Unknown error while calling writeSamples: {success}')
 
     def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
         """

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
 
 import os
 import sys
@@ -32,7 +31,7 @@ REQUIRED_NUMPY = 'numpy>=1.9.1'
 
 
 # from MDAnalysis setup.py (http://www.mdanalysis.org/)
-class NumpyExtension(Extension, object):
+class NumpyExtension(Extension):
     """Derived class to cleanly handle setup-time (numpy) dependencies.
     """
     # The only setup-time numpy dependency comes when setting up its
@@ -44,7 +43,7 @@ class NumpyExtension(Extension, object):
     #  care of calling it when needed.
     def __init__(self, *args, **kwargs):
         self._np_include_dirs = []
-        super(NumpyExtension, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def include_dirs(self):
@@ -203,7 +202,7 @@ c_lib = ('c_edf',{'sources': sources,
                  'macros': c_macros,})
 
 ext_modules = [
-    NumpyExtension('pyedflib._extensions.{0}'.format(module),
+    NumpyExtension(f'pyedflib._extensions.{module}',
               sources=[make_ext_path(source)],
               # Doesn't automatically rebuild if library changes
               depends=c_lib[1]['sources'] + c_lib[1]['depends'],

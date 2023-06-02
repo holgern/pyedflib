@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import division, print_function, absolute_import
 
 import os
 import numpy as np
@@ -50,7 +49,7 @@ if __name__ == '__main__':
 
     annotations = f.readAnnotations()
     for n in np.arange(f.annotations_in_file):
-        print("annotation: onset is %f    duration is %s    description is %s" % (annotations[0][n],annotations[1][n],annotations[2][n]))
+        print(f"annotation: onset is {annotations[0][n]:f}    duration is {annotations[1][n]}    description is {annotations[2][n]}")
 
     buf = f.readSignal(channel)
     n = 200

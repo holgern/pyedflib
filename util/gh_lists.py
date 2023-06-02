@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-# -*- encoding:utf-8 -*-
 """
 gh_lists.py MILESTONE
 
 Functions for Github API requests.
 """
-from __future__ import print_function, division, absolute_import
-
 import os
 import re
 import sys
@@ -31,14 +28,14 @@ def main():
         milestones = get_milestones(getter, args.project)
         if args.milestone not in milestones:
             msg = "Milestone {0} not available. Available milestones: {1}"
-            msg = msg.format(args.milestone, u", ".join(sorted(milestones)))
+            msg = msg.format(args.milestone, ", ".join(sorted(milestones)))
             p.error(msg)
         issues = get_issues(getter, args.project, args.milestone)
         issues.sort()
     finally:
         getter.save()
 
-    prs = [x for x in issues if u'/pull/' in x.url]
+    prs = [x for x in issues if '/pull/' in x.url]
     issues = [x for x in issues if x not in prs]
 
     def print_list(title, items):
@@ -48,35 +45,35 @@ def main():
         print()
 
         for issue in items:
-            msg = u"- `#{0} <{1}>`__: {2}"
-            title = re.sub(u"\s+", u" ", issue.title.strip())
+            msg = "- `#{0} <{1}>`__: {2}"
+            title = re.sub(r"\s+", " ", issue.title.strip())
             if len(title) > 60:
-                remainder = re.sub(u"\s.*$", u"...", title[60:])
+                remainder = re.sub(r"\s.*$", "...", title[60:])
                 if len(remainder) > 20:
-                    remainder = title[:80] + u"..."
+                    remainder = title[:80] + "..."
                 else:
                     title = title[:60] + remainder
             msg = msg.format(issue.id, issue.url, title)
             print(msg)
         print()
 
-    msg = u"Issues closed for {0}".format(args.milestone)
+    msg = f"Issues closed for {args.milestone}"
     print_list(msg, issues)
 
-    msg = u"Pull requests for {0}".format(args.milestone)
+    msg = f"Pull requests for {args.milestone}"
     print_list(msg, prs)
 
     return 0
 
 
 def get_milestones(getter, project):
-    url = "https://api.github.com/repos/{project}/milestones".format(project=project)
+    url = f"https://api.github.com/repos/{project}/milestones"
     raw_data, info = getter.get(url)
     data = json.loads(raw_data)
 
     milestones = {}
     for ms in data:
-        milestones[ms[u'title']] = ms[u'number']
+        milestones[ms['title']] = ms['number']
     return milestones
 
 
@@ -104,17 +101,17 @@ def get_issues(getter, project, milestone):
     for raw_data in raw_datas:
         data = json.loads(raw_data)
         for issue_data in data:
-            issues.append(Issue(issue_data[u'number'],
-                                issue_data[u'title'],
-                                issue_data[u'html_url']))
+            issues.append(Issue(issue_data['number'],
+                                issue_data['title'],
+                                issue_data['html_url']))
     return issues
 
 
-class CachedGet(object):
+class CachedGet:
     def __init__(self, filename):
         self.filename = filename
         if os.path.isfile(filename):
-            print("[gh_lists] using {0} as cache (remove it if you want fresh data)".format(filename),
+            print(f"[gh_lists] using {filename} as cache (remove it if you want fresh data)",
                   file=sys.stderr)
             with open(filename, 'rb') as f:
                 self.cache = json.load(f)

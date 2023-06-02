@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- encoding:utf-8 -*-
 """
 git-authors [OPTIONS] REV1..REV2
 
@@ -7,8 +6,6 @@ List the authors who contributed within a given revision interval.
 
 """
 # Author: Pauli Virtanen <pav@iki.fi>. This script is in the public domain.
-
-from __future__ import division, print_function, absolute_import
 
 import optparse
 import re
@@ -77,12 +74,12 @@ def main():
 
     # Find all authors before the named range
     for line in git.pipe('log', '--pretty=@@@%an@@@%n@@@%cn@@@%n%b',
-                         '%s' % (rev1,)):
+                         f'{rev1}'):
         analyze_line(line, all_authors)
 
     # Find authors in the named range
     for line in git.pipe('log', '--pretty=@@@%an@@@%n@@@%cn@@@%n%b',
-                         '%s..%s' % (rev1, rev2)):
+                         f'{rev1}..{rev2}'):
         analyze_line(line, authors, disp=options.debug)
 
     # Sort
@@ -126,14 +123,14 @@ This list of names is automatically generated, and may not be fully complete.
 
 """ % dict(count=len(authors))).encode('utf-8'))
 
-    stdout_b.write(("\nNOTE: Check this list manually! It is automatically generated "
-                    "and some names\n      may be missing.\n").encode('utf-8'))
+    stdout_b.write("\nNOTE: Check this list manually! It is automatically generated "
+                   "and some names\n      may be missing.\n")
 
 #------------------------------------------------------------------------------
 # Communicating with Git
 #------------------------------------------------------------------------------
 
-class Cmd(object):
+class Cmd:
     executable = None
 
     def __init__(self, executable):
