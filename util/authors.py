@@ -1,8 +1,14 @@
 #!/usr/bin/env python
+# -*- encoding:utf-8 -*-
 """
-git-authors [OPTIONS] REV1..REV2
+List the authors who contributed within a given revision interval::
 
-List the authors who contributed within a given revision interval.
+    python tools/authors.py REV1..REV2
+
+`REVx` being a commit hash.
+
+To change the name mapping, edit .mailmap on the top-level of the
+repository.
 
 """
 # Author: Pauli Virtanen <pav@iki.fi>. This script is in the public domain.
@@ -11,24 +17,19 @@ import optparse
 import re
 import sys
 import os
+import io
 import subprocess
+import collections
 
-
-from scipy._lib.six import u, PY3
-if PY3:
-    stdout_b = sys.stdout.buffer
-else:
-    stdout_b = sys.stdout
-
-
-NAME_MAP = {
-    u('Helder'): u('Helder Oliveira'),
-}
+stdout_b = sys.stdout.buffer
+MAILMAP_FILE = os.path.join(os.path.dirname(__file__), "..", ".mailmap")
 
 
 def main():
     p = optparse.OptionParser(__doc__.strip())
     p.add_option("-d", "--debug", action="store_true",
+                 help="print debug output")
+    p.add_option("-n", "--new", action="store_true",
                  help="print debug output")
     options, args = p.parse_args()
 
@@ -40,15 +41,17 @@ def main():
     except ValueError:
         p.error("argument is not a revision range")
 
+    NAME_MAP = load_name_map(MAILMAP_FILE)
+
     # Analyze log data
     all_authors = set()
-    authors = set()
+    authors = collections.Counter()
 
     def analyze_line(line, names, disp=False):
         line = line.strip().decode('utf-8')
 
         # Check the commit author name
-        m = re.match(u('^@@@([^@]*)@@@'), line)
+        m = re.match(u'^@@@([^@]*)@@@', line)
         if m:
             name = m.group(1)
             line = line[m.end():]
@@ -56,20 +59,20 @@ def main():
             if disp:
                 if name not in names:
                     stdout_b.write(("    - Author: %s\n" % name).encode('utf-8'))
-            names.add(name)
+            names.update((name,))
 
         # Look for "thanks to" messages in the commit log
-        m = re.search(u(r'([Tt]hanks to|[Cc]ourtesy of) ([A-Z][A-Za-z]*? [A-Z][A-Za-z]*? [A-Z][A-Za-z]*|[A-Z][A-Za-z]*? [A-Z]\. [A-Z][A-Za-z]*|[A-Z][A-Za-z ]*? [A-Z][A-Za-z]*|[a-z0-9]+)($|\.| )'), line)
+        m = re.search(r'([Tt]hanks to|[Cc]ourtesy of|Co-authored-by:) ([A-Z][A-Za-z]*? [A-Z][A-Za-z]*? [A-Z][A-Za-z]*|[A-Z][A-Za-z]*? [A-Z]\. [A-Z][A-Za-z]*|[A-Z][A-Za-z ]*? [A-Z][A-Za-z]*|[a-z0-9]+)($|\.| )', line)
         if m:
             name = m.group(2)
-            if name not in (u('this'),):
+            if name not in (u'this',):
                 if disp:
                     stdout_b.write("    - Log   : %s\n" % line.strip().encode('utf-8'))
                 name = NAME_MAP.get(name, name)
-                names.add(name)
+                names.update((name,))
 
             line = line[m.end():].strip()
-            line = re.sub(u(r'^(and|, and|, ) '), u('Thanks to '), line)
+            line = re.sub(r'^(and|, and|, ) ', u'Thanks to ', line)
             analyze_line(line.encode('utf-8'), names)
 
     # Find all authors before the named range
@@ -84,24 +87,39 @@ def main():
 
     # Sort
     def name_key(fullname):
-        m = re.search(u(' [a-z ]*[A-Za-z-\']+$'), fullname)
+        m = re.search(u' [a-z ]*[A-Za-z-]+$', fullname)
         if m:
             forename = fullname[:m.start()].strip()
             surname = fullname[m.start():].strip()
         else:
             forename = ""
             surname = fullname.strip()
-        surname = surname.replace('\'', '')
-        if surname.startswith(u('van der ')):
+        if surname.startswith(u'van der '):
             surname = surname[8:]
-        if surname.startswith(u('de ')):
+        if surname.startswith(u'de '):
             surname = surname[3:]
-        if surname.startswith(u('von ')):
+        if surname.startswith(u'von '):
             surname = surname[4:]
         return (surname.lower(), forename.lower())
 
-    authors = list(authors)
-    authors.sort(key=name_key)
+    # generate set of all new authors
+    if vars(options)['new']:
+        new_authors = set(authors.keys()).difference(all_authors)
+        n_authors = list(new_authors)
+        n_authors.sort(key=name_key)
+        # Print some empty lines to separate
+        stdout_b.write(("\n\n").encode('utf-8'))
+        for author in n_authors:
+            stdout_b.write(("- %s\n" % author).encode('utf-8'))
+        # return for early exit so we only print new authors
+        return
+
+    try:
+        authors.pop('GitHub')
+    except KeyError:
+        pass
+    # Order by name. Could order by count with authors.most_common()
+    authors = sorted(authors.items(), key=lambda i: name_key(i[0]))
 
     # Print
     stdout_b.write(b"""
@@ -110,11 +128,14 @@ Authors
 
 """)
 
-    for author in authors:
+    for author, count in authors:
+        # remove @ if only GH handle is available
+        author_clean = author.strip('@')
+
         if author in all_authors:
-            stdout_b.write(("* %s\n" % author).encode('utf-8'))
+            stdout_b.write((f"* {author_clean} ({count})\n").encode('utf-8'))
         else:
-            stdout_b.write(("* %s +\n" % author).encode('utf-8'))
+            stdout_b.write((f"* {author_clean} ({count}) +\n").encode('utf-8'))
 
     stdout_b.write(("""
 A total of %(count)d people contributed to this release.
@@ -123,8 +144,32 @@ This list of names is automatically generated, and may not be fully complete.
 
 """ % dict(count=len(authors))).encode('utf-8'))
 
-    stdout_b.write("\nNOTE: Check this list manually! It is automatically generated "
-                   "and some names\n      may be missing.\n")
+    stdout_b.write(("\nNOTE: Check this list manually! It is automatically generated "
+                    "and some names\n      may be missing.\n").encode('utf-8'))
+
+
+def load_name_map(filename):
+    name_map = {}
+
+    with io.open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith(u"#") or not line:
+                continue
+
+            m = re.match(r'^(.*?)\s*<(.*?)>(.*?)\s*<(.*?)>\s*$', line)
+            if not m:
+                print("Invalid line in .mailmap: '{!r}'".format(line), file=sys.stderr)
+                sys.exit(1)
+
+            new_name = m.group(1).strip()
+            old_name = m.group(3).strip()
+
+            if old_name and new_name:
+                name_map[old_name] = new_name
+
+    return name_map
+
 
 #------------------------------------------------------------------------------
 # Communicating with Git
@@ -181,6 +226,7 @@ class Cmd:
                                           stderr=subprocess.PIPE),
                         call=True, **kw)
         return (ret == 0)
+
 
 git = Cmd("git")
 
