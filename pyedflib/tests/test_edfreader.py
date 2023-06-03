@@ -178,7 +178,8 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getStartdatetime(),datetimeSoll)
         np.testing.assert_equal(f.getPatientCode(), 'abcxyz99')
         np.testing.assert_equal(f.getPatientName(), 'Hans Muller')
-        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getSex(), 'Male')
+        np.testing.assert_equal(f.getGender(), 'Male')  # deprecated
         np.testing.assert_equal(f.getBirthdate(), '30 jun 1969')
         np.testing.assert_equal(f.getPatientAdditional(), 'patient')
         np.testing.assert_equal(f.getAdmincode(), 'Dr. X')
@@ -381,7 +382,8 @@ class TestEdfReader(unittest.TestCase):
             'patientcode': b'',
             'equipment': b'',
             'admincode': b'',
-            'gender': b'',
+            'sex': b'',
+            'gender': b'',  # deprecated
             'birthdate': b''
         }
 

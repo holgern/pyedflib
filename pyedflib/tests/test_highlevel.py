@@ -70,7 +70,7 @@ class TestHighLevel(unittest.TestCase):
         header = highlevel.make_header(technician='tech', recording_additional='r_add',
                                                 patientname='name', patient_additional='p_add',
                                                 patientcode='42', equipment='eeg', admincode='120',
-                                                gender='Male', startdate=startdate,birthdate='05.09.1980')
+                                                sex='Male', startdate=startdate,birthdate='05.09.1980')
         annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
 
         signal_headers1 = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
@@ -235,13 +235,14 @@ class TestHighLevel(unittest.TestCase):
     def test_read_header(self):
 
         header = highlevel.read_edf_header(self.test_generator)
-        self.assertEqual(len(header), 14)
+        self.assertEqual(len(header), 15)
         self.assertEqual(len(header['channels']), 11)
         self.assertEqual(len(header['SignalHeaders']), 11)
         self.assertEqual(header['Duration'], 600)
         self.assertEqual(header['admincode'], 'Dr. X')
         self.assertEqual(header['birthdate'], '30 jun 1969')
         self.assertEqual(header['equipment'], 'test generator')
+        self.assertEqual(header['sex'], 'Male')
         self.assertEqual(header['gender'], 'Male')
         self.assertEqual(header['patient_additional'], 'patient')
         self.assertEqual(header['patientcode'], 'abcxyz99')
@@ -254,7 +255,7 @@ class TestHighLevel(unittest.TestCase):
         header = highlevel.make_header(technician='tech', recording_additional='radd',
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
-                                                gender='Male', birthdate='05.09.1980')
+                                                sex='Male', birthdate='05.09.1980')
         annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
         header['annotations'] = annotations
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
@@ -325,7 +326,7 @@ class TestHighLevel(unittest.TestCase):
         header = highlevel.make_header(technician='tech', recording_additional='radd',
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
-                                                gender='Male', birthdate='05.09.1980')
+                                                sex='Male', birthdate='05.09.1980')
         annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
         header['annotations'] = annotations
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])

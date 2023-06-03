@@ -10,9 +10,9 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
            'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly',
            'set_patient_additional', 'set_digital_maximum', 'set_birthdate', 'set_digital_minimum',
            'write_digital_samples', 'set_equipment', 'set_samples_per_record','set_admincode', 'set_label',
-           'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
-           'seek', 'set_startdatetime' ,'set_datarecord_duration', 'set_number_of_annotation_signals',
-           'open_errors', 'FILETYPE_EDFPLUS',
+           'tell', 'rewind', 'set_sex', 'set_gender', 'set_physical_dimension', 'set_transducer',
+           'set_prefilter', 'seek', 'set_startdatetime' ,'set_datarecord_duration',
+           'set_number_of_annotation_signals', 'open_errors', 'FILETYPE_EDFPLUS',
            'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors', 'get_number_of_open_files',
            'get_handle', 'is_file_used', 'blockwrite_digital_short_samples', 'write_digital_short_samples']
 
@@ -270,8 +270,13 @@ cdef class CyEdfReader:
         def __get__(self):
             return self.hdr.patientcode
 
+    property sex:
+        def __get__(self):
+            return self.hdr.gender
+
     property gender:
         def __get__(self):
+            warnings.warn("Variable 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
             return self.hdr.gender
 
     property birthdate:
@@ -615,10 +620,14 @@ def rewind(handle, edfsignal):
     """void edfrewind(int handle, int edfsignal)"""
     c_edf.edfrewind(handle, edfsignal)
 
+def set_sex(handle, sex):
+    """int edf_set_sex(int handle, int sex)"""
+    if sex is None: return 0 #don't set sex at all to prevent default 'F'
+    return c_edf.edf_set_gender(handle, sex)
+
 def set_gender(handle, gender):
-    """int edf_set_gender(int handle, int gender)"""
-    if gender is None: return 0 #don't set gender at all to prevent default 'F'
-    return c_edf.edf_set_gender(handle, gender)
+    warnings.warn("Function 'set_gender' is deprecated, use 'set_sex' instead.", DeprecationWarning, stacklevel=2)
+    return set_sex(handle, gender)
 
 def set_physical_dimension(handle, edfsignal, phys_dim):
     """int edf_set_physical_dimension(int handle, int edfsignal, const char *phys_dim)"""

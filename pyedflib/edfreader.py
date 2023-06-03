@@ -7,6 +7,7 @@
 
 from datetime import datetime
 import numpy as np
+import warnings
 
 from ._extensions._pyedflib import CyEdfReader
 
@@ -139,8 +140,9 @@ class EdfReader(CyEdfReader):
         return {"technician": self.getTechnician(), "recording_additional": self.getRecordingAdditional(),
                 "patientname": self.getPatientName(), "patient_additional": self.getPatientAdditional(),
                 "patientcode": self.getPatientCode(), "equipment": self.getEquipment(),
-                "admincode": self.getAdmincode(), "gender": self.getGender(), "startdate": self.getStartdatetime(),
-                "birthdate": self.getBirthdate()}
+                "admincode": self.getAdmincode(), "sex": self.getSex(), "startdate": self.getStartdatetime(),
+                "birthdate": self.getBirthdate(),
+                "gender": self.getSex()}  # backwards compatibility
 
     def getSignalHeader(self, chn):
         """
@@ -152,7 +154,7 @@ class EdfReader(CyEdfReader):
         """
         return {'label': self.getLabel(chn),
                 'dimension': self.getPhysicalDimension(chn),
-                'sample_rate': self.getSampleFrequency(chn),
+                'sample_rate': self.getSampleFrequency(chn),  # backwards compatibility
                 'sample_frequency': self.getSampleFrequency(chn),
                 'physical_max':self.getPhysicalMaximum(chn),
                 'physical_min': self.getPhysicalMinimum(chn),
@@ -307,9 +309,9 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.admincode.rstrip())
 
-    def getGender(self):
+    def getSex(self):
         """
-        Returns the Gender of the patient.
+        Returns the Sex of the patient.
 
         Parameters
         ----------
@@ -319,12 +321,16 @@ class EdfReader(CyEdfReader):
         --------
         >>> import pyedflib
         >>> f = pyedflib.data.test_generator()
-        >>> f.getGender()==''
+        >>> f.getSex()==''
         True
         >>> f.close()
 
         """
-        return self._convert_string(self.gender.rstrip())
+        return self._convert_string(self.sex.rstrip())
+
+    def getGender(self):
+        warnings.warn("Method 'getGender' is deprecated, use 'getSex' instead.", DeprecationWarning, stacklevel=2)
+        return self.getSex()
 
     def getFileDuration(self):
         """

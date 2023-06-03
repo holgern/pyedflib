@@ -147,7 +147,8 @@ def phys2dig(signal, dmin, dmax, pmin, pmax):
 
 def make_header(technician='', recording_additional='', patientname='',
                 patient_additional='', patientcode= '', equipment= '',
-                admincode= '', gender= '', startdate=None, birthdate= ''):
+                admincode= '', sex= '', startdate=None, birthdate= '',
+                gender=None):
     """
     A convenience function to create an EDF header (a dictionary) that
     can be used by pyedflib to update the main header of the EDF
@@ -168,8 +169,8 @@ def make_header(technician='', recording_additional='', patientname='',
         which system was used. The default is ''.
     admincode : str, optional
         code of the admin. The default is ''.
-    gender : str, optional
-        gender of patient. The default is ''.
+    sex : str, optional
+        sex of patient. The default is ''.
     startdate : datetime.datetime, optional
         startdate of recording. The default is None.
     birthdate : str/datetime.datetime, optional
@@ -191,7 +192,18 @@ def make_header(technician='', recording_additional='', patientname='',
         del now
     if isinstance(birthdate, datetime):
         birthdate = birthdate.strftime('%d %b %Y').lower()
+
+    # backwards compatibility
+    if gender is not None:
+        if sex == '':
+            sex = gender
+            warnings.warn("Parameter 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
+        elif sex != gender:
+            raise ValueError("Defined both parameters 'sex' and 'gender', with different values: {sex} != {gender}")
+    gender = sex
+
     local = locals()
+
     header = {}
     for var in local:
         if isinstance(local[var], datetime):
