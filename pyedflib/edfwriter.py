@@ -109,20 +109,19 @@ def u(x):
 
 
 def du(x):
-    if isbytestr(x):
+    if isinstance(x, bytes):
         return x
     else:
         return x.encode("utf-8")
 
 
 def isstr(s):
-    try:
-        return isinstance(s, basestring)
-    except NameError:
-        return isinstance(s, str)
+    warnings.warn('This function is deprecated.', DeprecationWarning, stacklevel=2)
+    return isinstance(s, str)
 
 
 def isbytestr(s):
+    warnings.warn('This function is deprecated.', DeprecationWarning, stacklevel=2)
     return isinstance(s, bytes)
 
 
@@ -264,7 +263,7 @@ class EdfWriter:
         # subseconds are noted in nanoseconds, so we multiply by 100
         if self.recording_start_time.microsecond>0:
             set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
-        if isstr(self.birthdate):
+        if isinstance(self.birthdate, str):
             if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
                 set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
