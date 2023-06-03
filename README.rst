@@ -18,9 +18,9 @@ pyEDFlib
 .. image:: https://img.shields.io/conda/vn/conda-forge/pyedflib.svg
    :target: https://anaconda.org/conda-forge/pyedflib
    :alt: Conda Version
-  
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   
-   :target: https://anaconda.org/conda-forge/pyedflib 
+
+.. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg
+   :target: https://anaconda.org/conda-forge/pyedflib
    :alt: Conda Downloads
 
 What is pyEDFlib
@@ -97,11 +97,11 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     # drop a channel from the file or anonymize edf
     highlevel.drop_channels('edf_file.edf', to_drop=['ch2', 'ch4'])
     highlevel.anonymize_edf('edf_file.edf', new_file='anonymized.edf'
-	                         to_remove=['patientname', 'birthdate'],
-	                         new_values=['anonymized', ''])
+                             to_remove=['patientname', 'birthdate'],
+                             new_values=['anonymized', ''])
     # check if the two files have the same content
     highlevel.compare_edf('edf_file.edf', 'anonymized.edf')
-    # change polarity of certain channels 
+    # change polarity of certain channels
     highlevel.change_polarity('file.edf', channels=[1,3])
     # rename channels within a file
     highlevel.rename_channels('file.edf', mapping={'C3-M1':'C3'})
@@ -112,12 +112,12 @@ License
 
 pyEDFlib is a free Open Source software released under the BSD 2-clause license.
 
-  
+
 Releases can be cited via Zenodo.
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5678481.svg
    :target: https://doi.org/10.5281/zenodo.5678481
-  
+
 .. _Cython: http://cython.org/
 .. _Anaconda: https://www.continuum.io
 .. _GitHub: https://github.com/holgern/pyedflib
