@@ -38,14 +38,14 @@ class TestEdfReader(unittest.TestCase):
                 os.remove(os.path.join(data_dir, file))
             except Exception as e:
                 print(e)
-                
+
     def tearDown(self):
         # small hack to close handles in case of tests throwing an exception
         for obj in gc.get_objects():
             if isinstance(obj, (EdfWriter, EdfReader)):
                 obj.close()
                 del obj
-                
+
     def test_EdfReader(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)
@@ -79,7 +79,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.signals_in_file, 5)
         np.testing.assert_equal(f.datarecords_in_file, datarecords)
         np.testing.assert_equal(f.getFileDuration(), datarecords)
-        
+
         sample_frequencies = [1000, 800, 500, 975, 999]
 
         for i in np.arange(f.signals_in_file):
@@ -88,7 +88,7 @@ class TestEdfReader(unittest.TestCase):
             np.testing.assert_equal(f.getNSamples()[i], int(sample_frequencies[i] * datarecords))
             np.testing.assert_almost_equal(f.getSignalHeader(i)["sample_frequency"], sample_frequencies[i])
             np.testing.assert_almost_equal(f.getSignalHeaders()[i]["sample_frequency"], sample_frequencies[i])
-            
+
         np.testing.assert_equal(f.handle, 0)
         f.close()
         np.testing.assert_equal(f.handle, -1)
@@ -107,7 +107,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.datarecord_duration, datarecord_duration)
         np.testing.assert_equal(f.datarecords_in_file, datarecords / datarecord_duration)
         np.testing.assert_equal(f.getFileDuration(), datarecords)
-        
+
         sample_frequencies = [2000, 1600, 1000, 1950, 1998]
 
         for i in np.arange(f.signals_in_file):
@@ -134,7 +134,7 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.datarecord_duration, datarecord_duration)
         np.testing.assert_equal(f.datarecords_in_file, datarecords / datarecord_duration)
         np.testing.assert_equal(f.getFileDuration(), datarecords)
-        
+
         sample_frequencies = [500, 400, 250, 487.5, 499.5]
 
         for i in np.arange(f.signals_in_file):
@@ -160,12 +160,12 @@ class TestEdfReader(unittest.TestCase):
         for i in range(10):
             for func in funcs:
                 getattr(f, func)(i)
-            
+
         for i in [-1, 11]:
             for func in funcs:
                 with self.assertRaises(IndexError, msg=f"f.{func}({i})"):
                     getattr(f, func)(i)
-            
+
         f.close()
 
     def test_EdfReader_headerInfos(self):
@@ -294,7 +294,7 @@ class TestEdfReader(unittest.TestCase):
         # Don't close the file but try to reopen it and verify that it fails.
         with np.testing.assert_raises(OSError):
             ff = pyedflib.EdfReader(self.edf_data_file)
-        
+
         # Now close and verify it can be re-opened/read.
         f.close()
 
@@ -357,7 +357,7 @@ class TestEdfReader(unittest.TestCase):
                 f.setTechnician('tec1')
                 data = np.ones(100) * 0.1
                 f.writePhysicalSamples(data)
-    
+
             with open(self.bdf_accented_file, 'rb') as f:
                 content = bytearray(f.read())
                 content[181] = 58
