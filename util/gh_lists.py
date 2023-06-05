@@ -119,7 +119,6 @@ class CachedGet:
             self.cache = {}
 
     def get(self, url):
-        url = unicode(url)
         if url not in self.cache:
             print("[gh_lists] get:", url, file=sys.stderr)
             req = urlopen(url)

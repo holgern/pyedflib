@@ -105,14 +105,14 @@ def check_signal_header_correct(channels, i, file_type):
 
 
 def u(x):
-    return x.decode("utf-8", "strict")
+    return x.decode("utf_8", "strict")
 
 
 def du(x):
     if isinstance(x, bytes):
         return x
     else:
-        return x.encode("utf-8")
+        return x.encode("utf_8")
 
 
 def isstr(s):
@@ -861,7 +861,7 @@ class EdfWriter:
                 if success<0:
                     raise OSError(f'Unknown error while calling writeSamples: {success}')
 
-    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
+    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf_8'):
         """
         Writes an annotation/event to the file
         """
@@ -871,7 +871,7 @@ class EdfWriter:
         if isinstance(duration_in_seconds, bytes):
             duration_in_seconds = float(duration_in_seconds)
 
-        if str_format == 'utf-8':
+        if str_format == 'utf_8':
             if duration_in_seconds >= 0:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), du(description))
             else:
