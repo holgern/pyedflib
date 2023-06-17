@@ -14,7 +14,6 @@ from . import highlevel
 from . import data
 
 from pyedflib.version import version as __version__
-from numpy.testing import Tester
 
 __all__ = [s for s in dir() if not s.startswith('_')]
 try:
@@ -23,6 +22,3 @@ try:
     del s
 except NameError:
     pass
-
-
-test = Tester().test
