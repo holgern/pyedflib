@@ -21,5 +21,5 @@ Tests are implemented with `nose`_, so use one of:
 Note doctests require `Matplotlib`_ in addition to the usual dependencies.
 
 
-.. _nose: http://nose.readthedocs.org/en/latest/ 
-.. _Matplotlib: http://matplotlib.org
+.. _nose: https://nose.readthedocs.io/
+.. _Matplotlib: https://matplotlib.org/

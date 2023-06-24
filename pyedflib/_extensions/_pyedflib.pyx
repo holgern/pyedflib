@@ -97,7 +97,7 @@ def contains_unicode(string):
 def get_short_path_name(long_name):
     """
     Gets the short path name of a given long path.
-    http://stackoverflow.com/a/23598461/200291
+    https://stackoverflow.com/a/23598461/200291
     """
     import ctypes
     from ctypes import wintypes

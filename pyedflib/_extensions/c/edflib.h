@@ -130,9 +130,9 @@ extern "C" {
 
 
 
-/* For more info about the EDF and EDF+ format, visit: http://edfplus.info/specs/ */
+/* For more info about the EDF and EDF+ format, visit: https://edfplus.info/specs/ */
 
-/* For more info about the BDF and BDF+ format, visit: http://www.teuniz.net/edfbrowser/bdfplus%20format%20description.html */
+/* For more info about the BDF and BDF+ format, visit: https://www.teuniz.net/edfbrowser/bdfplus%20format%20description.html */
 
 /*
  * note: In EDF, the sensitivity (e.g. uV/bit) and offset are stored using four parameters:
@@ -149,7 +149,7 @@ extern "C" {
  * For a better explanation about the relation between digital data and physical data,
  * read the document "Coding Schemes Used with Data Converters" (PDF):
  *
- * http://www.ti.com/general/docs/lit/getliterature.tsp?baseLiteratureNumber=sbaa042
+ * https://www.ti.com/general/docs/lit/getliterature.tsp?baseLiteratureNumber=sbaa042
  *
  * note: An EDF file usually contains multiple so-called datarecords. One datarecord usually has a duration of one second (this is the default but it is not mandatory!).
  * In that case a file with a duration of five minutes contains 300 datarecords. The duration of a datarecord can be freely choosen but, if possible, use values from

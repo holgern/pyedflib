@@ -8,7 +8,7 @@ pyEDFlib
    :alt: Test Coverage
 
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
-   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
+   :target: https://pyedflib.readthedocs.io/en/latest/?badge=latest
    :alt: Docs Build
 
 .. image:: https://badge.fury.io/py/pyEDFlib.svg
@@ -42,7 +42,7 @@ The EDFlib is able to read and write EDF/EDF+/BDF/BDF+ files.
 Documentation
 -------------
 
-Documentation is available online at http://pyedflib.readthedocs.org.
+Documentation is available online at https://pyedflib.readthedocs.io.
 
 Installation
 ------------
@@ -118,18 +118,18 @@ Releases can be cited via Zenodo.
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5678481.svg
    :target: https://doi.org/10.5281/zenodo.5678481
 
-.. _Cython: http://cython.org/
-.. _Anaconda: https://www.continuum.io
+.. _Cython: https://cython.org/
+.. _Anaconda: https://www.anaconda.com/
 .. _GitHub: https://github.com/holgern/pyedflib
 .. _GitHub Issues: https://github.com/holgern/pyedflib/issues
-.. _Numpy: http://www.numpy.org
-.. _Python: http://python.org/
-.. _Python Package Index: http://pypi.python.org/pypi/pyEDFlib/
+.. _Numpy: https://numpy.org/
+.. _Python: https://www.python.org/
+.. _Python Package Index: https://pypi.org/project/pyEDFlib/
 .. _Releases Page: https://github.com/holgern/pyedflib/releases
-.. _edfplus.info: http://www.edfplus.info/
-.. _European Data Format: http://www.edfplus.info/
+.. _edfplus.info: https://www.edfplus.info/
+.. _European Data Format: https://www.edfplus.info/
 .. _Kemp2003: https://www.ncbi.nlm.nih.gov/pubmed/12948806?dopt=Citation
 .. _Kemp1992: https://www.ncbi.nlm.nih.gov/pubmed/1374708?dopt=Abstract
-.. _BioSemi: http://www.biosemi.com/faq/file_format.htm
+.. _BioSemi: https://www.biosemi.com/faq/file_format.htm
 .. _toolbox from Christopher Lee-Messer: https://github.com/cleemesser/python-edf
-.. _EDFlib: http://www.teuniz.net/edflib/
+.. _EDFlib: https://www.teuniz.net/edflib/

@@ -30,7 +30,7 @@ VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 REQUIRED_NUMPY = 'numpy>=1.9.1'
 
 
-# from MDAnalysis setup.py (http://www.mdanalysis.org/)
+# from MDAnalysis setup.py (https://www.mdanalysis.org/)
 class NumpyExtension(Extension):
     """Derived class to cleanly handle setup-time (numpy) dependencies.
     """
@@ -59,7 +59,7 @@ class NumpyExtension(Extension):
     def include_dirs(self, val):
         self._np_include_dir_args = val
 
-# from MDAnalysis setup.py (http://www.mdanalysis.org/)
+# from MDAnalysis setup.py (https://www.mdanalysis.org/)
 def get_numpy_include():
     try:
         # Obtain the numpy include directory. This logic works across numpy
@@ -83,7 +83,7 @@ def get_numpy_include():
             print(e)
             print('*** package "numpy" not found ***')
             print('pyEDFlib requires a version of NumPy, even for setup.')
-            print('Please get it from http://numpy.scipy.org/ or install it through '
+            print('Please get it from https://numpy.org/ or install it through '
                   'your package manager.')
             sys.exit(-1)
     try:
