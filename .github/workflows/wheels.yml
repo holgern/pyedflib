@@ -1,5 +1,6 @@
 name: Build wheel
 on:
+  workflow_dispatch:
   push:
     # Pattern matched against refs/tags
     tags:
