@@ -33,7 +33,7 @@ Use ``pip`` to install numpy_::
 Numpy can also be obtained via scientific python distributions such as:
 
 - Anaconda_
-- `Enthought Canopy`_
+- `Enthought Deployment Manager`_
 - `Python(x,y) <http://python-xy.github.io/>`_
 
 .. note::
@@ -61,4 +61,4 @@ via::
 .. _Sphinx: http://sphinx.pocoo.org
 .. _numpydoc: https://github.com/numpy/numpydoc
 .. _Anaconda: https://www.continuum.io/downloads
-.. _Enthought Canopy: https://www.enthought.com/products/canopy/
+.. _Enthought Deployment Manager: https://www.enthought.com/edm/
