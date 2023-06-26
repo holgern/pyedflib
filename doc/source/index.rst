@@ -31,7 +31,7 @@ The definition of the *EDF/EDF+* format can be found under `edfplus.info <https:
 The *EDF/EDF+* format saves all data with 16 Bit.
 A version of the format which saves all data with 24 Bit, called *BDF*, was introduced by the company `BioSemi <https://www.biosemi.com/faq/file_format.htm>`_.
 
-The ``PyEDFlib`` `Python`_ toolbox is a fork of the ``python-edf`` `toolbox from Christopher Lee-Messer <https://bitbucket.org/cleemesser/python-edf/>`_.
+The ``PyEDFlib`` `Python`_ toolbox is a fork of the ``python-edf`` `toolbox from Christopher Lee-Messer <https://github.com/cleemesser/python-edf>`_.
 and uses the `EDFlib <http://www.teuniz.net/edflib/>`_ from Teunis van Beelen.
 
 Requirements
