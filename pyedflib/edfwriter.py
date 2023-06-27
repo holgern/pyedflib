@@ -446,7 +446,7 @@ class EdfWriter:
 
     def setSex(self, sex):
         """
-        Sets the sex.
+        Sets the sex. Due to the edf specifications, only binary assignment is possible.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
 
         Parameters
