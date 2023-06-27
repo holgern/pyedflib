@@ -126,7 +126,7 @@ class EdfReader(CyEdfReader):
         if isinstance(s, bytes):
             return s.decode("latin")
         else:
-            return s.decode("utf-8", "strict")
+            return s.decode("utf_8", "strict")
 
     def getHeader(self):
         """
