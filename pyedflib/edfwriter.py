@@ -314,6 +314,19 @@ class EdfWriter:
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
             'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
         """
+        try:
+            sample_rate = channel_info.pop('sample_rate')
+        except KeyError:
+            pass
+        else:
+            if 'sample_frequency' in channel_info:
+                if sample_rate != channel_info['sample_frequency']:
+                    warnings.warn("The 'sample_rate' parameter is deprecated. "
+                                  "Please use 'sample_frequency' instead.",
+                                  DeprecationWarning)
+            else:
+                channel_info['sample_frequency'] = sample_rate
+
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
         self.channels[edfsignal].update(channel_info)
