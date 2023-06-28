@@ -239,10 +239,14 @@ def make_signal_header(label, dimension='uV', sample_rate=256, sample_frequency=
         a signal header that can be used to save a channel to an EDF.
 
     """
+    if sample_frequency is None:
+        sample_frequency = sample_rate
+    elif sample_rate != 256 and sample_rate != sample_frequency:
+        warnings.warn("The 'sample_rate' parameter is deprecated. Please use "
+                      "'sample_frequency' instead.", DeprecationWarning)
 
     signal_header = {'label': label,
                'dimension': dimension,
-               'sample_rate': sample_rate,
                'sample_frequency': sample_frequency,
                'physical_min': physical_min,
                'physical_max': physical_max,
