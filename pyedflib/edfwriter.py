@@ -171,19 +171,6 @@ class EdfWriter:
             edflib.FILETYPE_EDFPLUS
             edflib.FILETYPE_BDFPLUS
         n_channels is the number of channels without the annotation channel
-
-        channel_info should be a
-        list of dicts, one for each channel in the data. Each dict needs
-        these values:
-
-            'label' : channel label (string, <= 16 characters, must be unique)
-            'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
-            'sample_frequency' : number of samples per record (int)
-            'physical_max' : maximum physical value (float)
-            'physical_min' : minimum physical value (float)
-            'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
-            'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
         """
         self.path = file_name
         self.file_type = file_type
@@ -205,13 +192,15 @@ class EdfWriter:
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
-                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV',
+                                      'sample_frequency': 100,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
-                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV',
+                                      'sample_frequency': 100,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
 
