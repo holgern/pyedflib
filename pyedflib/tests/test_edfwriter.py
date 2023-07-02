@@ -797,7 +797,30 @@ class TestEdfWriter(unittest.TestCase):
             np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
             np.testing.assert_equal(f.getSampleFrequency(0), 100)
             self.assertEqual(f.getSex(), expected,
-                             f'set {sex}, but {expected}!={f.getSex()} ')
+                             f'set {sex}, but f.getSex()!={expected}')
+            self.assertEqual(f.getGender(), expected,
+                             f'set {sex}, but f.getGender()!={expected}')
+            del f
+
+        # try again, this time with setGender() instead of setSex()
+        for sex, expected in sex_mapping.items():
+            f = pyedflib.EdfWriter(self.edf_data_file, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
+            f.setGender(sex)  # deprecated
+            f.setSignalHeader(0, channel_info1)
+            f.setSignalHeader(1, channel_info2)
+            data = np.ones(100) * 0.1
+            assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+            assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+            del f
+
+            f = pyedflib.EdfReader(self.edf_data_file)
+            np.testing.assert_equal(f.getLabel(0), 'test_label1')
+            np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
+            np.testing.assert_equal(f.getSampleFrequency(0), 100)
+            self.assertEqual(f.getSex(), expected,
+                             f'set {sex}, but f.getSex()!={expected}')
+            self.assertEqual(f.getGender(), expected,
+                             f'set {sex}, but f.getGender()!={expected}')
             del f
 
     def test_non_one_second_record_duration(self):
