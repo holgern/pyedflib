@@ -274,12 +274,12 @@ cdef class CyEdfReader:
 
     property sex:
         def __get__(self):
-            return self.hdr.gender
+            return self.hdr.sex
 
     property gender:
         def __get__(self):
             warnings.warn("Variable 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
-            return self.hdr.gender
+            return self.hdr.sex
 
     property birthdate:
         def __get__(self):
@@ -583,11 +583,11 @@ def rewind(handle, edfsignal):
 def set_sex(handle, sex):
     """int edf_set_sex(int handle, int sex)"""
     if sex is None: return 0 #don't set sex at all to prevent default 'F'
-    return c_edf.edf_set_gender(handle, sex)
+    return c_edf.edf_set_sex(handle, sex)
 
 def set_gender(handle, gender):
     warnings.warn("Function 'set_gender' is deprecated, use 'set_sex' instead.", DeprecationWarning, stacklevel=2)
-    return set_sex(handle, gender)
+    return c_edf.edf_set_sex(handle, gender)
 
 def set_physical_dimension(handle, edfsignal, phys_dim):
     """int edf_set_physical_dimension(int handle, int edfsignal, const char *phys_dim)"""
