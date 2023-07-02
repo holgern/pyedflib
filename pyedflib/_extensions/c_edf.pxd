@@ -7,8 +7,10 @@ include "edf.pxi"
 
 cdef extern from "c/edflib.h":
     int edf_set_patientcode(int, char *)
-    int edfwrite_annotation_latin1(int, long long int, long long int, char *)
-    int edfwrite_annotation_utf8(int, long long int, long long int, char *)
+    int edfwrite_annotation_utf8(int, long long, long long, const char *)
+    int edfwrite_annotation_latin1_hr(int, long long int, long long int, char *)
+    int edfwrite_annotation_latin1(int, long long, long long, const char *)
+    int edfwrite_annotation_utf8_hr(int, long long int, long long int, char *)
     int edflib_version()
     cdef struct edf_annotation_struct:
         long long int onset
