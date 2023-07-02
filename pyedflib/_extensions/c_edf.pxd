@@ -57,7 +57,7 @@ cdef extern from "c/edflib.h":
         char * patient
         char * recording
         char * patientcode
-        char * gender
+        char * sex
         char * birthdate
         char * patient_name
         char * patient_additional
@@ -81,7 +81,7 @@ cdef extern from "c/edflib.h":
     int edf_blockwrite_digital_samples(int, int *)
     long long int edftell(int, int)
     void edfrewind(int, int)
-    int edf_set_gender(int, int)
+    int edf_set_sex(int, int)
     int edf_set_physical_dimension(int, int, char *)
     int edf_set_transducer(int, int, char *)
     int edf_set_prefilter(int, int, char *)
