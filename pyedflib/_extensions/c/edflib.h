@@ -192,6 +192,11 @@
 #define EDFLIB_READ_ANNOTATIONS         (1)
 #define EDFLIB_READ_ALL_ANNOTATIONS     (2)
 
+/* values for size check on edfopen_file_readonly */
+#define EDFLIB_CHECK_FILE_SIZE               (0)
+#define EDFLIB_DO_NOT_CHECK_FILE_SIZE        (1)
+#define EDFLIB_REPAIR_FILE_SIZE_IF_WRONG     (2)
+
 /* the following defines are possible errors returned by the first sample write action */
 #define EDFLIB_NO_SIGNALS                  (-20)
 #define EDFLIB_TOO_MANY_SIGNALS            (-21)
@@ -200,6 +205,28 @@
 #define EDFLIB_DIGMAX_LOWER_THAN_DIGMIN    (-24)
 #define EDFLIB_PHYSMIN_IS_PHYSMAX          (-25)
 #define EDFLIB_DATARECORD_SIZE_TOO_BIG     (-26)
+
+/* added for pyedflib */
+#define EDFLIB_INVALID_CHECK_SIZE_VALUE       (-13)
+#define EDFLIB_FILE_ERRORS_STARTDATE          (-30)
+#define EDFLIB_FILE_ERRORS_STARTTIME          (-31)
+#define EDFLIB_FILE_ERRORS_NUMBER_SIGNALS     (-32)
+#define EDFLIB_FILE_ERRORS_BYTES_HEADER       (-33)
+#define EDFLIB_FILE_ERRORS_RESERVED_FIELD     (-34)
+#define EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS (-35)
+#define EDFLIB_FILE_ERRORS_DURATION           (-36)
+#define EDFLIB_FILE_ERRORS_LABEL              (-37)
+#define EDFLIB_FILE_ERRORS_TRANSDUCER         (-38)
+#define EDFLIB_FILE_ERRORS_PHYS_DIMENSION     (-39)
+#define EDFLIB_FILE_ERRORS_PHYS_MAX           (-40)
+#define EDFLIB_FILE_ERRORS_PHYS_MIN           (-41)
+#define EDFLIB_FILE_ERRORS_DIG_MAX            (-42)
+#define EDFLIB_FILE_ERRORS_DIG_MIN            (-43)
+#define EDFLIB_FILE_ERRORS_PREFILTER          (-44)
+#define EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD (-45)
+#define EDFLIB_FILE_ERRORS_FILESIZE           (-46)
+#define EDFLIB_FILE_ERRORS_RECORDINGFIELD     (-47)
+#define EDFLIB_FILE_ERRORS_PATIENTNAME        (-48)
 
 #ifdef __cplusplus
 extern "C" {
@@ -267,7 +294,7 @@ typedef struct edf_hdr_struct
 
 /*****************  the following functions are used to read files **************************/
 
-EDFLIB_API int edfopen_file_readonly(const char *path, edflib_hdr_t *edfhdr, int read_annotations);
+EDFLIB_API int edfopen_file_readonly(const char *path, edflib_hdr_t *edfhdr, int read_annotations, int check_file_size);
 /* opens an existing file for reading
  * path is a null-terminated string containing the path to the file
  * hdr is a pointer to an edf_hdr_struct, all fields in this struct will be overwritten
@@ -278,6 +305,11 @@ EDFLIB_API int edfopen_file_readonly(const char *path, edflib_hdr_t *edfhdr, int
  *   EDFLIB_READ_ANNOTATIONS             annotations will be read immediately, stops when an annotation has
  *                                       been found which contains the description "Recording ends"
  *   EDFLIB_READ_ALL_ANNOTATIONS         all annotations will be read immediately
+
+ * check_file_size must have one of the following values:
+ * EDFLIB_CHECK_FILE_SIZE                file size is checked and if wrong, the file will not be opened
+ * EDFLIB_DO_NOT_CHECK_FILE_SIZE         the file will alsways be opened and the file size is not checked
+ * EDFLIB_REPAIR_FILE_SIZE_IF_WRONG      the file size is checked and if it is wrong it will be fixed
 
  * returns 0 on success, in case of an error it returns -1 and an error code will be set in the member "filetype" of edflib_hdr_t
  * This function is required if you want to read a file
