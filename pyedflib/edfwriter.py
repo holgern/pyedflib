@@ -12,7 +12,7 @@ from datetime import datetime, date
 from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_BDF, FILETYPE_EDF
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
-from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration, set_number_of_annotation_signals
+from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_sex, set_datarecord_duration, set_number_of_annotation_signals
 from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samples_per_record, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
@@ -116,26 +116,31 @@ def du(x):
 
 
 def isstr(s):
-    warnings.warn('This function is deprecated.', DeprecationWarning, stacklevel=2)
+    warnings.warn("Function 'isstr' is deprecated.", DeprecationWarning, stacklevel=2)
     return isinstance(s, str)
 
 
 def isbytestr(s):
-    warnings.warn('This function is deprecated.', DeprecationWarning, stacklevel=2)
+    warnings.warn("Function 'isbytestr' is deprecated.", DeprecationWarning, stacklevel=2)
     return isinstance(s, bytes)
 
 
-def gender2int(gender):
-    if isinstance(gender, int) or gender is None:
-        return gender
-    elif gender.lower() in ['', 'x', 'xx', 'xxx', 'unknown', '?', '??']:
+def sex2int(sex):
+    if isinstance(sex, int) or sex is None:
+        return sex
+    elif sex.lower() in ('', 'x', 'xx', 'xxx', 'unknown', '?', '??'):
         return None
-    elif gender.lower() in ["female", "woman", "f", "w"]:
+    elif sex.lower() in ("female", "woman", "f", "w"):
         return 0
-    elif gender.lower() in  ["male", "man", "m"]:
+    elif sex.lower() in  ("male", "man", "m"):
         return 1
     else:
-        raise ValueError(f"Unknown gender: '{gender}'")
+        raise ValueError(f"Unknown sex: '{sex}'")
+
+
+def gender2int(gender):
+    warnings.warn("Function 'gender2int' is deprecated, use 'sex2int' instead.", DeprecationWarning, stacklevel=2)
+    return sex2int(gender)
 
 
 class ChannelDoesNotExist(Exception):
@@ -194,7 +199,7 @@ class EdfWriter:
         self.recording_additional = ''
         self.patient_additional = ''
         self.admincode = ''
-        self.gender = None
+        self.sex = None
         self.recording_start_time = datetime.now().replace(microsecond=0)
 
         self.birthdate = ''
@@ -227,13 +232,13 @@ class EdfWriter:
         """
         # some checks that warn users if header fields exceed 80 chars
         patient_ident = len(self.patient_code) + len(self.patient_name) \
-                        + len(self.patient_additional) + 3 + 1 + 11 # 3 spaces 1 gender 11 birthdate
+                        + len(self.patient_additional) + 3 + 1 + 11 # 3 spaces 1 sex 11 birthdate
         record_ident = len(self.equipment) + len(self.technician) \
                        + len(self.admincode) + len(self.recording_additional) \
                        + len('Startdate') + 3 + 11 # 3 spaces 11 birthdate
 
         if patient_ident>80:
-            warnings.warn('Patient code, name, gender and birthdate combined must not be larger than 80 chars. ' +
+            warnings.warn('Patient code, name, sex and birthdate combined must not be larger than 80 chars. ' +
                           f'Currently has len of {patient_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
         if record_ident>80:
             warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
@@ -253,7 +258,7 @@ class EdfWriter:
         set_patient_additional(self.handle, du(self.patient_additional))
         set_equipment(self.handle, du(self.equipment))
         set_admincode(self.handle, du(self.admincode))
-        set_gender(self.handle, gender2int(self.gender))
+        set_sex(self.handle, sex2int(self.sex))
 
         set_datarecord_duration(self.handle, self.record_duration)
         set_number_of_annotation_signals(self.handle, self.number_of_annotations)
@@ -293,7 +298,7 @@ class EdfWriter:
         self.patient_code = fileHeader["patientcode"]
         self.equipment = fileHeader["equipment"]
         self.admincode = fileHeader["admincode"]
-        self.gender = fileHeader["gender"]
+        self.sex = fileHeader["sex"]
         self.recording_start_time = fileHeader["startdate"]
         self.birthdate = fileHeader["birthdate"]
         self.update_header()
@@ -439,17 +444,22 @@ class EdfWriter:
         self.admincode = admincode
         self.update_header()
 
-    def setGender(self, gender):
+    def setSex(self, sex):
         """
-        Sets the gender.
+        Sets the sex. Due to the edf specifications, only binary assignment is possible.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
 
         Parameters
         ----------
-        gender : int
+        sex : int
             1 is male, 0 is female
         """
-        self.gender = gender2int(gender)
+        self.sex = sex2int(sex)
+        self.update_header()
+
+    def setGender(self, gender):
+        warnings.warn("Function 'setGender' is deprecated, use 'setSex' instead.", DeprecationWarning, stacklevel=2)
+        self.sex = sex2int(gender)
         self.update_header()
 
     def setDatarecordDuration(self, record_duration):

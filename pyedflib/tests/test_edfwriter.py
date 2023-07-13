@@ -3,6 +3,7 @@
 
 import os
 import gc
+import warnings
 import numpy as np
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
@@ -139,7 +140,7 @@ class TestEdfWriter(unittest.TestCase):
         startdate = datetime(2017, 1, 2, 13, 14, 15, 250)
         header = {'technician': 'tec1', 'recording_additional': 'recAdd1', 'patientname': 'pat1',
                   'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
-                  'admincode':'admin1','gender':1,'startdate':startdate,'birthdate':date(1951, 8, 2)}
+                  'admincode':'admin1','sex':1,'startdate':startdate,'birthdate':date(1951, 8, 2)}
         f.setHeader(header)
         f.setStartdatetime(startdate)
         f.setSignalHeader(0, channel_info)
@@ -211,7 +212,7 @@ class TestEdfWriter(unittest.TestCase):
         f.setPatientAdditional('patAdd1')
         f.setAdmincode('admin1')
         f.setEquipment('eq1')
-        f.setGender(1)
+        f.setSex(1)
         f.setBirthdate(date(1951, 8, 2))
         # f.setBirthdate('2.8.1951')
         startdate = datetime(2017, 1, 1, 1, 1, 1)
@@ -240,7 +241,7 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(f.getPatientAdditional(), 'patAdd1')
         np.testing.assert_equal(f.getAdmincode(), 'admin1')
         np.testing.assert_equal(f.getEquipment(), 'eq1')
-        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getSex(), 'Male')
         np.testing.assert_equal(f.getBirthdate(), '02 aug 1951')
         np.testing.assert_equal(f.getStartdatetime(), datetime(2017, 1, 1, 1, 1, 1))
 
@@ -281,7 +282,7 @@ class TestEdfWriter(unittest.TestCase):
         f.setPatientAdditional('patAdd1')
         f.setAdmincode('admin1')
         f.setEquipment('eq1')
-        f.setGender("Male")
+        f.setSex("Male")
         f.setBirthdate(date(1951, 8, 2))
         f.setStartdatetime(datetime(2017, 1, 1, 1, 1, 1))
         f.setSamplefrequency(1,100)
@@ -304,7 +305,7 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(f.getPatientAdditional(), 'patAdd1')
         np.testing.assert_equal(f.getAdmincode(), 'admin1')
         np.testing.assert_equal(f.getEquipment(), 'eq1')
-        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getSex(), 'Male')
         np.testing.assert_equal(f.getBirthdate(), '02 aug 1951')
         np.testing.assert_equal(f.getStartdatetime(), datetime(2017, 1, 1, 1, 1, 1))
 
@@ -361,7 +362,7 @@ class TestEdfWriter(unittest.TestCase):
 
         header = {'technician': 'tec1', 'recording_additional': 'recAdd1', 'patientname': 'pat1',
                   'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
-                  'admincode':'admin1','gender':1,'startdate':datetime(2017, 1, 1, 1, 1, 1),'birthdate':date(1951, 8, 2)}
+                  'admincode':'admin1','sex':1,'startdate':datetime(2017, 1, 1, 1, 1, 1),'birthdate':date(1951, 8, 2)}
         f.setHeader(header)
         f.setSignalHeader(0,channel_info)
         data = np.ones(100) * 0.1
@@ -377,7 +378,7 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(f.getEquipment(), 'eq1')
         np.testing.assert_equal(f.getPatientAdditional(), 'patAdd1')
         np.testing.assert_equal(f.getAdmincode(), 'admin1')
-        np.testing.assert_equal(f.getGender(), 'Male')
+        np.testing.assert_equal(f.getSex(), 'Male')
         np.testing.assert_equal(f.getBirthdate(), '02 aug 1951')
         np.testing.assert_equal(f.getStartdatetime(), datetime(2017, 1, 1, 1, 1, 1))
 
@@ -767,7 +768,7 @@ class TestEdfWriter(unittest.TestCase):
         self.assertRaises(AssertionError, f.writeSamples, [channel_data1, channel_data2])
 
 
-    def test_gender_setting_correctly(self):
+    def test_sex_setting_correctly(self):
         channel_info1 = {'label': 'test_label1', 'dimension': 'mV', 'sample_frequency': 100,
                          'physical_max': 3.0, 'physical_min': -3.0,
                          'digital_max': 32767, 'digital_min': -32768,
@@ -777,13 +778,13 @@ class TestEdfWriter(unittest.TestCase):
                          'digital_max': 32767, 'digital_min': -32768,
                          'prefilter': 'pre1', 'transducer': 'trans1'}
 
-        gender_mapping = {'X': '', 'XX':'', 'XXX':'', '?':'', None:'',
+        sex_mapping = {'X': '', 'XX':'', 'XXX':'', '?':'', None:'',
                           'M': 'Male', 'male':'Male', 'man':'Male', 1:'Male',
                           'F':'Female', 'female':'Female', 0:'Female'}
 
-        for gender, expected in gender_mapping.items():
+        for sex, expected in sex_mapping.items():
             f = pyedflib.EdfWriter(self.edf_data_file, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
-            f.setGender(gender)
+            f.setSex(sex)
             f.setSignalHeader(0, channel_info1)
             f.setSignalHeader(1, channel_info2)
             data = np.ones(100) * 0.1
@@ -795,8 +796,31 @@ class TestEdfWriter(unittest.TestCase):
             np.testing.assert_equal(f.getLabel(0), 'test_label1')
             np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
             np.testing.assert_equal(f.getSampleFrequency(0), 100)
+            self.assertEqual(f.getSex(), expected,
+                             f'set {sex}, but f.getSex()!={expected}')
             self.assertEqual(f.getGender(), expected,
-                             f'set {gender}, but {expected}!={f.getGender()} ')
+                             f'set {sex}, but f.getGender()!={expected}')
+            del f
+
+        # try again, this time with setGender() instead of setSex()
+        for sex, expected in sex_mapping.items():
+            f = pyedflib.EdfWriter(self.edf_data_file, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
+            f.setGender(sex)  # deprecated
+            f.setSignalHeader(0, channel_info1)
+            f.setSignalHeader(1, channel_info2)
+            data = np.ones(100) * 0.1
+            assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+            assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
+            del f
+
+            f = pyedflib.EdfReader(self.edf_data_file)
+            np.testing.assert_equal(f.getLabel(0), 'test_label1')
+            np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
+            np.testing.assert_equal(f.getSampleFrequency(0), 100)
+            self.assertEqual(f.getSex(), expected,
+                             f'set {sex}, but f.getSex()!={expected}')
+            self.assertEqual(f.getGender(), expected,
+                             f'set {sex}, but f.getGender()!={expected}')
             del f
 
     def test_non_one_second_record_duration(self):
@@ -917,7 +941,7 @@ class TestEdfWriter(unittest.TestCase):
 
         header = {'birthdate': '',
                   'startdate': datetime(2021, 6, 26, 13, 16, 1),
-                  'gender': '',
+                  'sex': '',
                   'admincode': '',
                   'equipment': '',
                   'patientcode': 'x'*40,
@@ -936,7 +960,7 @@ class TestEdfWriter(unittest.TestCase):
 
         header = {'birthdate': '',
                   'startdate': datetime(2021, 6, 26, 13, 16, 1),
-                  'gender': '',
+                  'sex': '',
                   'admincode': '',
                   'equipment': 'e'*20,
                   'patientcode': 'x',
