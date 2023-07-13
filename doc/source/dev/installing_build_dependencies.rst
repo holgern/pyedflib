@@ -58,7 +58,7 @@ via::
 .. _virtualenv: https://pypi.org/project/virtualenv/
 .. _numpy: https://numpy.org/
 .. _Cython: https://cython.org/
-.. _Sphinx: http://sphinx.pocoo.org
+.. _Sphinx: https://www.sphinx-doc.org/
 .. _numpydoc: https://github.com/numpy/numpydoc
 .. _Anaconda: https://www.continuum.io/downloads
 .. _Enthought Deployment Manager: https://www.enthought.com/edm/
