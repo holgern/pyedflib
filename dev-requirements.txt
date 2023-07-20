@@ -1,5 +1,5 @@
 nose
-cython
+cython<3.0
 numpy
 pytest
 dateparser
