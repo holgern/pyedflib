@@ -3,7 +3,7 @@
 # See LICENSE for license details.
 
 # get constants
-include "edf.pxi"
+include "edf.pxd"
 
 cdef extern from "c/edflib.h":
     int edf_set_patientcode(int, char *)

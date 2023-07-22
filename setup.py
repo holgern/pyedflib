@@ -4,21 +4,11 @@ import os
 import sys
 import subprocess
 import setuptools
-from functools import partial
+from sysconfig import get_path
 
 from setuptools import setup, Extension
-from distutils.sysconfig import get_python_inc
-
-try:
-    from Cython.Build import cythonize
-    USE_CYTHON = True
-except ImportError:
-    USE_CYTHON = False
-    if not os.path.exists(os.path.join('pyedflib', '_extensions', '_pyedflib.c')):
-        msg = ("Cython must be installed when working with a development "
-               "version of PyEDFlib")
-        raise RuntimeError(msg)
-
+from Cython.Build import cythonize
+from setuptools.command.develop import develop
 
 MAJOR = 0
 MINOR = 1
@@ -144,7 +134,7 @@ def get_version_info():
 
 
 def write_version_py(filename='pyedflib/version.py'):
-    cnt = """
+    cnt = """\
 # THIS FILE IS GENERATED FROM pyedflib SETUP.PY
 short_version = '%(version)s'
 version = '%(version)s'
@@ -163,28 +153,21 @@ if not release:
                        'git_revision': GIT_REVISION,
                        'isrelease': str(ISRELEASED)})
 
-
-# BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
-# update it when the contents of directories change.
-if os.path.exists('MANIFEST'):
-    os.remove('MANIFEST')
-
-
 if sys.platform == "darwin":
     # Don't create resource files on OS X tar.
     os.environ["COPY_EXTENDED_ATTRIBUTES_DISABLE"] = "true"
     os.environ["COPYFILE_DISABLE"] = "true"
 
-make_ext_path = partial(os.path.join, "pyedflib", "_extensions")
+# folder where extensions are stored
+ext_path = os.path.abspath("./pyedflib/_extensions/")
 
-sources = ["c/edflib.c"]
-sources = list(map(make_ext_path, sources))
 headers = ["c/edflib.h"]
-headers = list(map(make_ext_path, headers))
+sources = ["c/edflib.c"]
+headers = [os.path.join(ext_path, file) for file in headers]
+sources = [os.path.join(ext_path, file) for file in sources]
 
 cython_modules = ['_pyedflib']
-cython_sources = [('{0}.pyx' if USE_CYTHON else '{0}.c').format(module)
-                  for module in cython_modules]
+cython_sources = [f'{module}.pyx' for module in cython_modules]
 
 c_macros = [("PY_EXTENSION", None), ("_LARGEFILE64_SOURCE", None), ("_LARGEFILE_SOURCE", None)]
 
@@ -197,22 +180,22 @@ if os.environ.get("CYTHON_TRACE"):
 # By default C object files are rebuilt for every extension
 # C files must be built once only for coverage to work
 c_lib = ('c_edf',{'sources': sources,
-                 'depends': headers,
-                 'include_dirs': [make_ext_path("c"), get_python_inc()],
-                 'macros': c_macros,})
+                  'depends': headers,
+                  'include_dirs': [os.path.join(ext_path, "c"),
+                                   get_path('include')],
+                  'macros': c_macros,})
 
 ext_modules = [
     NumpyExtension(f'pyedflib._extensions.{module}',
-              sources=[make_ext_path(source)],
+              sources=[os.path.join(ext_path, source)],
               # Doesn't automatically rebuild if library changes
               depends=c_lib[1]['sources'] + c_lib[1]['depends'],
-              include_dirs=[make_ext_path("c"), get_numpy_include()],
+              include_dirs=[os.path.join(ext_path, "c"), get_numpy_include()],
               define_macros=c_macros + cython_macros,
               libraries=[c_lib[0]])
     for module, source, in zip(cython_modules, cython_sources)
 ]
 
-from setuptools.command.develop import develop
 class develop_build_clib(develop):
     """Ugly monkeypatching to get clib to build for development installs
     See coverage comment above for why we don't just let libraries be built
@@ -261,8 +244,7 @@ if __name__ == '__main__':
 
     # Rewrite the version file every time
     write_version_py()
-    if USE_CYTHON:
-            ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
+    ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
 
     setup(
         name="pyEDFlib",

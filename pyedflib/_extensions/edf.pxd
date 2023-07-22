@@ -1,0 +1,88 @@
+# Copyright (c) 2015, Holger Nahrstaedt
+# Copyright (c) 2011, 2015, Chris Lee-Messer
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#/* values for annotations */
+cdef EDFLIB_DO_NOT_READ_ANNOTATIONS = 0
+cdef EDFLIB_READ_ANNOTATIONS       = 1
+cdef EDFLIB_READ_ALL_ANNOTATIONS   = 2
+
+cdef EDFLIB_CHECK_FILE_SIZE = 0
+cdef EDFLIB_DO_NOT_CHECK_FILE_SIZE       = 1
+cdef EDFLIB_REPAIR_FILE_SIZE_IF_WRONG   = 2
+
+cdef EDFLIB_TIME_DIMENSION = 10000000LL
+cdef EDFLIB_MAXSIGNALS = 256
+cdef EDFLIB_MAX_ANNOTATION_LEN = 512
+
+cdef EDFSEEK_SET = 0
+cdef EDFSEEK_CUR = 1
+cdef EDFSEEK_END = 2
+#/* the following cdefines are used in the member "filetype" of the edf_hdr_struct */
+#/* and as return value for the function edfopen_file_readonly() */
+cdef EDFLIB_FILETYPE_EDF =                  0
+cdef EDFLIB_FILETYPE_EDFPLUS =              1
+cdef EDFLIB_FILETYPE_BDF    =              2
+cdef EDFLIB_FILETYPE_BDFPLUS  =             3
+cdef EDFLIB_MALLOC_ERROR       =          -1
+cdef EDFLIB_NO_SUCH_FILE_OR_DIRECTORY =   -2
+cdef EDFLIB_FILE_CONTAINS_FORMAT_ERRORS = -3
+cdef EDFLIB_MAXFILES_REACHED         =    -4
+cdef EDFLIB_FILE_READ_ERROR           =   -5
+cdef EDFLIB_FILE_ALREADY_OPENED       =   -6
+cdef EDFLIB_FILETYPE_ERROR            =   -7
+cdef EDFLIB_FILE_WRITE_ERROR          =   -8
+cdef EDFLIB_NUMBER_OF_SIGNALS_INVALID =   -9
+cdef EDFLIB_FILE_IS_DISCONTINUOUS     =  -10
+cdef EDFLIB_INVALID_READ_ANNOTS_VALUE =  -11
+cdef EDFLIB_INVALID_CHECK_SIZE_VALUE  =  -12
+
+
+#/* the following cdefines are possible errors returned by edfopen_file_writeonly() */
+cdef EDFLIB_NO_SIGNALS              =    -20
+cdef EDFLIB_TOO_MANY_SIGNALS         =   -21
+cdef EDFLIB_NO_SAMPLES_IN_RECORD      =  -22
+cdef EDFLIB_DIGMIN_IS_DIGMAX           = -23
+cdef EDFLIB_DIGMAX_LOWER_THAN_DIGMIN   = -24
+cdef EDFLIB_PHYSMIN_IS_PHYSMAX         = -25
+cdef EDFLIB_DATARECORD_SIZE_TOO_BIG    = -26
+cdef EDFLIB_FILE_ERRORS_STARTDATE      =-30
+cdef EDFLIB_FILE_ERRORS_STARTTIME      =-31
+cdef EDFLIB_FILE_ERRORS_NUMBER_SIGNALS =-32
+cdef EDFLIB_FILE_ERRORS_BYTES_HEADER   =-33
+cdef EDFLIB_FILE_ERRORS_RESERVED_FIELD =-34
+cdef EDFLIB_FILE_ERRORS_NUMBER_DATARECORDS =-35
+cdef EDFLIB_FILE_ERRORS_DURATION =-36
+cdef EDFLIB_FILE_ERRORS_LABEL =-37
+cdef EDFLIB_FILE_ERRORS_TRANSDUCER =-38
+cdef EDFLIB_FILE_ERRORS_PHYS_DIMENSION =-39
+cdef EDFLIB_FILE_ERRORS_PHYS_MAX =-40
+cdef EDFLIB_FILE_ERRORS_PHYS_MIN =-41
+cdef EDFLIB_FILE_ERRORS_DIG_MAX =-42
+cdef EDFLIB_FILE_ERRORS_DIG_MIN =-43
+cdef EDFLIB_FILE_ERRORS_PREFILTER =-44
+cdef EDFLIB_FILE_ERRORS_SAMPLES_DATARECORD =-45
+cdef EDFLIB_FILE_ERRORS_FILESIZE =-46
+cdef EDFLIB_FILE_ERRORS_RECORDINGFIELD =-47
+cdef EDFLIB_FILE_ERRORS_PATIENTNAME =-48
