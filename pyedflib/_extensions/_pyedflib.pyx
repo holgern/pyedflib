@@ -216,7 +216,7 @@ cdef class CyEdfReader:
                                   'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
 
                     file_name_str = get_short_path_name(file_name)
-                    result = self.open(file_name_str, annotations_mode=annotations_mode, check_file_size=check_file_size)
+                    result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, annotations_mode, check_file_size)
 
                     self.file_name = file_name
 
