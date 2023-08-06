@@ -141,29 +141,7 @@ cdef class CyEdfReader:
         EdfReader(file_name, annotations_mode, check_file_size)
         """
         self.hdr.handle = -1
-        try:
-            self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
-        except FileNotFoundError as e:
-            # if files contain Unicode on Windows, and the locale is set incorrectly
-            # there can be errors when creating the file.
-            # in this case, we can use a workaround and work on the file
-            # using short file names (DOS style)
-            exists = os.path.isfile(file_name)
-            is_windows = os.name == 'nt'
-            if exists and is_windows and contains_unicode(file_name):
-                # work-around to at least make Unicode files readable at all
-                warnings.warn('the filename {} contains Unicode, but Windows does not fully support this. ' \
-                              'Please consider changing your locale to support UTF8. Attempting to '
-                              'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
-                file_name = get_short_path_name(file_name)
-                self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
-            elif exists:
-                raise OSError(123, 'File {} was found but can\'t be accessed. ' \
-                              'Make sure it contains no special characters ' \
-                              'or change your locale to use UTF8.'.format(file_name), None, 123)
-            else:
-                raise e
-
+        self.open(file_name, annotations_mode=annotations_mode, check_file_size=check_file_size)
 
     def __dealloc__(self):
         if self.hdr.handle >= 0:
@@ -200,12 +178,55 @@ cdef class CyEdfReader:
         """
         open(file_name, annotations_mode, check_file_size)
         """
-        file_name_str = file_name.encode('utf_8','strict')
-        result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, annotations_mode, check_file_size)
+        cdef char* file_name_cstr
 
-        self.file_name = file_name
+        if isinstance(file_name, bytes):
+            file_name_cstr = file_name
+            result = c_edf.edfopen_file_readonly(file_name_cstr, &self.hdr, annotations_mode, check_file_size)
+            self.file_name = file_name
 
-        return self.check_open_ok(result)
+            return self.check_open_ok(result)
+        elif isinstance(file_name, str):
+            if not os.path.isfile(file_name):
+                raise FileNotFoundError('File {0} does not exist.'.format(file_name))
+
+            encodings = 'utf_8', locale.getpreferredencoding()
+
+            for encoding in encodings:
+                try:
+                    file_name_bytes = file_name.encode(encoding, 'strict')
+                    file_name_cstr = file_name_bytes
+                    result = c_edf.edfopen_file_readonly(file_name_cstr, &self.hdr, annotations_mode, check_file_size)
+
+                    if result == 0:
+                        self.file_name = file_name
+                        return True
+                except UnicodeEncodeError:
+                    warnings.warn('Can not encode filename {0} with encoding {1}.'.format(file_name, encoding))
+            else:
+                # if files contain Unicode on Windows, and the locale is set incorrectly
+                # there can be errors when creating the file.
+                # in this case, we can use a workaround and work on the file
+                # using short file names (DOS style)
+                is_windows = os.name == 'nt'
+                if is_windows and contains_unicode(file_name):
+                    # work-around to at least make Unicode files readable at all
+                    warnings.warn('The filename {} contains Unicode, but Windows does not fully support this. ' \
+                                  'Please consider changing your locale to support UTF8. Attempting to '
+                                  'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
+
+                    file_name_str = get_short_path_name(file_name)
+                    result = self.open(file_name_str, annotations_mode=annotations_mode, check_file_size=check_file_size)
+
+                    self.file_name = file_name
+
+                    return self.check_open_ok(result)
+                else:
+                    raise OSError(123, 'File {} was found but can\'t be accessed. ' \
+                                  'Make sure it contains no special characters ' \
+                                  'or change your locale to use UTF8.'.format(file_name), None, 123)
+        else:
+            raise TypeError('Argument file_name is not of type str or bytes.')
 
     def read_annotation(self):
         cdef c_edf.edf_annotation_struct annot
@@ -519,6 +540,12 @@ def set_physical_maximum(handle, edfsignal, phys_max):
 def open_file_writeonly(path, filetype, number_of_signals):
     """int edfopen_file_writeonly(char *path, int filetype, int number_of_signals)"""
 
+    cdef char* path_str
+
+    if isinstance(path, bytes):
+        path_str = path
+        return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)
+
     if os.name=='nt' and contains_unicode(path):
         default_enc = locale.getdefaultlocale()[1]
         if default_enc is None:
@@ -536,8 +563,8 @@ def open_file_writeonly(path, filetype, number_of_signals):
             with open(path, 'wb'): pass
             path = get_short_path_name(path)
 
-    py_byte_string  = path.encode('utf_8','strict')
-    cdef char* path_str = py_byte_string
+    py_byte_string = path.encode('utf_8','strict')
+    path_str = py_byte_string
     return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)
 
 def set_patient_additional(handle, patient_additional):
