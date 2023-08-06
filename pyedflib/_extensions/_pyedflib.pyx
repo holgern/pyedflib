@@ -215,8 +215,9 @@ cdef class CyEdfReader:
                                   'Please consider changing your locale to support UTF8. Attempting to '
                                   'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
 
-                    file_name_str = get_short_path_name(file_name)
-                    result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, annotations_mode, check_file_size)
+                    short_file_name = get_short_path_name(file_name)
+                    file_name_cstr = short_file_name.encode('utf_8', 'strict')
+                    result = c_edf.edfopen_file_readonly(file_name_cstr, &self.hdr, annotations_mode, check_file_size)
 
                     self.file_name = file_name
 
