@@ -212,11 +212,12 @@ cdef class CyEdfReader:
                 if is_windows and contains_unicode(file_name):
                     # work-around to at least make Unicode files readable at all
                     warnings.warn('The filename {} contains Unicode, but Windows does not fully support this. ' \
-                                  'Please consider changing your locale to support UTF8. Attempting to '
+                                  'Please consider changing your locale to support UTF8. Attempting to ' \
                                   'load file via workaround (https://github.com/holgern/pyedflib/pull/100) '.format(file_name))
 
                     short_file_name = get_short_path_name(file_name)
-                    file_name_cstr = short_file_name.encode('utf_8', 'strict')
+                    file_name_bytes = short_file_name.encode('utf_8', 'strict')
+                    file_name_cstr = file_name_bytes
                     result = c_edf.edfopen_file_readonly(file_name_cstr, &self.hdr, annotations_mode, check_file_size)
 
                     self.file_name = file_name
