@@ -29,6 +29,7 @@ pip-log.txt
 # Project working files
 _edflib.[ch]
 _pyedflib.[ch]
+edflib_utf8.c
 
 edf.[ch]
 cythonize.dat

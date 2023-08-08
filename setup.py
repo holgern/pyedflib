@@ -177,9 +177,30 @@ if sys.platform == "darwin":
 
 make_ext_path = partial(os.path.join, "pyedflib", "_extensions")
 
-sources = ["c/edflib.c"]
+if os.name == "nt":
+    # Patch edflib.c
+    with open(make_ext_path("c/edflib.c"), "rb") as fin:
+        with open(make_ext_path("c/edflib_utf8.c"), "wb") as fout:
+            for line in fin:
+                line = line.replace(
+                    b'#include "edflib.h"',
+                    b'#include "edflib.h"\r\n#include "fopen_utf8.h"')
+                line = line.replace(
+                    b'file = fopeno(path, "rb");',
+                    b'file = fopen_utf8(path, "rb");')
+                line = line.replace(
+                    b'file = fopeno(path, "wb");',
+                    b'file = fopen_utf8(path, "wb");')
+
+                fout.write(line)
+
+    sources = ["c/edflib_utf8.c", "c/fopen_utf8.c"]
+    headers = ["c/edflib.h", "c/fopen_utf8.h"]
+else:
+    sources = ["c/edflib.c"]
+    headers = ["c/edflib.h"]
+
 sources = list(map(make_ext_path, sources))
-headers = ["c/edflib.h"]
 headers = list(map(make_ext_path, headers))
 
 cython_modules = ['_pyedflib']
