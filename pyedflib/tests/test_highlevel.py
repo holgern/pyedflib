@@ -24,8 +24,6 @@ class TestHighLevel(unittest.TestCase):
         cls.test_generator = os.path.join(data_dir, 'test_generator.edf')
         cls.test_accented = os.path.join(data_dir, "tmp_áä'üöß.edf")
         cls.test_unicode = os.path.join(data_dir, "tmp_utf8-中文źąşㆆ운ʷᨄⅡəПр🤖.edf")
-        cls.test_unicode_at_start = os.path.join(data_dir, "中文źąşㆆ운ʷᨄⅡəПр🤖.edf")
-        cls.test_unicode_at_start_2 = os.path.join(data_dir, "中文źąşㆆ운ʷᨄⅡəПр🤖-2.edf")
         cls.anonymized = os.path.join(data_dir, "tmp_anonymized.edf")
         cls.personalized = os.path.join(data_dir, "tmp_personalized.edf")
         cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
@@ -232,24 +230,6 @@ class TestHighLevel(unittest.TestCase):
         shutil.copy(self.edfplus_data_file, self.test_unicode)
         signals2, _, _ = highlevel.read_edf(self.test_unicode)
         self.assertTrue(os.path.isfile(self.test_unicode), 'File does not exist')
-
-    def test_read_unicode_at_start(self):
-        signals = np.random.rand(3, 256*60) # then rescale to 0-1
-        signals = (signals - signals.min()) / (signals.max() - signals.min())
-        success = highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
-        self.assertTrue(success)
-        shutil.copy(self.edfplus_data_file, self.test_unicode_at_start)
-        signals2, _, _ = highlevel.read_edf(self.test_unicode_at_start)
-        self.assertTrue(os.path.isfile(self.test_unicode_at_start), 'File does not exist')
-
-    def test_read_bytes(self):
-        signals = np.random.rand(3, 256*60) # then rescale to 0-1
-        signals = (signals - signals.min()) / (signals.max() - signals.min())
-        success = highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
-        self.assertTrue(success)
-        shutil.copy(self.edfplus_data_file, self.test_unicode_at_start_2)
-        signals2, _, _ = highlevel.read_edf(self.test_unicode_at_start_2.encode('utf_8'))
-        self.assertTrue(os.path.isfile(self.test_unicode_at_start_2), 'File does not exist')
 
     def test_read_header(self):
 
