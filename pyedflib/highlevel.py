@@ -1,5 +1,3 @@
-
-# -*- coding: utf-8 -*-
 # Copyright (c) 2019 - 2023 Simon Kern
 # Copyright (c) 2015 - 2023 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
@@ -150,7 +148,8 @@ def phys2dig(signal, dmin, dmax, pmin, pmax):
 
 def make_header(technician='', recording_additional='', patientname='',
                 patient_additional='', patientcode= '', equipment= '',
-                admincode= '', gender= '', startdate=None, birthdate= ''):
+                admincode= '', sex= '', startdate=None, birthdate= '',
+                gender=None):
     """
     A convenience function to create an EDF header (a dictionary) that
     can be used by pyedflib to update the main header of the EDF
@@ -171,8 +170,8 @@ def make_header(technician='', recording_additional='', patientname='',
         which system was used. The default is ''.
     admincode : str, optional
         code of the admin. The default is ''.
-    gender : str, optional
-        gender of patient. The default is ''.
+    sex : str, optional
+        sex of patient. The default is ''.
     startdate : datetime.datetime, optional
         startdate of recording. The default is None.
     birthdate : str/datetime.datetime, optional
@@ -194,7 +193,18 @@ def make_header(technician='', recording_additional='', patientname='',
         del now
     if isinstance(birthdate, datetime):
         birthdate = birthdate.strftime('%d %b %Y').lower()
+
+    # backwards compatibility
+    if gender is not None:
+        if sex == '':
+            sex = gender
+            warnings.warn("Parameter 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
+        elif sex != gender:
+            raise ValueError("Defined both parameters 'sex' and 'gender', with different values: {sex} != {gender}")
+    gender = sex
+
     local = locals()
+
     header = {}
     for var in local:
         if isinstance(local[var], datetime):
@@ -447,7 +457,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
         elif ext.lower() == '.bdf':
             file_type = pyedflib.FILETYPE_BDFPLUS
         else:
-            raise ValueError('Unknown extension {}'.format(ext))
+            raise ValueError(f'Unknown extension {ext}')
 
     n_channels = len(signals)
 
@@ -471,7 +481,7 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
             'digital_min is {}, but signal_min is {}' \
             'for channel {}'.format(dmax, sig.max(), label)
             assert pmin != pmax, \
-            'physical_min {} should be different from physical_max {}'.format(pmin,pmax)
+            f'physical_min {pmin} should be different from physical_max {pmax}'
         else: # only warning, as this will not lead to clipping
             assert pmin<=sig.min(), \
             'phys_min is {}, but signal_min is {} ' \
@@ -519,7 +529,7 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     """
     signals = np.atleast_2d(signals)
     header = make_header(technician='pyedflib-quickwrite')
-    labels = ['CH_{}'.format(i) for i in range(len(signals))]
+    labels = [f'CH_{i}' for i in range(len(signals))]
     pmin, pmax = signals.min(), signals.max()
     signal_headers = make_signal_headers(labels, sample_frequency=sfreq,
                                          physical_min=pmin, physical_max=pmax)
@@ -541,7 +551,7 @@ def read_edf_header(edf_file, read_annotations=True):
         header of the edf file as dictionary.
 
     """
-    assert os.path.isfile(edf_file), 'file {} does not exist'.format(edf_file)
+    assert os.path.isfile(edf_file), f'file {edf_file} does not exist'
     with pyedflib.EdfReader(edf_file) as f:
 
         summary = f.getHeader()
@@ -663,7 +673,7 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
         assert all([isinstance(ch, (str, int)) for ch in to_drop]),\
             'channels must be int or string'
     assert os.path.exists(edf_source), \
-            'source file {} does not exist'.format(edf_source)
+            f'source file {edf_source} does not exist'
     assert edf_source!=edf_target, 'For safet, target must not be source file.'
 
     if edf_target is None:
@@ -868,11 +878,11 @@ def rename_channels(edf_file, mapping, new_file=None, verbose=False):
                                             ch_nrs=ch_nr, verbose=verbose)
         ch = signal_header[0]['label']
         if ch in mapping :
-            if verbose: print('{} to {}'.format(ch, mapping[ch]))
+            if verbose: print(f'{ch} to {mapping[ch]}')
             ch = mapping[ch]
             signal_header[0]['label']=ch
         else:
-            if verbose: print('no mapping for {}, leave as it is'.format(ch))
+            if verbose: print(f'no mapping for {ch}, leave as it is')
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
 
@@ -915,7 +925,7 @@ def change_polarity(edf_file, channels, new_file=None, verify=True,
     for i,sig in enumerate(signals):
         label = signal_headers[i]['label'].lower()
         if label in channels:
-            if verbose: print('inverting {}'.format(label))
+            if verbose: print(f'inverting {label}')
             signals[i] = -sig
     write_edf(new_file, signals, signal_headers, header,
               digital=True, correct=False, verbose=verbose)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
 
 import os
 import sys
@@ -23,7 +22,7 @@ except ImportError:
 
 MAJOR = 0
 MINOR = 1
-MICRO = 30
+MICRO = 34
 ISRELEASED = True
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -31,8 +30,8 @@ VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 REQUIRED_NUMPY = 'numpy>=1.9.1'
 
 
-# from MDAnalysis setup.py (http://www.mdanalysis.org/)
-class NumpyExtension(Extension, object):
+# from MDAnalysis setup.py (https://www.mdanalysis.org/)
+class NumpyExtension(Extension):
     """Derived class to cleanly handle setup-time (numpy) dependencies.
     """
     # The only setup-time numpy dependency comes when setting up its
@@ -44,7 +43,7 @@ class NumpyExtension(Extension, object):
     #  care of calling it when needed.
     def __init__(self, *args, **kwargs):
         self._np_include_dirs = []
-        super(NumpyExtension, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
     def include_dirs(self):
@@ -60,7 +59,7 @@ class NumpyExtension(Extension, object):
     def include_dirs(self, val):
         self._np_include_dir_args = val
 
-# from MDAnalysis setup.py (http://www.mdanalysis.org/)
+# from MDAnalysis setup.py (https://www.mdanalysis.org/)
 def get_numpy_include():
     try:
         # Obtain the numpy include directory. This logic works across numpy
@@ -84,7 +83,7 @@ def get_numpy_include():
             print(e)
             print('*** package "numpy" not found ***')
             print('pyEDFlib requires a version of NumPy, even for setup.')
-            print('Please get it from http://numpy.scipy.org/ or install it through '
+            print('Please get it from https://numpy.org/ or install it through '
                   'your package manager.')
             sys.exit(-1)
     try:
@@ -203,7 +202,7 @@ c_lib = ('c_edf',{'sources': sources,
                  'macros': c_macros,})
 
 ext_modules = [
-    NumpyExtension('pyedflib._extensions.{0}'.format(module),
+    NumpyExtension(f'pyedflib._extensions.{module}',
               sources=[make_ext_path(source)],
               # Doesn't automatically rebuild if library changes
               depends=c_lib[1]['sources'] + c_lib[1]['depends'],
@@ -286,11 +285,11 @@ if __name__ == '__main__':
             "Programming Language :: C",
             "Programming Language :: Python",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.5",
-            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],

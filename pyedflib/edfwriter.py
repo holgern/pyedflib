@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2019 - 2023 Simon Kern
 # Copyright (c) 2015 - 2023 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
@@ -13,7 +12,7 @@ from datetime import datetime, date
 from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_BDF, FILETYPE_EDF
 from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
-from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_gender, set_datarecord_duration, set_number_of_annotation_signals
+from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_sex, set_datarecord_duration, set_number_of_annotation_signals
 from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samples_per_record, set_physical_minimum, set_label, set_physical_dimension
 from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
@@ -106,38 +105,42 @@ def check_signal_header_correct(channels, i, file_type):
 
 
 def u(x):
-    return x.decode("utf-8", "strict")
+    return x.decode("utf_8", "strict")
 
 
 def du(x):
-    if isbytestr(x):
+    if isinstance(x, bytes):
         return x
     else:
-        return x.encode("utf-8")
+        return x.encode("utf_8")
 
 
 def isstr(s):
-    try:
-        return isinstance(s, basestring)
-    except NameError:
-        return isinstance(s, str)
+    warnings.warn("Function 'isstr' is deprecated.", DeprecationWarning, stacklevel=2)
+    return isinstance(s, str)
 
 
 def isbytestr(s):
+    warnings.warn("Function 'isbytestr' is deprecated.", DeprecationWarning, stacklevel=2)
     return isinstance(s, bytes)
 
 
-def gender2int(gender):
-    if isinstance(gender, int) or gender is None:
-        return gender
-    elif gender.lower() in ['', 'x', 'xx', 'xxx', 'unknown', '?', '??']:
+def sex2int(sex):
+    if isinstance(sex, int) or sex is None:
+        return sex
+    elif sex.lower() in ('', 'x', 'xx', 'xxx', 'unknown', '?', '??'):
         return None
-    elif gender.lower() in ["female", "woman", "f", "w"]:
+    elif sex.lower() in ("female", "woman", "f", "w"):
         return 0
-    elif gender.lower() in  ["male", "man", "m"]:
+    elif sex.lower() in  ("male", "man", "m"):
         return 1
     else:
-        raise ValueError("Unknown gender: '{}'".format(gender))
+        raise ValueError(f"Unknown sex: '{sex}'")
+
+
+def gender2int(gender):
+    warnings.warn("Function 'gender2int' is deprecated, use 'sex2int' instead.", DeprecationWarning, stacklevel=2)
+    return sex2int(gender)
 
 
 class ChannelDoesNotExist(Exception):
@@ -156,7 +159,7 @@ class WrongInputSize(Exception):
         return repr(self.parameter)
 
 
-class EdfWriter(object):
+class EdfWriter:
     def __exit__(self, exc_type, exc_val, ex_tb):
         self.close()
 
@@ -196,7 +199,7 @@ class EdfWriter(object):
         self.recording_additional = ''
         self.patient_additional = ''
         self.admincode = ''
-        self.gender = None
+        self.sex = None
         self.recording_start_time = datetime.now().replace(microsecond=0)
 
         self.birthdate = ''
@@ -207,12 +210,12 @@ class EdfWriter(object):
         self.sample_buffer = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': 'ch{}'.format(i), 'dimension': 'mV', 'sample_rate': 100,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
                                       'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
@@ -220,7 +223,7 @@ class EdfWriter(object):
                 self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
         if (self.handle < 0):
-            raise IOError(write_errors[self.handle])
+            raise OSError(write_errors[self.handle])
         self._enforce_record_duration = False
 
     def update_header(self):
@@ -229,17 +232,17 @@ class EdfWriter(object):
         """
         # some checks that warn users if header fields exceed 80 chars
         patient_ident = len(self.patient_code) + len(self.patient_name) \
-                        + len(self.patient_additional) + 3 + 1 + 11 # 3 spaces 1 gender 11 birthdate
+                        + len(self.patient_additional) + 3 + 1 + 11 # 3 spaces 1 sex 11 birthdate
         record_ident = len(self.equipment) + len(self.technician) \
                        + len(self.admincode) + len(self.recording_additional) \
                        + len('Startdate') + 3 + 11 # 3 spaces 11 birthdate
 
         if patient_ident>80:
-            warnings.warn('Patient code, name, gender and birthdate combined must not be larger than 80 chars. ' +
-                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(patient_ident))
+            warnings.warn('Patient code, name, sex and birthdate combined must not be larger than 80 chars. ' +
+                          f'Currently has len of {patient_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
         if record_ident>80:
             warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
-                          'Currently has len of {}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs'.format(record_ident))
+                          f'Currently has len of {record_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
 
         # all data records (i.e. blocks of data of a channel) have one singular
         # length in seconds. If there are different sampling frequencies for
@@ -255,7 +258,7 @@ class EdfWriter(object):
         set_patient_additional(self.handle, du(self.patient_additional))
         set_equipment(self.handle, du(self.equipment))
         set_admincode(self.handle, du(self.admincode))
-        set_gender(self.handle, gender2int(self.gender))
+        set_sex(self.handle, sex2int(self.sex))
 
         set_datarecord_duration(self.handle, self.record_duration)
         set_number_of_annotation_signals(self.handle, self.number_of_annotations)
@@ -265,7 +268,7 @@ class EdfWriter(object):
         # subseconds are noted in nanoseconds, so we multiply by 100
         if self.recording_start_time.microsecond>0:
             set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*100)
-        if isstr(self.birthdate):
+        if isinstance(self.birthdate, str):
             if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
                 set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
@@ -295,7 +298,7 @@ class EdfWriter(object):
         self.patient_code = fileHeader["patientcode"]
         self.equipment = fileHeader["equipment"]
         self.admincode = fileHeader["admincode"]
-        self.gender = fileHeader["gender"]
+        self.sex = fileHeader["sex"]
         self.recording_start_time = fileHeader["startdate"]
         self.birthdate = fileHeader["birthdate"]
         self.update_header()
@@ -441,17 +444,22 @@ class EdfWriter(object):
         self.admincode = admincode
         self.update_header()
 
-    def setGender(self, gender):
+    def setSex(self, sex):
         """
-        Sets the gender.
+        Sets the sex. Due to the edf specifications, only binary assignment is possible.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
 
         Parameters
         ----------
-        gender : int
+        sex : int
             1 is male, 0 is female
         """
-        self.gender = gender2int(gender)
+        self.sex = sex2int(sex)
+        self.update_header()
+
+    def setGender(self, gender):
+        warnings.warn("Function 'setGender' is deprecated, use 'setSex' instead.", DeprecationWarning, stacklevel=2)
+        self.sex = sex2int(gender)
         self.update_header()
 
     def setDatarecordDuration(self, record_duration):
@@ -842,7 +850,7 @@ class EdfWriter(object):
                 success = self.blockWritePhysicalSamples(dataRecord)
 
             if success < 0:
-                raise IOError(f'Unknown error while calling blockWriteSamples: {success}')
+                raise OSError(f'Unknown error while calling blockWriteSamples: {success}')
 
             for i in np.arange(len(data_list)):
                 if (np.size(data_list[i]) < ind[i] + smp_per_record[i]):
@@ -861,9 +869,9 @@ class EdfWriter(object):
                     success = self.writePhysicalSamples(lastSamples)
 
                 if success<0:
-                    raise IOError(f'Unknown error while calling writeSamples: {success}')
+                    raise OSError(f'Unknown error while calling writeSamples: {success}')
 
-    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf-8'):
+    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf_8'):
         """
         Writes an annotation/event to the file
         """
@@ -873,7 +881,7 @@ class EdfWriter(object):
         if isinstance(duration_in_seconds, bytes):
             duration_in_seconds = float(duration_in_seconds)
 
-        if str_format == 'utf-8':
+        if str_format == 'utf_8':
             if duration_in_seconds >= 0:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), du(description))
             else:

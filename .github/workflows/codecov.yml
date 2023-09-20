@@ -23,7 +23,7 @@ jobs:
         pip install -r requirements-test.txt
         pytest --cov=./pyedflib/ --cov-report=xml --cov-config=.coveragerc
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         directory: .
         env_vars: OS,PYTHON

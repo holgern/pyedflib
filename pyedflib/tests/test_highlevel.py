@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
@@ -71,7 +70,7 @@ class TestHighLevel(unittest.TestCase):
         header = highlevel.make_header(technician='tech', recording_additional='r_add',
                                                 patientname='name', patient_additional='p_add',
                                                 patientcode='42', equipment='eeg', admincode='120',
-                                                gender='Male', startdate=startdate,birthdate='05.09.1980')
+                                                sex='Male', startdate=startdate,birthdate='05.09.1980')
         annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
 
         signal_headers1 = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
@@ -82,7 +81,7 @@ class TestHighLevel(unittest.TestCase):
             else:
                 header['annotations'] = annotations
 
-            file = '{}_{}_phys.edf'.format(self.tmp_testfile, file_type)
+            file = f'{self.tmp_testfile}_{file_type}_phys.edf'
             signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
             success = highlevel.write_edf(file, signals, signal_headers1, header, file_type=file_type)
             self.assertTrue(os.path.isfile(file))
@@ -103,7 +102,7 @@ class TestHighLevel(unittest.TestCase):
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
 
-            file = '{}_{}_dig.edf'.format(self.tmp_testfile, file_type)
+            file = f'{self.tmp_testfile}_{file_type}_dig.edf'
             signals = (signals*100).astype(np.int8)
             success = highlevel.write_edf(file, signals,  signal_headers1, header, digital=True)
             self.assertTrue(os.path.isfile(file))
@@ -187,7 +186,7 @@ class TestHighLevel(unittest.TestCase):
         sheaders = []
         for sfreq in sfreqs:
             signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
-            shead = highlevel.make_signal_header('ch{}'.format(sfreq), sample_frequency=sfreq)
+            shead = highlevel.make_signal_header(f'ch{sfreq}', sample_frequency=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
         signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
@@ -236,13 +235,14 @@ class TestHighLevel(unittest.TestCase):
     def test_read_header(self):
 
         header = highlevel.read_edf_header(self.test_generator)
-        self.assertEqual(len(header), 14)
+        self.assertEqual(len(header), 15)
         self.assertEqual(len(header['channels']), 11)
         self.assertEqual(len(header['SignalHeaders']), 11)
         self.assertEqual(header['Duration'], 600)
         self.assertEqual(header['admincode'], 'Dr. X')
         self.assertEqual(header['birthdate'], '30 jun 1969')
         self.assertEqual(header['equipment'], 'test generator')
+        self.assertEqual(header['sex'], 'Male')
         self.assertEqual(header['gender'], 'Male')
         self.assertEqual(header['patient_additional'], 'patient')
         self.assertEqual(header['patientcode'], 'abcxyz99')
@@ -255,7 +255,7 @@ class TestHighLevel(unittest.TestCase):
         header = highlevel.make_header(technician='tech', recording_additional='radd',
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
-                                                gender='Male', birthdate='05.09.1980')
+                                                sex='Male', birthdate='05.09.1980')
         annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
         header['annotations'] = annotations
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
@@ -345,7 +345,7 @@ class TestHighLevel(unittest.TestCase):
         header = highlevel.make_header(technician='tech', recording_additional='radd',
                                                 patientname='name', patient_additional='padd',
                                                 patientcode='42', equipment='eeg', admincode='420',
-                                                gender='Male', birthdate='05.09.1980')
+                                                sex='Male', birthdate='05.09.1980')
         annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
         header['annotations'] = annotations
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])

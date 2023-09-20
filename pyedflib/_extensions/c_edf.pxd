@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2015 - 2017 Holger Nahrstaedt
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # See LICENSE for license details.

@@ -8,7 +8,7 @@ pyEDFlib
    :alt: Test Coverage
 
 .. image:: https://readthedocs.org/projects/pyedflib/badge/?version=latest
-   :target: http://pyedflib.readthedocs.org/en/latest/?badge=latest
+   :target: https://pyedflib.readthedocs.io/en/latest/?badge=latest
    :alt: Docs Build
 
 .. image:: https://badge.fury.io/py/pyEDFlib.svg
@@ -18,9 +18,9 @@ pyEDFlib
 .. image:: https://img.shields.io/conda/vn/conda-forge/pyedflib.svg
    :target: https://anaconda.org/conda-forge/pyedflib
    :alt: Conda Version
-  
-.. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg   
-   :target: https://anaconda.org/conda-forge/pyedflib 
+
+.. image:: https://anaconda.org/conda-forge/pyedflib/badges/downloads.svg
+   :target: https://anaconda.org/conda-forge/pyedflib
    :alt: Conda Downloads
 
 What is pyEDFlib
@@ -30,8 +30,8 @@ pyEDFlib is a python library to read/write EDF+/BDF+ files based on EDFlib.
 EDF means `European Data Format`_ and was firstly published `Kemp1992`_.
 In 2003, an improved version of the file protocol  named EDF+ has been published and can be found at `Kemp2003`_.
 
-The EDF/EDF+ format saves all data with 16 Bit. A version which saves all data with 24 Bit,
-was introduces by the company `BioSemi`_.
+The EDF/EDF+ format saves all data with 16 Bit. The company `BioSemi`_
+introduced a version which saves all data with 24 Bit.
 
 The definition of the EDF/EDF+/BDF/BDF+ format can be found under `edfplus.info`_.
 
@@ -42,7 +42,7 @@ The EDFlib is able to read and write EDF/EDF+/BDF/BDF+ files.
 Documentation
 -------------
 
-Documentation is available online at http://pyedflib.readthedocs.org.
+Documentation is available online at https://pyedflib.readthedocs.io.
 
 Installation
 ------------
@@ -97,11 +97,11 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     # drop a channel from the file or anonymize edf
     highlevel.drop_channels('edf_file.edf', to_drop=['ch2', 'ch4'])
     highlevel.anonymize_edf('edf_file.edf', new_file='anonymized.edf'
-	                         to_remove=['patientname', 'birthdate'],
-	                         new_values=['anonymized', ''])
+                             to_remove=['patientname', 'birthdate'],
+                             new_values=['anonymized', ''])
     # check if the two files have the same content
     highlevel.compare_edf('edf_file.edf', 'anonymized.edf')
-    # change polarity of certain channels 
+    # change polarity of certain channels
     highlevel.change_polarity('file.edf', channels=[1,3])
     # rename channels within a file
     highlevel.rename_channels('file.edf', mapping={'C3-M1':'C3'})
@@ -112,24 +112,24 @@ License
 
 pyEDFlib is a free Open Source software released under the BSD 2-clause license.
 
-  
+
 Releases can be cited via Zenodo.
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5678481.svg
    :target: https://doi.org/10.5281/zenodo.5678481
-  
-.. _Cython: http://cython.org/
-.. _Anaconda: https://www.continuum.io
+
+.. _Cython: https://cython.org/
+.. _Anaconda: https://www.anaconda.com/
 .. _GitHub: https://github.com/holgern/pyedflib
 .. _GitHub Issues: https://github.com/holgern/pyedflib/issues
-.. _Numpy: http://www.numpy.org
-.. _Python: http://python.org/
-.. _Python Package Index: http://pypi.python.org/pypi/pyEDFlib/
+.. _Numpy: https://numpy.org/
+.. _Python: https://www.python.org/
+.. _Python Package Index: https://pypi.org/project/pyEDFlib/
 .. _Releases Page: https://github.com/holgern/pyedflib/releases
-.. _edfplus.info: http://www.edfplus.info/
-.. _European Data Format: http://www.edfplus.info/
+.. _edfplus.info: https://www.edfplus.info/
+.. _European Data Format: https://www.edfplus.info/
 .. _Kemp2003: https://www.ncbi.nlm.nih.gov/pubmed/12948806?dopt=Citation
 .. _Kemp1992: https://www.ncbi.nlm.nih.gov/pubmed/1374708?dopt=Abstract
-.. _BioSemi: http://www.biosemi.com/faq/file_format.htm
+.. _BioSemi: https://www.biosemi.com/faq/file_format.htm
 .. _toolbox from Christopher Lee-Messer: https://github.com/cleemesser/python-edf
-.. _EDFlib: http://www.teuniz.net/edflib/
+.. _EDFlib: https://www.teuniz.net/edflib/

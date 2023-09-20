@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import division, print_function, absolute_import
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,15 +25,15 @@ if __name__ == '__main__':
         sigbufs[i] = f.readSignal(i)
         if n_min < len(sigbufs[i]):
             n_min = len(sigbufs[i])
-            
+
     duration = f.getFileDuration()
     f._close()
     del f
     dt = int(duration/5)
     fig = plt.figure()
-    ax1 = fig.add_subplot(1,1,1)    
+    ax1 = fig.add_subplot(1,1,1)
     n_plot = np.min((n_min, 2000))
-    sigbufs_plot = np.zeros((n, n_plot))    
+    sigbufs_plot = np.zeros((n, n_plot))
     offset = 0
     ani = animation.FuncAnimation(fig, animate, interval=200)
     plt.show()

@@ -17,7 +17,7 @@ project. If you don't have `virtualenv`_ yet, install and activate it using::
 Installing Cython
 -----------------
 
-Use ``pip`` (http://pypi.python.org/pypi/pip) to install Cython_::
+Use ``pip`` (https://pypi.org/project/pip/) to install Cython_::
 
 
     pip install Cython>=0.16
@@ -33,12 +33,12 @@ Use ``pip`` to install numpy_::
 Numpy can also be obtained via scientific python distributions such as:
 
 - Anaconda_
-- `Enthought Canopy`_
-- `Python(x,y) <http://python-xy.github.io/>`_
+- `Enthought Deployment Manager`_
+- `Python(x,y) <https://python-xy.github.io/>`_
 
 .. note::
 
-  You can find binaries for 64-bit Windows on http://www.lfd.uci.edu/~gohlke/pythonlibs/.
+  You can find binaries for 64-bit Windows on https://www.lfd.uci.edu/~gohlke/pythonlibs/.
 
 
 Installing Sphinx
@@ -55,10 +55,10 @@ via::
     pip install numpydoc
 
 
-.. _virtualenv: http://pypi.python.org/pypi/virtualenv
-.. _numpy: http://numpy.scipy.org/
-.. _Cython: http://cython.org/
-.. _Sphinx: http://sphinx.pocoo.org
+.. _virtualenv: https://pypi.org/project/virtualenv/
+.. _numpy: https://numpy.org/
+.. _Cython: https://cython.org/
+.. _Sphinx: https://www.sphinx-doc.org/
 .. _numpydoc: https://github.com/numpy/numpydoc
 .. _Anaconda: https://www.continuum.io/downloads
-.. _Enthought Canopy: https://www.enthought.com/products/canopy/
+.. _Enthought Deployment Manager: https://www.enthought.com/edm/

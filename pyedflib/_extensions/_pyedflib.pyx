@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2015-2023 Holger Nahrstaedt, Simon Kern
 # Copyright (c) 2011, 2015, Chris Lee-Messer
 # See LICENSE for license details.
@@ -11,9 +10,9 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
            'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly',
            'set_patient_additional', 'set_digital_maximum', 'set_birthdate', 'set_digital_minimum',
            'write_digital_samples', 'set_equipment', 'set_samples_per_record','set_admincode', 'set_label',
-           'tell', 'rewind', 'set_gender','set_physical_dimension', 'set_transducer', 'set_prefilter',
-           'seek', 'set_startdatetime' ,'set_datarecord_duration', 'set_number_of_annotation_signals',
-           'open_errors', 'FILETYPE_EDFPLUS',
+           'tell', 'rewind', 'set_sex', 'set_gender', 'set_physical_dimension', 'set_transducer',
+           'set_prefilter', 'seek', 'set_startdatetime' ,'set_datarecord_duration',
+           'set_number_of_annotation_signals', 'open_errors', 'FILETYPE_EDFPLUS',
            'FILETYPE_EDF','FILETYPE_BDF','FILETYPE_BDFPLUS', 'write_errors', 'get_number_of_open_files',
            'get_handle', 'is_file_used', 'blockwrite_digital_short_samples', 'write_digital_short_samples']
 
@@ -98,7 +97,7 @@ def contains_unicode(string):
 def get_short_path_name(long_name):
     """
     Gets the short path name of a given long path.
-    http://stackoverflow.com/a/23598461/200291
+    https://stackoverflow.com/a/23598461/200291
     """
     import ctypes
     from ctypes import wintypes
@@ -201,7 +200,7 @@ cdef class CyEdfReader:
         """
         open(file_name, annotations_mode, check_file_size)
         """
-        file_name_str = file_name.encode('utf8','strict')
+        file_name_str = file_name.encode('utf_8','strict')
         result = c_edf.edfopen_file_readonly(file_name_str, &self.hdr, annotations_mode, check_file_size)
 
         self.file_name = file_name
@@ -271,8 +270,13 @@ cdef class CyEdfReader:
         def __get__(self):
             return self.hdr.patientcode
 
+    property sex:
+        def __get__(self):
+            return self.hdr.gender
+
     property gender:
         def __get__(self):
+            warnings.warn("Variable 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
             return self.hdr.gender
 
     property birthdate:
@@ -428,31 +432,6 @@ cdef class CyEdfReader:
 # low level functions
 
 
-
-cdef unicode _ustring(s):
-    if type(s) is unicode:
-        # fast path for most common case(s)
-        return <unicode>s
-    elif PY_MAJOR_VERSION < 3 and isinstance(s, bytes):
-        # only accept byte strings in Python 2.x, not in Py3
-        return (<bytes>s).decode('ascii')
-    elif isinstance(s, unicode):
-        # an evil cast to <unicode> might work here in some(!) cases,
-        # depending on what the further processing does.  to be safe,
-        # we can always create a copy instead
-        return unicode(s)
-    else:
-        raise TypeError()
-
-# define a global name for whatever char type is used in the module
-ctypedef unsigned char char_type
-
-cdef char_type[:] _chars(s):
-    if isinstance(s, unicode):
-        # encode to the specific encoding used inside of the module
-        s = (<unicode>s).encode('utf8')
-    return s
-
 def set_patientcode(int handle, char *patientcode):
     # check if rw?
     return c_edf.edf_set_patientcode(handle, patientcode)
@@ -530,8 +509,8 @@ def get_handle(file_number):
     return c_edf.edflib_get_handle(file_number)
 
 def is_file_used(path):
-    path_str = _ustring(path).encode('utf8','strict')
-    return c_edf.edflib_is_file_used(path_str)
+    path_byte = path.encode('utf_8','strict')
+    return c_edf.edflib_is_file_used(path_byte)
 
 # so you can use the same name if defining a python only function
 def set_physical_maximum(handle, edfsignal, phys_max):
@@ -557,7 +536,7 @@ def open_file_writeonly(path, filetype, number_of_signals):
             with open(path, 'wb'): pass
             path = get_short_path_name(path)
 
-    py_byte_string  = _ustring(path).encode('utf8','strict')
+    py_byte_string  = path.encode('utf_8','strict')
     cdef char* path_str = py_byte_string
     return c_edf.edfopen_file_writeonly(path_str, filetype, number_of_signals)
 
@@ -616,10 +595,14 @@ def rewind(handle, edfsignal):
     """void edfrewind(int handle, int edfsignal)"""
     c_edf.edfrewind(handle, edfsignal)
 
+def set_sex(handle, sex):
+    """int edf_set_sex(int handle, int sex)"""
+    if sex is None: return 0 #don't set sex at all to prevent default 'F'
+    return c_edf.edf_set_gender(handle, sex)
+
 def set_gender(handle, gender):
-    """int edf_set_gender(int handle, int gender)"""
-    if gender is None: return 0 #don't set gender at all to prevent default 'F'
-    return c_edf.edf_set_gender(handle, gender)
+    warnings.warn("Function 'set_gender' is deprecated, use 'set_sex' instead.", DeprecationWarning, stacklevel=2)
+    return set_sex(handle, gender)
 
 def set_physical_dimension(handle, edfsignal, phys_dim):
     """int edf_set_physical_dimension(int handle, int edfsignal, const char *phys_dim)"""

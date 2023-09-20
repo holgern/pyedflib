@@ -22,8 +22,6 @@ docstrings is valid python::
     $ python refguide_check.py --check_docs optimize
 
 """
-from __future__ import print_function
-
 import sys
 import os
 import re
@@ -62,7 +60,7 @@ OTHER_MODULE_DOCS = {}
 
 # these names are known to fail doctesting and we like to keep it that way
 # e.g. sometimes pseudocode is acceptable etc
-DOCTEST_SKIPLIST = set([])
+DOCTEST_SKIPLIST = set()
 
 # these names are not required to be present in ALL despite being in
 # autosummary:: listing
@@ -238,7 +236,7 @@ def validate_rst_syntax(text, name, dots=True):
     if text is None:
         if dots:
             output_dot('E')
-        return False, "ERROR: %s: no documentation" % (name,)
+        return False, f"ERROR: {name}: no documentation"
 
     ok_unknown_items = set([
         'mod', 'currentmodule', 'autosummary', 'data',
@@ -314,11 +312,7 @@ def check_rest(module, names, dots=True):
     Returns: [(name, success_flag, output), ...]
     """
 
-    try:
-        skip_types = (dict, str, unicode, float, int)
-    except NameError:
-        # python 3
-        skip_types = (dict, str, float, int)
+    skip_types = (dict, str, float, int)
 
     results = []
 
@@ -332,7 +326,7 @@ def check_rest(module, names, dots=True):
         obj = getattr(module, name, None)
 
         if obj is None:
-            results.append((full_name, False, "%s has no docstring" % (full_name,)))
+            results.append((full_name, False, f"{full_name} has no docstring"))
             continue
         elif isinstance(obj, skip_types):
             continue
@@ -489,9 +483,9 @@ class Checker(doctest.OutputChecker):
             # and then compare the tuples.
             try:
                 num = len(a_want)
-                regex = ('[\w\d_]+\(' +
-                         ', '.join(['[\w\d_]+=(.+)']*num) +
-                         '\)')
+                regex = (r'[\w\d_]+\(' +
+                         ', '.join([r'[\w\d_]+=(.+)']*num) +
+                         r'\)')
                 grp = re.findall(regex, got.replace('\n', ' '))
                 if len(grp) > 1:  # no more than one for now
                     return False
@@ -536,7 +530,7 @@ def _run_doctests(tests, full_name, verbose, doctest_warnings):
     def out(msg):
         output.append(msg)
 
-    class MyStderr(object):
+    class MyStderr:
         """Redirect stderr to the current stdout"""
         def write(self, msg):
             if doctest_warnings:
