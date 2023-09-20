@@ -872,11 +872,11 @@ def crop_edf(
 
     # Safety check: are we able to load the new EDF file?
     # Get new EDF start, stop and duration
-    edf = pyedflib.EdfReader(new_file)
-    start = edf.getStartdatetime()
-    stop = start + timedelta(seconds=edf.getFileDuration())
-    duration = stop - start
-    edf.close()
+    with pyedflib.EdfReader(new_file) as edf:
+        start = edf.getStartdatetime()
+        stop = start + timedelta(seconds=edf.getFileDuration())
+        duration = stop - start
+        edf.close()
 
     # Verbose
     if verbose:
