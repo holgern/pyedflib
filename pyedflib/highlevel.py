@@ -855,8 +855,8 @@ def crop_edf(
     for i in range(len(edf.getSignalHeaders())):
         sf = edf.getSampleFrequency(i)
         # Convert from seconds to samples
-        start_idx = int(start_diff_from_start * sf)
-        stop_idx = int(stop_diff_from_start * sf)
+        start_idx = int(np.round(start_diff_from_start * sf))
+        stop_idx = int(np.round(stop_diff_from_start * sf))
         # We use digital=True in reading and writing to avoid precision loss
         signals.append(
             edf.readSignal(i, start=start_idx, n=stop_idx - start_idx, digital=True)
