@@ -831,7 +831,7 @@ def crop_edf(
             start = current_start + timedelta(seconds=start)
         else:
             pass
-    assert current_start <= start
+    assert current_start <= start, 'start must not be before current start of recording'
     start_diff_from_start = (start - current_start).total_seconds()
 
     # Define new stop time
