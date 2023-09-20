@@ -31,8 +31,8 @@ def _compare_cropped_edf(path_orig_edf, path_cropped_edf):
     # Compare signal values
     for i in range(signals.shape[0]):
         sf_sig = signal_headers[i]["sample_frequency"]
-        idx_start = int((start - orig_start).seconds * sf_sig)
-        idx_stop = int((stop - orig_start).seconds * sf_sig)
+        idx_start = int(np.round((start - orig_start).seconds * sf_sig))
+        idx_stop = int(np.round((stop - orig_start).seconds * sf_sig))
         assert (signals[i] == orig_signals[i, idx_start:idx_stop]).all()
 
 
