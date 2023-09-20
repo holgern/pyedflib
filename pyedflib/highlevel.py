@@ -767,9 +767,22 @@ def anonymize_edf(edf_file, new_file=None,
     return True
 
 
-def crop_edf(edf_file, *, new_file=None, new_start=None, new_stop=None,
-             verbose=True):
+def crop_edf(
+    edf_file,
+    *,
+    new_file=None,
+    start=None,
+    stop=None,
+    start_format="datetime",
+    stop_format="datetime",
+    verbose=True,
+):
     """Crop an EDF file to desired start/stop times.
+
+    The new start/end times can be either specified as a datetime.datetime or
+    as seconds from the beginning of the recording.
+    For example, using `crop_edf(..., start=10, start_format="seconds") will
+    remove the first 10-seconds of the recording.
 
     Parameters
     ----------
@@ -778,16 +791,31 @@ def crop_edf(edf_file, *, new_file=None, new_start=None, new_stop=None,
     new_file : str | None
          The path to the new cropped file. If None (default), the input
          filename appended with '_cropped' is used.
-    new_start : datetime.datetime
-        The new start timestamp. Can be None to keep the original start time.
-    new_stop : datetime.datetime
-        The new stop timestamp. Can be None to keep the original stop time.
+    start : datetime.datetime | int | float | None
+        The new start. Can be None to keep the original start time of
+        the recording.
+    stop : datetime.datetime | int | float | None
+        The new stop. Can be None to keep the original end time of the
+        recording.
+    start_format : str
+        The format of ``start``: "datetime" (default) or "seconds".
+    stop_format : str
+        The format of ``stop``: "datetime" (default) or "seconds".
     verbose : bool
-        If True (default), print some details about the original and cropped file.
+        If True (default), print some details about the original and cropped
+        file.
     """
     # Check input
-    assert isinstance(new_start, (datetime, type(None)))
-    assert isinstance(new_stop, (datetime, type(None)))
+    assert start_format in ["datetime", "seconds"]
+    assert stop_format in ["datetime", "seconds"]
+    if start_format == "datetime":
+        assert isinstance(start, (datetime, type(None)))
+    else:
+        assert isinstance(start, (int, float, type(None)))
+    if stop_format == "datetime":
+        assert isinstance(stop, (datetime, type(None)))
+    else:
+        assert isinstance(start, (int, float, type(None)))
 
     # Open the original EDF file
     edf = pyedflib.EdfReader(edf_file)
@@ -796,35 +824,47 @@ def crop_edf(edf_file, *, new_file=None, new_start=None, new_stop=None,
 
     # Define new start time
     current_start = edf.getStartdatetime()
-    if new_start is None:
-        new_start = current_start
-    start_diff_seconds = (new_start - current_start).total_seconds()
-    assert current_start <= new_start
+    if start is None:
+        start = current_start
+    else:
+        if start_format == "seconds":
+            start = current_start + timedelta(seconds=start)
+        else:
+            pass
+    assert current_start <= start
+    start_diff_from_start = (start - current_start).total_seconds()
 
     # Define new stop time
     current_stop = current_start + timedelta(seconds=edf.getFileDuration())
     current_duration = current_stop - current_start
-    if new_stop is None:
-        new_stop = current_stop
-    assert new_stop <= current_stop
-    stop_diff_from_start = (new_stop - current_start).total_seconds()
+    if stop is None:
+        stop = current_stop
+    else:
+        if stop_format == "seconds":
+            stop = current_start + timedelta(seconds=stop)
+        else:
+            pass
+    assert stop <= current_stop
+    stop_diff_from_start = (stop - current_start).total_seconds()
 
     # Crop each signal
     signals = []
     for i in range(len(edf.getSignalHeaders())):
-        # Question: should we use `_get_sample_frequency` instead?
         sf = edf.getSampleFrequency(i)
-        start_idx = int(start_diff_seconds * sf)
+        # Convert from seconds to samples
+        start_idx = int(start_diff_from_start * sf)
         stop_idx = int(stop_diff_from_start * sf)
         # We use digital=True in reading and writing to avoid precision loss
-        signals.append(edf.readSignal(i, start=start_idx, n=stop_idx - start_idx, digital=True))
+        signals.append(
+            edf.readSignal(i, start=start_idx, n=stop_idx - start_idx, digital=True)
+        )
     edf.close()
 
     # Update header startdate and save file
-    header["startdate"] = new_start
+    header["startdate"] = start
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
-        new_file = file + '_cropped' + ext
+        new_file = file + "_cropped" + ext
     write_edf(new_file, signals, signals_headers, header, digital=True)
 
     # Safety check: are we able to load the new EDF file?
@@ -931,5 +971,3 @@ def change_polarity(edf_file, channels, new_file=None, verify=True,
               digital=True, correct=False, verbose=verbose)
     if verify: compare_edf(edf_file, new_file)
     return True
-
-
