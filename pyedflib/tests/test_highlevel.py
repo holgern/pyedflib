@@ -1,7 +1,7 @@
 # Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
-import os, sys
+import os
 import shutil
 import gc
 import numpy as np
@@ -11,7 +11,30 @@ import unittest
 from pyedflib import highlevel
 from pyedflib.edfwriter import EdfWriter
 from pyedflib.edfreader import EdfReader
-from datetime import datetime, date
+from datetime import datetime, timedelta
+
+
+def _compare_cropped_edf(path_orig_edf, path_cropped_edf):
+    # Load original EDF
+    orig_signals, orig_signal_headers, orig_header = highlevel.read_edf(path_orig_edf)  # noqa: E501
+    orig_start = orig_header["startdate"]
+
+    # Load cropped EDF
+    signals, signal_headers, header = highlevel.read_edf(path_cropped_edf)  # noqa: E501
+    start = header["startdate"]
+    duration = signals[0].size / signal_headers[0]["sample_frequency"]
+    stop = start + timedelta(seconds=duration)
+
+    # Compare signal headers
+    assert signal_headers == orig_signal_headers
+
+    # Compare signal values
+    for i in range(signals.shape[0]):
+        sf_sig = signal_headers[i]["sample_frequency"]
+        idx_start = int(np.round((start - orig_start).seconds * sf_sig))
+        idx_stop = int(np.round((stop - orig_start).seconds * sf_sig))
+        assert (signals[i] == orig_signals[i, idx_start:idx_stop]).all()
+
 
 class TestHighLevel(unittest.TestCase):
 
@@ -299,6 +322,58 @@ class TestHighLevel(unittest.TestCase):
                                                'technician'],
                                     new_values=['x', '', 'xx', 'xxx'],
                                     verify=True)
+
+    def test_crop_edf(self):
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        edf_file = os.path.join(data_dir, 'test_generator.edf')
+        outfile = os.path.join(data_dir, 'tmp_test_generator_cropped.edf')
+        orig_header = highlevel.read_edf_header(edf_file)  # noqa: E501
+        orig_start = orig_header["startdate"]
+        new_start = datetime(2011, 4, 4, 12, 58, 0)
+        new_stop = datetime(2011, 4, 4, 13, 0, 0)
+
+        # Test 1: no cropping
+        # The output file should be the same as input.
+        highlevel.crop_edf(
+            edf_file, new_file=outfile, start=None, stop=None)
+        assert highlevel.compare_edf(edf_file, outfile)
+
+        # Test 2: crop using datetimes (default)
+        # .. both start and stop
+        highlevel.crop_edf(
+            edf_file, new_file=outfile, start=new_start,
+            stop=new_stop
+        )
+        # Test that the signal values are correctly cropped
+        _compare_cropped_edf(edf_file, outfile)
+        # .. only start
+        highlevel.crop_edf(edf_file, new_file=outfile, start=new_start)
+        _compare_cropped_edf(edf_file, outfile)
+        # .. only stop
+        highlevel.crop_edf(edf_file, new_file=outfile, stop=new_stop)
+        _compare_cropped_edf(edf_file, outfile)
+
+        # Test 3: crop using seconds
+        new_start_sec = (new_start - orig_start).seconds
+        new_stop_sec = (new_stop - orig_start).seconds
+        # .. both start and stop
+        highlevel.crop_edf(
+            edf_file, new_file=outfile, start=new_start_sec,
+            stop=new_stop_sec, start_format="seconds", stop_format="seconds"
+        )
+        _compare_cropped_edf(edf_file, outfile)
+        # .. only start
+        highlevel.crop_edf(
+            edf_file, new_file=outfile,
+            start=new_start_sec, start_format="seconds"
+        )
+        _compare_cropped_edf(edf_file, outfile)
+        # .. only stop
+        highlevel.crop_edf(
+            edf_file, new_file=outfile, stop=new_stop_sec,
+            stop_format="seconds"
+        )
+        _compare_cropped_edf(edf_file, outfile)
 
     def test_drop_channel(self):
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])

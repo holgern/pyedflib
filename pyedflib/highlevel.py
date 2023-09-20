@@ -15,6 +15,7 @@ Includes
     - Comparing EDFs
     - Renaming Channels from EDF files
     - Dropping Channels from EDF files
+    - Cropping EDFs
 
 @author: skjerns
 """
@@ -24,7 +25,7 @@ import numpy as np
 import warnings
 import pyedflib
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
 # from . import EdfWriter
 # from . import EdfReader
 
@@ -764,6 +765,124 @@ def anonymize_edf(edf_file, new_file=None,
     if verify:
         compare_edf(edf_file, new_file, verbose=verbose)
     return True
+
+
+def crop_edf(
+    edf_file,
+    *,
+    new_file=None,
+    start=None,
+    stop=None,
+    start_format="datetime",
+    stop_format="datetime",
+    verbose=True,
+):
+    """Crop an EDF file to desired start/stop times.
+
+    The new start/end times can be either specified as a datetime.datetime or
+    as seconds from the beginning of the recording.
+    For example, using `crop_edf(..., start=10, start_format="seconds") will
+    remove the first 10-seconds of the recording.
+
+    Parameters
+    ----------
+    edf_file : str
+        The path to the EDF file.
+    new_file : str | None
+         The path to the new cropped file. If None (default), the input
+         filename appended with '_cropped' is used.
+    start : datetime.datetime | int | float | None
+        The new start. Can be None to keep the original start time of
+        the recording.
+    stop : datetime.datetime | int | float | None
+        The new stop. Can be None to keep the original end time of the
+        recording.
+    start_format : str
+        The format of ``start``: "datetime" (default) or "seconds".
+    stop_format : str
+        The format of ``stop``: "datetime" (default) or "seconds".
+    verbose : bool
+        If True (default), print some details about the original and cropped
+        file.
+    """
+    # Check input
+    assert start_format in ["datetime", "seconds"]
+    assert stop_format in ["datetime", "seconds"]
+    if start_format == "datetime":
+        assert isinstance(start, (datetime, type(None)))
+    else:
+        assert isinstance(start, (int, float, type(None)))
+    if stop_format == "datetime":
+        assert isinstance(stop, (datetime, type(None)))
+    else:
+        assert isinstance(start, (int, float, type(None)))
+
+    # Open the original EDF file
+    edf = pyedflib.EdfReader(edf_file)
+    signals_headers = edf.getSignalHeaders()
+    header = edf.getHeader()
+
+    # Define new start time
+    current_start = edf.getStartdatetime()
+    if start is None:
+        start = current_start
+    else:
+        if start_format == "seconds":
+            start = current_start + timedelta(seconds=start)
+        else:
+            pass
+    assert current_start <= start, 'start must not be before current start of recording'
+    start_diff_from_start = (start - current_start).total_seconds()
+
+    # Define new stop time
+    current_stop = current_start + timedelta(seconds=edf.getFileDuration())
+    current_duration = current_stop - current_start
+    if stop is None:
+        stop = current_stop
+    else:
+        if stop_format == "seconds":
+            stop = current_start + timedelta(seconds=stop)
+        else:
+            pass
+    assert stop <= current_stop, 'new stop value must not be after current end of recording'
+    
+    assert start < current_stop, 'new start value must not be after current end of recording'
+    assert stop > current_start, 'new stop value must not be before current start of recording'
+    stop_diff_from_start = (stop - current_start).total_seconds()
+
+    # Crop each signal
+    signals = []
+    for i in range(len(edf.getSignalHeaders())):
+        sf = edf.getSampleFrequency(i)
+        # Convert from seconds to samples
+        start_idx = int(np.round(start_diff_from_start * sf))
+        stop_idx = int(np.round(stop_diff_from_start * sf))
+        # We use digital=True in reading and writing to avoid precision loss
+        signals.append(
+            edf.readSignal(i, start=start_idx, n=stop_idx - start_idx, digital=True)
+        )
+    edf.close()
+
+    # Update header startdate and save file
+    header["startdate"] = start
+    if new_file is None:
+        file, ext = os.path.splitext(edf_file)
+        new_file = file + "_cropped" + ext
+    write_edf(new_file, signals, signals_headers, header, digital=True)
+
+    # Safety check: are we able to load the new EDF file?
+    # Get new EDF start, stop and duration
+    with pyedflib.EdfReader(new_file) as edf:
+        start = edf.getStartdatetime()
+        stop = start + timedelta(seconds=edf.getFileDuration())
+        duration = stop - start
+        edf.close()
+
+    # Verbose
+    if verbose:
+        print(f"Original: {current_start} to {current_stop} ({current_duration})")
+        print(f"Truncated: {start} to {stop} ({duration})")
+        print(f"Succesfully written file: {new_file}")
 
 
 def rename_channels(edf_file, mapping, new_file=None, verbose=False):
