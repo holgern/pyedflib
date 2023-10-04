@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [37, 38, 39, 310, 311]
+        python: [37, 38, 39, 310, 311, 312]
         include:
           - os: ubuntu-latest
             arch: aarch64
