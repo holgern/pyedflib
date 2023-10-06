@@ -51,10 +51,11 @@ jobs:
           python-version: '3.8'
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
+        
       - name: Install OpenBLAS (for Python > 3.11)
-        run: |
-          sudo apt-get update
-          sudo apt-get install libopenblas-dev
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libopenblas-dev
+
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
