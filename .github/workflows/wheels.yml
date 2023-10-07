@@ -55,7 +55,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           # Disable  building PyPy wheels
-          CIBW_SKIP: "pp* cp312-manylinux_i686"
+          CIBW_SKIP: "pp* cp312*i686"
           CIBW_PRERELEASE_PYTHONS: False
 
       - uses: actions/upload-artifact@v3
