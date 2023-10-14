@@ -14,7 +14,7 @@ from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, se
 from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
 from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_sex, set_datarecord_duration, set_number_of_annotation_signals
 from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samples_per_record, set_physical_minimum, set_label, set_physical_dimension
-from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
+from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1_hr, write_annotation_utf8_hr
 from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
 
 
@@ -883,14 +883,14 @@ class EdfWriter:
 
         if str_format == 'utf_8':
             if duration_in_seconds >= 0:
-                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), du(description))
+                return write_annotation_utf8_hr(self.handle, np.round(onset_in_seconds*1000000).astype(np.int64), np.round(duration_in_seconds*1000000).astype(np.int64), du(description))
             else:
-                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, du(description))
+                return write_annotation_utf8_hr(self.handle, np.round(onset_in_seconds*1000000).astype(np.int64), -1, du(description))
         else:
             if duration_in_seconds >= 0:
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), u(description).encode('latin1'))
+                return write_annotation_latin1_hr(self.handle, np.round(onset_in_seconds*1000000).astype(np.int64), np.round(duration_in_seconds*1000000).astype(np.int64), u(description).encode('latin1'))
             else:
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, u(description).encode('latin1'))
+                return write_annotation_latin1_hr(self.handle, np.round(onset_in_seconds*1000000).astype(np.int64), -1, u(description).encode('latin1'))
 
     def close(self):
         """
