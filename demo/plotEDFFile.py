@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import numpy as np
-
-import pyedflib
-
-
 from stacklineplot import stackplot
 
+import pyedflib
 
 if __name__ == '__main__':
     f = pyedflib.data.test_generator()

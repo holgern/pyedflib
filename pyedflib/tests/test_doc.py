@@ -3,7 +3,6 @@ import glob
 import os
 import unittest
 
-
 pdir = os.path.pardir
 docs_base = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                          pdir, pdir, "doc", "source"))

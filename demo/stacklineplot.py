@@ -2,8 +2,8 @@
 # uses line collections (might actually be from pbrain example)
 # clm
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.collections import LineCollection
 
 

@@ -22,26 +22,28 @@ docstrings is valid python::
     $ python refguide_check.py --check_docs optimize
 
 """
-import sys
+import copy
+import doctest
+import glob
+import inspect
+import io
 import os
 import re
-import copy
-import inspect
-import warnings
-import doctest
-import tempfile
-import io
-import docutils.core
-from docutils.parsers.rst import directives
 import shutil
-import glob
-from doctest import NORMALIZE_WHITESPACE, ELLIPSIS, IGNORE_EXCEPTION_DETAIL
+import sys
+import tempfile
+import warnings
 from argparse import ArgumentParser
+from doctest import ELLIPSIS, IGNORE_EXCEPTION_DETAIL, NORMALIZE_WHITESPACE
+
+import docutils.core
 import numpy as np
+from docutils.parsers.rst import directives
 
 # sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'doc',
 #                 'sphinxext'))
 from numpydoc.docscrape_sphinx import get_doc_object
+
 # Remove sphinx directives that don't run without Sphinx environment
 directives._directives.pop('versionadded', None)
 directives._directives.pop('versionchanged', None)

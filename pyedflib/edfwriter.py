@@ -5,18 +5,51 @@
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
 
-import numpy as np
 import sys
 import warnings
-from datetime import datetime, date
-from ._extensions._pyedflib import FILETYPE_EDFPLUS, FILETYPE_BDFPLUS, FILETYPE_BDF, FILETYPE_EDF
-from ._extensions._pyedflib import open_file_writeonly, set_physical_maximum, set_patient_additional, set_digital_maximum
-from ._extensions._pyedflib import set_birthdate, set_digital_minimum, set_technician, set_recording_additional, set_patientname
-from ._extensions._pyedflib import set_patientcode, set_equipment, set_admincode, set_sex, set_datarecord_duration, set_number_of_annotation_signals
-from ._extensions._pyedflib import set_startdatetime, set_starttime_subsecond, set_samples_per_record, set_physical_minimum, set_label, set_physical_dimension
-from ._extensions._pyedflib import set_transducer, set_prefilter, write_physical_samples, close_file, write_annotation_latin1, write_annotation_utf8
-from ._extensions._pyedflib import blockwrite_physical_samples, write_errors, blockwrite_digital_samples, write_digital_short_samples, write_digital_samples, blockwrite_digital_short_samples
+from datetime import date, datetime
 
+import numpy as np
+
+from ._extensions._pyedflib import (
+    FILETYPE_BDF,
+    FILETYPE_BDFPLUS,
+    FILETYPE_EDF,
+    FILETYPE_EDFPLUS,
+    blockwrite_digital_samples,
+    blockwrite_digital_short_samples,
+    blockwrite_physical_samples,
+    close_file,
+    open_file_writeonly,
+    set_admincode,
+    set_birthdate,
+    set_datarecord_duration,
+    set_digital_maximum,
+    set_digital_minimum,
+    set_equipment,
+    set_label,
+    set_number_of_annotation_signals,
+    set_patient_additional,
+    set_patientcode,
+    set_patientname,
+    set_physical_dimension,
+    set_physical_maximum,
+    set_physical_minimum,
+    set_prefilter,
+    set_recording_additional,
+    set_samples_per_record,
+    set_sex,
+    set_startdatetime,
+    set_starttime_subsecond,
+    set_technician,
+    set_transducer,
+    write_annotation_latin1,
+    write_annotation_utf8,
+    write_digital_samples,
+    write_digital_short_samples,
+    write_errors,
+    write_physical_samples,
+)
 
 __all__ = ['EdfWriter']
 

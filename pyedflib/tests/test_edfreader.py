@@ -1,16 +1,19 @@
 # Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
-import os
 import gc
-import numpy as np
-from datetime import datetime
+import os
+
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
+from datetime import datetime
+
+import numpy as np
+
 import pyedflib
-from pyedflib.edfwriter import EdfWriter
 from pyedflib.edfreader import EdfReader
+from pyedflib.edfwriter import EdfWriter
 
 
 class TestEdfReader(unittest.TestCase):

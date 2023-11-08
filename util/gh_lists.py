@@ -4,15 +4,14 @@ gh_lists.py MILESTONE
 
 Functions for Github API requests.
 """
+import argparse
+import collections
+import json
 import os
 import re
 import sys
-import json
-import collections
-import argparse
 
 from urllib2 import urlopen
-
 
 Issue = collections.namedtuple('Issue', ('id', 'title', 'url'))
 
