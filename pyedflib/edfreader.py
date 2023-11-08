@@ -171,10 +171,10 @@ class EdfReader(CyEdfReader):
         ----------
         None
         """
-        signalHeader = []
-        for chn in np.arange(self.signals_in_file):
-            signalHeader.append(self.getSignalHeader(chn))
-        return signalHeader
+        return [
+                self.getSignalHeader(chn)
+                for chn in np.arange(self.signals_in_file)
+        ]
 
     def getTechnician(self):
         """
