@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import time
-import pyedflib
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
 from stacklineplot import stackplot_t
+
+import pyedflib
+
 
 def animate(frame):
     global offset

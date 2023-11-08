@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import subprocess
-import setuptools
+import sys
+from distutils.sysconfig import get_python_inc
 from functools import partial
 
-from setuptools import setup, Extension
-from distutils.sysconfig import get_python_inc
+import setuptools
+from setuptools import Extension, setup
 
 try:
     from Cython.Build import cythonize
@@ -213,6 +213,8 @@ ext_modules = [
 ]
 
 from setuptools.command.develop import develop
+
+
 class develop_build_clib(develop):
     """Ugly monkeypatching to get clib to build for development installs
     See coverage comment above for why we don't just let libraries be built

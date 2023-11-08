@@ -21,11 +21,14 @@ Includes
 """
 
 import os
-import numpy as np
 import warnings
-import pyedflib
 from copy import deepcopy
 from datetime import datetime, timedelta
+
+import numpy as np
+
+import pyedflib
+
 # from . import EdfWriter
 # from . import EdfReader
 

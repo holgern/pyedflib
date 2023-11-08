@@ -1,8 +1,10 @@
 # Copyright (c) 2016 Holger Nahrstaedt
 
 import os
+
 import numpy as np
 from scipy import signal
+
 import pyedflib
 
 # signal label/waveform  amplitude    f       sf

@@ -9,10 +9,10 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-import re
 import datetime
-import jinja2.filters
+import re
 
+import jinja2.filters
 import numpy as np
 
 # FIXME: doctests need the str/repr formatting used in Numpy < 1.14.
@@ -64,6 +64,7 @@ author = 'Holger Nahrstaedt'
 #
 # The short X.Y version.
 import pyedflib
+
 version = re.sub(r'\.dev0+.*$', r'.dev', pyedflib.__version__)
 release = pyedflib.__version__
 

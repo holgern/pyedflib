@@ -1,17 +1,20 @@
 # Copyright (c) 2019 - 2023 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
-import os
 import gc
-import warnings
-import numpy as np
+import os
+
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
+import warnings
+from datetime import date, datetime
+
+import numpy as np
+
 import pyedflib
-from pyedflib.edfwriter import EdfWriter, ChannelDoesNotExist, WrongInputSize
 from pyedflib.edfreader import EdfReader
-from datetime import datetime, date
+from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter, WrongInputSize
 
 
 class TestEdfWriter(unittest.TestCase):

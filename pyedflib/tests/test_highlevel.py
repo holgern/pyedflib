@@ -1,17 +1,20 @@
 # Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 Holger Nahrstaedt
 
+import gc
 import os
 import shutil
-import gc
-import numpy as np
+
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
-from pyedflib import highlevel
-from pyedflib.edfwriter import EdfWriter
-from pyedflib.edfreader import EdfReader
 from datetime import datetime, timedelta
+
+import numpy as np
+
+from pyedflib import highlevel
+from pyedflib.edfreader import EdfReader
+from pyedflib.edfwriter import EdfWriter
 
 
 def _compare_cropped_edf(path_orig_edf, path_cropped_edf):

@@ -13,13 +13,13 @@ repository.
 """
 # Author: Pauli Virtanen <pav@iki.fi>. This script is in the public domain.
 
-import optparse
-import re
-import sys
-import os
-import io
-import subprocess
 import collections
+import io
+import optparse
+import os
+import re
+import subprocess
+import sys
 
 stdout_b = sys.stdout.buffer
 MAILMAP_FILE = os.path.join(os.path.dirname(__file__), "..", ".mailmap")

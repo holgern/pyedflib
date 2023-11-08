@@ -5,9 +5,10 @@
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
 
-from datetime import datetime
-import numpy as np
 import warnings
+from datetime import datetime
+
+import numpy as np
 
 from ._extensions._pyedflib import CyEdfReader
 

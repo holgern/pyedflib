@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import os
+
 import numpy as np
 
 import pyedflib
-
 
 if __name__ == '__main__':
     f = pyedflib.data.test_generator()

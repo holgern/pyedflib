@@ -1,1 +1,1 @@
-from ._readers import test_generator, get_generator_filename
+from ._readers import get_generator_filename, test_generator
