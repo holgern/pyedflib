@@ -21,7 +21,7 @@ __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subse
 import locale
 import os
 import warnings
-cimport c_edf
+from . cimport c_edf
 cimport cpython
 import numpy as np
 cimport numpy as np
