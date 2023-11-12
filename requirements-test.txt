@@ -4,7 +4,7 @@ wheel
 flake8
 nose
 coverage
-cython<3.0
+cython
 numpy
 pytest
 dateparser
