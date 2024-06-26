@@ -128,7 +128,7 @@ def check_signal_header_correct(channels, i, file_type):
                                                                       len(str(ch['physical_min'])),
                                                                       str(ch['physical_min'])[:8]))
     if len(str(ch['physical_max']))>8:
-        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
+        warnings.warn('Physical maximum for channel {} ({}) is {}, which has {} chars, '\
                          'however, EDF+ can only save 8 chars, will be truncated to {}, '\
                          'some loss of precision is to be expected.'.format(i, label,
                                                                       ch['physical_max'],
