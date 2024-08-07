@@ -55,7 +55,7 @@ jobs:
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           # Disable  building PyPy wheels
-          CIBW_SKIP: "pp* cp312*i686"
+          CIBW_SKIP: "pp* cp313* cp312*i686"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_PRERELEASE_PYTHONS: False
 
