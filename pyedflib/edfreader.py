@@ -7,14 +7,21 @@
 
 import warnings
 from datetime import datetime
+from typing import List, Tuple, Dict, Union, Optional
 
 import numpy as np
 
 from ._extensions._pyedflib import CyEdfReader
 
-__all__ = ['EdfReader', 'DO_NOT_READ_ANNOTATIONS',
-           'READ_ANNOTATIONS', 'READ_ALL_ANNOTATIONS', 'CHECK_FILE_SIZE',
-           'DO_NOT_CHECK_FILE_SIZE', 'REPAIR_FILE_SIZE_IF_WRONG']
+__all__ = [
+    "EdfReader",
+    "DO_NOT_READ_ANNOTATIONS",
+    "READ_ANNOTATIONS",
+    "READ_ALL_ANNOTATIONS",
+    "CHECK_FILE_SIZE",
+    "DO_NOT_CHECK_FILE_SIZE",
+    "REPAIR_FILE_SIZE_IF_WRONG",
+]
 
 DO_NOT_READ_ANNOTATIONS = 0
 READ_ANNOTATIONS = 1
@@ -24,31 +31,33 @@ CHECK_FILE_SIZE = 0
 DO_NOT_CHECK_FILE_SIZE = 1
 REPAIR_FILE_SIZE_IF_WRONG = 2
 
-def _debug_parse_header(filename): #pragma: no cover
+
+def _debug_parse_header(filename: str) -> None:  # pragma: no cover
     """
     A debug function that reads a header and outputs everything that
     is contained in the header
     """
     import json
     from collections import OrderedDict
-    header = OrderedDict()
-    with open(filename, 'rb') as f:
-        f.seek(0)
-        header['version'] = f.read(8).decode()
-        header['patient_id'] = f.read(80).decode().strip()
-        header['recording_id'] = f.read(80).decode().strip()
-        header['startdate'] = f.read(8).decode()
-        header['starttime'] = f.read(8).decode()
-        header['header_n_bytes'] = f.read(8).decode()
-        header['reserved'] = f.read(44).decode().strip()
-        header['n_records'] = f.read(8).decode()
-        header['record_duration'] = f.read(8).decode()
-        header['n_signals'] = f.read(4).decode()
 
-        print('\n##### Header')
+    header = OrderedDict()
+    with open(filename, "rb") as f:
+        f.seek(0)
+        header["version"] = f.read(8).decode()
+        header["patient_id"] = f.read(80).decode().strip()
+        header["recording_id"] = f.read(80).decode().strip()
+        header["startdate"] = f.read(8).decode()
+        header["starttime"] = f.read(8).decode()
+        header["header_n_bytes"] = f.read(8).decode()
+        header["reserved"] = f.read(44).decode().strip()
+        header["n_records"] = f.read(8).decode()
+        header["record_duration"] = f.read(8).decode()
+        header["n_signals"] = f.read(4).decode()
+
+        print("\n##### Header")
         print(json.dumps(header, indent=2))
 
-        nsigs = int(header['n_signals'])
+        nsigs = int(header["n_signals"])
         label = [f.read(16).decode() for i in range(nsigs)]
         transducer = [f.read(80).decode().strip() for i in range(nsigs)]
         dimension = [f.read(8).decode().strip() for i in range(nsigs)]
@@ -59,11 +68,33 @@ def _debug_parse_header(filename): #pragma: no cover
         prefilter = [f.read(80).decode().strip() for i in range(nsigs)]
         n_samples = [f.read(8).decode() for i in range(nsigs)]
         reserved = [f.read(32).decode() for i in range(nsigs)]
-    _ = zip(label, transducer, dimension, pmin, pmax, dmin, dmax, prefilter, n_samples, reserved)
+    _ = zip(
+        label,
+        transducer,
+        dimension,
+        pmin,
+        pmax,
+        dmin,
+        dmax,
+        prefilter,
+        n_samples,
+        reserved,
+    )
     values = locals().copy()
-    fields = ['label', 'transducer', 'dimension', 'pmin', 'pmax', 'dmin', 'dmax', 'prefilter', 'n_samples', 'reserved']
-    sheaders = [{field:values[field][i] for field in fields} for i in range(nsigs)]
-    print('\n##### Signal Headers')
+    fields = [
+        "label",
+        "transducer",
+        "dimension",
+        "pmin",
+        "pmax",
+        "dmin",
+        "dmax",
+        "prefilter",
+        "n_samples",
+        "reserved",
+    ]
+    sheaders = [{field: values[field][i] for field in fields} for i in range(nsigs)]
+    print("\n##### Signal Headers")
     print(json.dumps(sheaders, indent=2))
 
 
@@ -71,26 +102,28 @@ class EdfReader(CyEdfReader):
     """
     This provides a simple interface to read EDF, EDF+, BDF and BDF+ files.
     """
-    def __enter__(self):
+
+    def __enter__(self) -> "EdfReader":
         return self
 
-    def __del__(self):
+    def __del__(self) -> None:
         self._close()
 
-    def __exit__(self, exc_type, exc_val, ex_tb):
+    def __exit__(self, exc_type, exc_val, ex_tb) -> None:
         self._close()  # cleanup the file
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the file handler
         """
         self._close()
 
-    def getNSamples(self):
-        return np.array([self.samples_in_file(chn)
-                         for chn in np.arange(self.signals_in_file)])
+    def getNSamples(self) -> np.ndarray:
+        return np.array(
+            [self.samples_in_file(chn) for chn in np.arange(self.signals_in_file)]
+        )
 
-    def readAnnotations(self):
+    def readAnnotations(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Annotations from a edf-file
 
@@ -98,21 +131,21 @@ class EdfReader(CyEdfReader):
         ----------
         None
         """
-        annot = self.read_annotation()
+        annot: Union[np.ndarray, List[List]] = self.read_annotation()
         annot = np.array(annot)
-        if (annot.shape[0] == 0):
+        if annot.shape[0] == 0:
             return np.array([]), np.array([]), np.array([])
         ann_time = self._get_float(annot[:, 0])
         ann_text = annot[:, 2]
         ann_text_out = ["" for x in range(len(annot[:, 1]))]
         for i in np.arange(len(annot[:, 1])):
             ann_text_out[i] = self._convert_string(ann_text[i])
-            if annot[i, 1] == '':
-                annot[i, 1] = '-1'
+            if annot[i, 1] == "":
+                annot[i, 1] = "-1"
         ann_duration = self._get_float(annot[:, 1])
-        return ann_time/10000000, ann_duration, np.array(ann_text_out)
+        return ann_time / 10000000, ann_duration, np.array(ann_text_out)
 
-    def _get_float(self, v):
+    def _get_float(self, v: np.ndarray) -> np.ndarray:
         result = np.zeros(np.size(v))
         for i in np.arange(np.size(v)):
             try:
@@ -124,13 +157,14 @@ class EdfReader(CyEdfReader):
                 result[i] = float(v[i])
         return result
 
-    def _convert_string(self,s):
+    # FIX: Seems s must always be bytes because string has no decode method
+    def _convert_string(self, s: Union[bytes, str]) -> str:
         if isinstance(s, bytes):
             return s.decode("latin")
         else:
-            return s.decode("utf_8", "strict")
+            return s.decode("utf_8", "strict")  # type: ignore
 
-    def getHeader(self):
+    def getHeader(self) -> Dict[str, Union[str, datetime]]:
         """
         Returns the file header as dict
 
@@ -138,14 +172,23 @@ class EdfReader(CyEdfReader):
         ----------
         None
         """
-        return {"technician": self.getTechnician(), "recording_additional": self.getRecordingAdditional(),
-                "patientname": self.getPatientName(), "patient_additional": self.getPatientAdditional(),
-                "patientcode": self.getPatientCode(), "equipment": self.getEquipment(),
-                "admincode": self.getAdmincode(), "sex": self.getSex(), "startdate": self.getStartdatetime(),
-                "birthdate": self.getBirthdate(),
-                "gender": self.getSex()}  # backwards compatibility
+        return {
+            "technician": self.getTechnician(),
+            "recording_additional": self.getRecordingAdditional(),
+            "patientname": self.getPatientName(),
+            "patient_additional": self.getPatientAdditional(),
+            "patientcode": self.getPatientCode(),
+            "equipment": self.getEquipment(),
+            "admincode": self.getAdmincode(),
+            "sex": self.getSex(),
+            "startdate": self.getStartdatetime(),
+            "birthdate": self.getBirthdate(),
+            "gender": self.getSex(),
+        }  # backwards compatibility
 
-    def getSignalHeader(self, chn):
+    def getSignalHeader(
+        self, chn: int
+    ) -> Dict[str, Union[str, float, int, np.ndarray]]:
         """
         Returns the  header of one signal as  dicts
 
@@ -153,18 +196,20 @@ class EdfReader(CyEdfReader):
         ----------
         None
         """
-        return {'label': self.getLabel(chn),
-                'dimension': self.getPhysicalDimension(chn),
-                'sample_rate': self.getSampleFrequency(chn),  # backwards compatibility
-                'sample_frequency': self.getSampleFrequency(chn),
-                'physical_max':self.getPhysicalMaximum(chn),
-                'physical_min': self.getPhysicalMinimum(chn),
-                'digital_max': self.getDigitalMaximum(chn),
-                'digital_min': self.getDigitalMinimum(chn),
-                'prefilter':self.getPrefilter(chn),
-                'transducer': self.getTransducer(chn)}
+        return {
+            "label": self.getLabel(chn),
+            "dimension": self.getPhysicalDimension(chn),
+            "sample_rate": self.getSampleFrequency(chn),  # backwards compatibility
+            "sample_frequency": self.getSampleFrequency(chn),
+            "physical_max": self.getPhysicalMaximum(chn),
+            "physical_min": self.getPhysicalMinimum(chn),
+            "digital_max": self.getDigitalMaximum(chn),
+            "digital_min": self.getDigitalMinimum(chn),
+            "prefilter": self.getPrefilter(chn),
+            "transducer": self.getTransducer(chn),
+        }
 
-    def getSignalHeaders(self):
+    def getSignalHeaders(self) -> List[Dict[str, Union[str, float, int, np.ndarray]]]:
         """
         Returns the  header of all signals as array of dicts
 
@@ -172,12 +217,9 @@ class EdfReader(CyEdfReader):
         ----------
         None
         """
-        return [
-                self.getSignalHeader(chn)
-                for chn in np.arange(self.signals_in_file)
-        ]
+        return [self.getSignalHeader(chn) for chn in np.arange(self.signals_in_file)]
 
-    def getTechnician(self):
+    def getTechnician(self) -> str:
         """
         Returns the technicians name
 
@@ -196,7 +238,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.technician.rstrip())
 
-    def getRecordingAdditional(self):
+    def getRecordingAdditional(self) -> str:
         """
         Returns the additional recordinginfo
 
@@ -215,7 +257,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.recording_additional.rstrip())
 
-    def getPatientName(self):
+    def getPatientName(self) -> str:
         """
         Returns the patientname
 
@@ -234,7 +276,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.patientname.rstrip())
 
-    def getPatientCode(self):
+    def getPatientCode(self) -> str:
         """
         Returns the patientcode
 
@@ -253,7 +295,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.patientcode.rstrip())
 
-    def getPatientAdditional(self):
+    def getPatientAdditional(self) -> str:
         """
         Returns the additional patientinfo.
 
@@ -272,7 +314,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.patient_additional.rstrip())
 
-    def getEquipment(self):
+    def getEquipment(self) -> str:
         """
         Returns the used Equipment.
 
@@ -291,7 +333,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.equipment.rstrip())
 
-    def getAdmincode(self):
+    def getAdmincode(self) -> str:
         """
         Returns the Admincode.
 
@@ -310,7 +352,7 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.admincode.rstrip())
 
-    def getSex(self):
+    def getSex(self) -> str:
         """
         Returns the Sex of the patient.
 
@@ -329,11 +371,15 @@ class EdfReader(CyEdfReader):
         """
         return self._convert_string(self.sex.rstrip())
 
-    def getGender(self):
-        warnings.warn("Method 'getGender' is deprecated, use 'getSex' instead.", DeprecationWarning, stacklevel=2)
+    def getGender(self) -> str:
+        warnings.warn(
+            "Method 'getGender' is deprecated, use 'getSex' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.getSex()
 
-    def getFileDuration(self):
+    def getFileDuration(self) -> float:
         """
         Returns the duration of the file in seconds.
 
@@ -352,7 +398,7 @@ class EdfReader(CyEdfReader):
         """
         return self.file_duration
 
-    def getStartdatetime(self):
+    def getStartdatetime(self) -> datetime:
         """
         Returns the date and starttime as datetime object
 
@@ -370,12 +416,18 @@ class EdfReader(CyEdfReader):
 
         """
         # denoted as long long in nanoseconds, we need to transfer it to microsecond
-        subsecond = np.round(self.starttime_subsecond/100).astype(int)
-        return datetime(self.startdate_year, self.startdate_month, self.startdate_day,
-                                 self.starttime_hour, self.starttime_minute, self.starttime_second,
-                                 subsecond)
+        subsecond = np.round(self.starttime_subsecond / 100).astype(int)
+        return datetime(
+            self.startdate_year,
+            self.startdate_month,
+            self.startdate_day,
+            self.starttime_hour,
+            self.starttime_minute,
+            self.starttime_second,
+            subsecond,
+        )
 
-    def getBirthdate(self, string=True):
+    def getBirthdate(self, string: bool = True) -> Union[str, datetime]:
         """
         Returns the birthdate as string object
 
@@ -396,9 +448,11 @@ class EdfReader(CyEdfReader):
         if string:
             return self._convert_string(self.birthdate.rstrip())
         else:
-            return datetime.strptime(self._convert_string(self.birthdate.rstrip()), "%d %b %Y")
+            return datetime.strptime(
+                self._convert_string(self.birthdate.rstrip()), "%d %b %Y"
+            )
 
-    def getSampleFrequencies(self):
+    def getSampleFrequencies(self) -> np.ndarray:
         """
         Returns  samplefrequencies of all signals.
 
@@ -415,10 +469,11 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
-        return np.array([self.samplefrequency(chn)
-                         for chn in np.arange(self.signals_in_file)])
+        return np.array(
+            [self.samplefrequency(chn) for chn in np.arange(self.signals_in_file)]
+        )
 
-    def getSampleFrequency(self, chn):
+    def getSampleFrequency(self, chn: int) -> float:
         """
         Returns the samplefrequency of signal edfsignal.
 
@@ -439,10 +494,13 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self.samplefrequency(chn)
         else:
-            raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+            raise IndexError(
+                "Trying to access channel {}, but only {} " "channels found".format(
+                    chn, self.signals_in_file
+                )
+            )
 
-    def getSignalLabels(self):
+    def getSignalLabels(self) -> List[str]:
         """
         Returns all labels (name) ("FP1", "SaO2", etc.).
 
@@ -459,10 +517,12 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
-        return [self._convert_string(self.signal_label(chn).strip())
-                for chn in np.arange(self.signals_in_file)]
+        return [
+            self._convert_string(self.signal_label(chn).strip())
+            for chn in np.arange(self.signals_in_file)
+        ]
 
-    def getLabel(self,chn):
+    def getLabel(self, chn: int) -> str:
         """
         Returns the label (name) of signal chn ("FP1", "SaO2", etc.).
 
@@ -483,10 +543,13 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.signal_label(chn).rstrip())
         else:
-            raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+            raise IndexError(
+                "Trying to access channel {}, but only {} " "channels found".format(
+                    chn, self.signals_in_file
+                )
+            )
 
-    def getPrefilter(self,chn):
+    def getPrefilter(self, chn: int) -> str:
         """
         Returns the prefilter of signal chn ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
 
@@ -507,10 +570,13 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.prefilter(chn).rstrip())
         else:
-            raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+            raise IndexError(
+                "Trying to access channel {}, but only {} " "channels found".format(
+                    chn, self.signals_in_file
+                )
+            )
 
-    def getPhysicalMaximum(self,chn=None):
+    def getPhysicalMaximum(self, chn: Optional[int] = None) -> Union[float, np.ndarray]:
         """
         Returns the maximum physical value of signal edfsignal.
 
@@ -532,15 +598,18 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.physical_max(chn)
             else:
-                raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+                raise IndexError(
+                    "Trying to access channel {}, but only {} " "channels found".format(
+                        chn, self.signals_in_file
+                    )
+                )
         else:
             physMax = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
                 physMax[i] = self.physical_max(i)
             return physMax
 
-    def getPhysicalMinimum(self,chn=None):
+    def getPhysicalMinimum(self, chn: Optional[int] = None) -> Union[float, np.ndarray]:
         """
         Returns the minimum physical value of signal edfsignal.
 
@@ -562,15 +631,18 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.physical_min(chn)
             else:
-                raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+                raise IndexError(
+                    "Trying to access channel {}, but only {} " "channels found".format(
+                        chn, self.signals_in_file
+                    )
+                )
         else:
             physMin = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
                 physMin[i] = self.physical_min(i)
             return physMin
 
-    def getDigitalMaximum(self, chn=None):
+    def getDigitalMaximum(self, chn: Optional[int] = None) -> Union[int, np.ndarray]:
         """
         Returns the maximum digital value of signal edfsignal.
 
@@ -592,15 +664,18 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.digital_max(chn)
             else:
-                raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+                raise IndexError(
+                    "Trying to access channel {}, but only {} " "channels found".format(
+                        chn, self.signals_in_file
+                    )
+                )
         else:
             digMax = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
                 digMax[i] = self.digital_max(i)
             return digMax
 
-    def getDigitalMinimum(self, chn=None):
+    def getDigitalMinimum(self, chn: Optional[int] = None):
         """
         Returns the minimum digital value of signal edfsignal.
 
@@ -622,15 +697,18 @@ class EdfReader(CyEdfReader):
             if 0 <= chn < self.signals_in_file:
                 return self.digital_min(chn)
             else:
-                raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+                raise IndexError(
+                    "Trying to access channel {}, but only {} " "channels found".format(
+                        chn, self.signals_in_file
+                    )
+                )
         else:
             digMin = np.zeros(self.signals_in_file)
             for i in np.arange(self.signals_in_file):
                 digMin[i] = self.digital_min(i)
             return digMin
 
-    def getTransducer(self, chn):
+    def getTransducer(self, chn: int):
         """
         Returns the transducer of signal chn ("AgAgCl cup electrodes", etc.).
 
@@ -651,9 +729,13 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.transducer(chn).rstrip())
         else:
-            raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
-    def getPhysicalDimension(self, chn):
+            raise IndexError(
+                "Trying to access channel {}, but only {} " "channels found".format(
+                    chn, self.signals_in_file
+                )
+            )
+
+    def getPhysicalDimension(self, chn: int):
         """
         Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
 
@@ -674,10 +756,15 @@ class EdfReader(CyEdfReader):
         if 0 <= chn < self.signals_in_file:
             return self._convert_string(self.physical_dimension(chn).rstrip())
         else:
-            raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+            raise IndexError(
+                "Trying to access channel {}, but only {} " "channels found".format(
+                    chn, self.signals_in_file
+                )
+            )
 
-    def readSignal(self, chn, start=0, n=None, digital=False):
+    def readSignal(
+        self, chn: int, start: int = 0, n: Optional[int] = None, digital: bool = False
+    ):
         """
         Returns the physical data of signal chn. When start and n is set, a subset is returned
 
@@ -715,15 +802,25 @@ class EdfReader(CyEdfReader):
             elif n > nsamples[chn]:
                 return np.array([])
             dtype = np.int32 if digital else np.float64
-            x = np.zeros(n, dtype=dtype)
+            # FIX: The following type checking fails because n is assigned to
+            # nsamples[chn] output. Such as nsamples is an array without
+            # hint of the dtype, the static type checker will not be able to
+            # infer the dtype of n. The following code will raise an error
+            # because the dtype of n is not known. It would be required to
+            # upgrade numpy to 1.20.0 to fix this issue, such as this version
+            # introduced support for type hinting of numpy arrays.
+            x = np.zeros(n, dtype=dtype)  # type: ignore
             if digital:
-                self.read_digital_signal(chn, start, n, x)
+                self.read_digital_signal(chn, start, n, x)  # type: ignore
             else:
-                self.readsignal(chn, start, n, x)
+                self.readsignal(chn, start, n, x)  # type: ignore
             return x
         else:
-            raise IndexError('Trying to access channel {}, but only {} ' \
-                             'channels found'.format(chn, self.signals_in_file))
+            raise IndexError(
+                "Trying to access channel {}, but only {} " "channels found".format(
+                    chn, self.signals_in_file
+                )
+            )
 
     def file_info(self):
         print("file name:", self.file_name)
@@ -735,6 +832,11 @@ class EdfReader(CyEdfReader):
         """
         self.file_info()
         for ii in np.arange(self.signals_in_file):
-            print("label:", self.getSignalLabels()[ii], "fs:",
-                  self.getSampleFrequencies()[ii], "nsamples",
-                  self.getNSamples()[ii])
+            print(
+                "label:",
+                self.getSignalLabels()[ii],
+                "fs:",
+                self.getSampleFrequencies()[ii],
+                "nsamples",
+                self.getNSamples()[ii],
+            )
