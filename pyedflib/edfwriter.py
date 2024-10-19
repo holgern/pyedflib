@@ -8,6 +8,7 @@
 import sys
 import warnings
 from datetime import date, datetime
+from typing import Any, Union, Optional, List, Dict
 
 import numpy as np
 
@@ -54,7 +55,7 @@ from ._extensions._pyedflib import (
 __all__ = ['EdfWriter']
 
 
-def check_is_ascii(string):
+def check_is_ascii(string: str) -> None:
     """according to the EDF+ specifications, only ASCII chars in ordeal
     range 32...126 are allowed, where 32 is space
 
@@ -65,7 +66,7 @@ def check_is_ascii(string):
                       ' characters and no spaces: "{}"'.format(string))
 
 
-def check_signal_header_correct(channels, i, file_type):
+def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]]], i: int, file_type: int) -> None:
     """
     helper function  to check if all entries in the channel dictionary are fine.
 
@@ -74,30 +75,35 @@ def check_signal_header_correct(channels, i, file_type):
     Will throw an exception if dmin, dmax, pmin, pmax are out of bounds or would
     be truncated in such a way as that signal values would be completely off.
     """
+    # NOTE: `ch` is a list of dicts where each value can be a string, int or
+    # float. This diversity, makes it hard to type hint the `ch` variable
+    # because there is no way to specify that the value of a key is a string,
+    # int or float. Thus, it will raise many type errors. To avoid this, we
+    # are ignoring them using `# type: ignore` comments.
     ch = channels[i]
     label = ch['label']
 
-    if len(ch['label'])>16:
+    if len(ch['label'])>16:  # type: ignore
         warnings.warn('Label of channel {} is longer than 16 ASCII chars.'\
-                      'The label will be truncated to "{}"'.format(i, ch['label'][:16] ))
-    if len(ch['prefilter'])>80:
+                'The label will be truncated to "{}"'.format(i, ch['label'][:16] ))  # type: ignore
+    if len(ch['prefilter'])>80:  # type: ignore
         warnings.warn('prefilter of channel {} is longer than 80 ASCII chars.'\
-                      'The label will be truncated to "{}"'.format(i, ch['prefilter'][:80] ))
-    if len(ch['transducer'])>80:
+                'The label will be truncated to "{}"'.format(i, ch['prefilter'][:80] ))  # type: ignore
+    if len(ch['transducer'])>80:  # type: ignore
         warnings.warn('transducer of channel {} is longer than 80 ASCII chars.'\
-                      'The label will be truncated to "{}"'.format(i, ch['transducer'][:80] ))
-    if len(ch['dimension'])>80:
+                'The label will be truncated to "{}"'.format(i, ch['transducer'][:80] ))  # type: ignore
+    if len(ch['dimension'])>80:  # type: ignore
         warnings.warn('dimension of channel {} is longer than 8 ASCII chars.'\
-                      'The label will be truncated to "{}"'.format(i, ch['dimension'][:8] ))
+                'The label will be truncated to "{}"'.format(i, ch['dimension'][:8] ))  # type: ignore
 
     # these ones actually raise an exception
     dmin, dmax = (-8388608, 8388607) if file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF) else (-32768, 32767)
-    if ch['digital_min']<dmin:
+    if ch['digital_min']<dmin:  # type: ignore
         raise ValueError('Digital minimum for channel {} ({}) is {},'\
                          'but minimum allowed value is {}'.format(i, label,
                                                                   ch['digital_min'],
                                                                   dmin))
-    if ch['digital_max']>dmax:
+    if ch['digital_max']>dmax:  # type: ignore
         raise ValueError('Digital maximum for channel {} ({}) is {},'\
                          'but maximum allowed value is {}'.format(i, label,
                                                                   ch['digital_max'],
@@ -106,13 +112,13 @@ def check_signal_header_correct(channels, i, file_type):
 
     # if we truncate the physical min before the dot, we potentitally
     # have all the signals incorrect by an order of magnitude.
-    if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:
+    if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:  # type: ignore
         raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
                          'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
                          'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min']))))
-    if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:
+    if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:  # type: ignore
         raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
                          'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
                          'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
@@ -136,29 +142,28 @@ def check_signal_header_correct(channels, i, file_type):
                                                                       str(ch['physical_max'])[:8]))
 
 
-
-def u(x):
+def u(x: bytes) -> str:
     return x.decode("utf_8", "strict")
 
 
-def du(x):
+def du(x: Union[str, bytes]) -> bytes:
     if isinstance(x, bytes):
         return x
     else:
         return x.encode("utf_8")
 
 
-def isstr(s):
+def isstr(s: Any) -> bool:
     warnings.warn("Function 'isstr' is deprecated.", DeprecationWarning, stacklevel=2)
     return isinstance(s, str)
 
 
-def isbytestr(s):
+def isbytestr(s: Any) -> bool:
     warnings.warn("Function 'isbytestr' is deprecated.", DeprecationWarning, stacklevel=2)
     return isinstance(s, bytes)
 
 
-def sex2int(sex):
+def sex2int(sex: Union[int, str, None]) -> Optional[int]:
     if isinstance(sex, int) or sex is None:
         return sex
     elif sex.lower() in ('', 'x', 'xx', 'xxx', 'unknown', '?', '??'):
@@ -171,39 +176,38 @@ def sex2int(sex):
         raise ValueError(f"Unknown sex: '{sex}'")
 
 
-def gender2int(gender):
+def gender2int(gender: Union[int, str, None]) -> Optional[int]:
     warnings.warn("Function 'gender2int' is deprecated, use 'sex2int' instead.", DeprecationWarning, stacklevel=2)
     return sex2int(gender)
 
 
 class ChannelDoesNotExist(Exception):
-    def __init__(self, value):
+    def __init__(self, value: Any) -> None:
         self.parameter = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self.parameter)
 
 
 class WrongInputSize(Exception):
-    def __init__(self, value):
+    def __init__(self, value: Any) -> None:
         self.parameter = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self.parameter)
 
 
 class EdfWriter:
-    def __exit__(self, exc_type, exc_val, ex_tb):
+    def __exit__(self, exc_type: Optional[type], exc_val: Optional[BaseException], ex_tb: Optional[BaseException]) -> None:
         self.close()
 
-    def __enter__(self):
+    def __enter__(self) -> 'EdfWriter':
         return self
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
-    def __init__(self, file_name, n_channels,
-                 file_type=FILETYPE_EDFPLUS):
+    def __init__(self, file_name: str, n_channels: int, file_type: int = FILETYPE_EDFPLUS) -> None:
         """Initialises an EDF file at file_name.
         file_type is one of
             edflib.FILETYPE_EDFPLUS
@@ -232,15 +236,15 @@ class EdfWriter:
         self.recording_additional = ''
         self.patient_additional = ''
         self.admincode = ''
-        self.sex = None
+        self.sex: Optional[int] = None
         self.recording_start_time = datetime.now().replace(microsecond=0)
 
-        self.birthdate = ''
-        self.record_duration = 1  # length of one data record in seconds
+        self.birthdate: Union[str, date] = ''
+        self.record_duration: float = 1  # length of one data record in seconds
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
-        self.channels = []
-        self.sample_buffer = []
+        self.channels: List[Dict[str, Union[str, float, None]]] = []
+        self.sample_buffer: List[List] = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
                 self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
@@ -259,7 +263,7 @@ class EdfWriter:
             raise OSError(write_errors[self.handle])
         self._enforce_record_duration = False
 
-    def update_header(self):
+    def update_header(self) -> None:
         """
         Updates header to edffile struct
         """
@@ -320,7 +324,7 @@ class EdfWriter:
             set_transducer(self.handle, i, du(self.channels[i]['transducer']))
             set_prefilter(self.handle, i, du(self.channels[i]['prefilter']))
 
-    def setHeader(self, fileHeader):
+    def setHeader(self, fileHeader: Dict[str, Any]) -> None:
         """
         Sets the file header
         """
@@ -336,7 +340,7 @@ class EdfWriter:
         self.birthdate = fileHeader["birthdate"]
         self.update_header()
 
-    def setSignalHeader(self, edfsignal, channel_info):
+    def setSignalHeader(self, edfsignal: int, channel_info: Dict[str, Union[str, int, float]]) -> None:
         """
         Sets the parameter for signal edfsignal.
 
@@ -357,7 +361,7 @@ class EdfWriter:
         self.channels[edfsignal].update(channel_info)
         self.update_header()
 
-    def setSignalHeaders(self, signalHeaders):
+    def setSignalHeaders(self, signalHeaders: List[Dict[str, Union[str, int, float]]]) -> None:
         """
         Sets the parameter for all signals
 
@@ -386,7 +390,7 @@ class EdfWriter:
             self.channels[edfsignal].update(signalHeaders[edfsignal])
         self.update_header()
 
-    def setTechnician(self, technician):
+    def setTechnician(self, technician: str) -> None:
         """
         Sets the technicians name to `technician`.
 
@@ -398,7 +402,7 @@ class EdfWriter:
         self.technician = technician
         self.update_header()
 
-    def setRecordingAdditional(self, recording_additional):
+    def setRecordingAdditional(self, recording_additional: str) -> None:
         """
         Sets the additional recordinginfo
 
@@ -410,7 +414,7 @@ class EdfWriter:
         self.recording_additional = recording_additional
         self.update_header()
 
-    def setPatientName(self, patient_name):
+    def setPatientName(self, patient_name: str) -> None:
         """
         Sets the patientname to `patient_name`.
 
@@ -422,7 +426,7 @@ class EdfWriter:
         self.patient_name = patient_name
         self.update_header()
 
-    def setPatientCode(self, patient_code):
+    def setPatientCode(self, patient_code: str) -> None:
         """
         Sets the patientcode to `patient_code`.
 
@@ -434,7 +438,7 @@ class EdfWriter:
         self.patient_code = patient_code
         self.update_header()
 
-    def setPatientAdditional(self, patient_additional):
+    def setPatientAdditional(self, patient_additional: str) -> None:
         """
         Sets the additional patientinfo to `patient_additional`.
 
@@ -446,7 +450,7 @@ class EdfWriter:
         self.patient_additional = patient_additional
         self.update_header()
 
-    def setEquipment(self, equipment):
+    def setEquipment(self, equipment: str) -> None:
         """
         Sets the name of the param equipment used during the acquisition.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
@@ -461,7 +465,7 @@ class EdfWriter:
         self.equipment = equipment
         self.update_header()
 
-    def setAdmincode(self, admincode):
+    def setAdmincode(self, admincode: str) -> None:
         """
         Sets the admincode.
 
@@ -477,7 +481,7 @@ class EdfWriter:
         self.admincode = admincode
         self.update_header()
 
-    def setSex(self, sex):
+    def setSex(self, sex: int) -> None:
         """
         Sets the sex. Due to the edf specifications, only binary assignment is possible.
         This function is optional and can be called only after opening a file in writemode and before the first sample write action.
@@ -490,12 +494,12 @@ class EdfWriter:
         self.sex = sex2int(sex)
         self.update_header()
 
-    def setGender(self, gender):
+    def setGender(self, gender: Union[int, str, None]) -> None:
         warnings.warn("Function 'setGender' is deprecated, use 'setSex' instead.", DeprecationWarning, stacklevel=2)
         self.sex = sex2int(gender)
         self.update_header()
 
-    def setDatarecordDuration(self, record_duration):
+    def setDatarecordDuration(self, record_duration: float) -> None:
         """
         Sets the datarecord duration. The default value is 1 second.
         The datarecord duration must be in the range 0.001 to 60  seconds.
@@ -524,7 +528,7 @@ class EdfWriter:
         self.record_duration = record_duration
         self.update_header()
 
-    def set_number_of_annotation_signals(self, number_of_annotations):
+    def set_number_of_annotation_signals(self, number_of_annotations: int) -> None:
         """
         Sets the number of annotation signals. The default value is 1
         This function is optional and can be called only after opening a file in writemode
@@ -543,7 +547,7 @@ class EdfWriter:
         self.number_of_annotations = number_of_annotations
         self.update_header()
 
-    def setStartdatetime(self, recording_start_time):
+    def setStartdatetime(self, recording_start_time: Union[datetime, str]) -> None:
         """
         Sets the recording start Time
 
@@ -557,7 +561,7 @@ class EdfWriter:
         self.recording_start_time = recording_start_time
         self.update_header()
 
-    def setBirthdate(self, birthdate):
+    def setBirthdate(self, birthdate: date) -> None:
         """
         Sets the birthdate.
 
@@ -582,7 +586,7 @@ class EdfWriter:
         self.birthdate = birthdate
         self.update_header()
 
-    def setSamplefrequency(self, edfsignal, samplefrequency):
+    def setSamplefrequency(self, edfsignal: int, samplefrequency: Union[int, float]) -> None:
         """
         Sets the samplefrequency of signal edfsignal.
 
@@ -606,7 +610,7 @@ class EdfWriter:
         self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
-    def setPhysicalMaximum(self, edfsignal, physical_maximum):
+    def setPhysicalMaximum(self, edfsignal: int, physical_maximum: float) -> None:
         """
         Sets the physical_maximum of signal edfsignal.
 
@@ -626,7 +630,7 @@ class EdfWriter:
         self.channels[edfsignal]['physical_max'] = physical_maximum
         self.update_header()
 
-    def setPhysicalMinimum(self, edfsignal, physical_minimum):
+    def setPhysicalMinimum(self, edfsignal: int, physical_minimum: float) -> None:
         """
         Sets the physical_minimum of signal edfsignal.
 
@@ -646,7 +650,7 @@ class EdfWriter:
         self.channels[edfsignal]['physical_min'] = physical_minimum
         self.update_header()
 
-    def setDigitalMaximum(self, edfsignal, digital_maximum):
+    def setDigitalMaximum(self, edfsignal: int, digital_maximum: int) -> None:
         """
         Sets the maximum digital value of signal edfsignal.
         Usually, the value 32767 is used for EDF+ and 8388607 for BDF+.
@@ -667,7 +671,7 @@ class EdfWriter:
         self.channels[edfsignal]['digital_max'] = digital_maximum
         self.update_header()
 
-    def setDigitalMinimum(self, edfsignal, digital_minimum):
+    def setDigitalMinimum(self, edfsignal: int, digital_minimum: int) -> None:
         """
         Sets the minimum digital value of signal edfsignal.
         Usually, the value -32768 is used for EDF+ and -8388608 for BDF+. Usually this will be (-(digital_maximum + 1)).
@@ -688,7 +692,7 @@ class EdfWriter:
         self.channels[edfsignal]['digital_min'] = digital_minimum
         self.update_header()
 
-    def setLabel(self, edfsignal, label):
+    def setLabel(self, edfsignal: int, label: str) -> None:
         """
         Sets the label (name) of signal edfsignal ("FP1", "SaO2", etc.).
 
@@ -708,7 +712,7 @@ class EdfWriter:
         self.channels[edfsignal]['label'] = label
         self.update_header()
 
-    def setPhysicalDimension(self, edfsignal, physical_dimension):
+    def setPhysicalDimension(self, edfsignal: int, physical_dimension: str) -> None:
         """
         Sets the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
 
@@ -724,7 +728,7 @@ class EdfWriter:
         self.channels[edfsignal]['dimension'] = physical_dimension
         self.update_header()
 
-    def setTransducer(self, edfsignal, transducer):
+    def setTransducer(self, edfsignal: int, transducer: str) -> None:
         """
         Sets the transducer of signal edfsignal
 
@@ -740,7 +744,7 @@ class EdfWriter:
         self.channels[edfsignal]['transducer'] = transducer
         self.update_header()
 
-    def setPrefilter(self, edfsignal, prefilter):
+    def setPrefilter(self, edfsignal: int, prefilter: str) -> None:
         """
         Sets the prefilter of signal edfsignal ("HP:0.1Hz", "LP:75Hz N:50Hz", etc.)
 
@@ -756,7 +760,7 @@ class EdfWriter:
         self.channels[edfsignal]['prefilter'] = prefilter
         self.update_header()
 
-    def writePhysicalSamples(self, data):
+    def writePhysicalSamples(self, data: np.ndarray) -> int:
         """
         Writes n physical samples (uV, mA, Ohm) belonging to one signal where n
         is the samplefrequency of the signal.
@@ -777,13 +781,13 @@ class EdfWriter:
         """
         return write_physical_samples(self.handle, data)
 
-    def writeDigitalSamples(self, data):
+    def writeDigitalSamples(self, data: np.ndarray) -> int:
         return write_digital_samples(self.handle, data)
 
-    def writeDigitalShortSamples(self, data):
+    def writeDigitalShortSamples(self, data: np.ndarray) -> int:
         return write_digital_short_samples(self.handle, data)
 
-    def blockWritePhysicalSamples(self, data):
+    def blockWritePhysicalSamples(self, data: np.ndarray) -> int:
         """
         Writes physical samples (uV, mA, Ohm)
         must be filled with samples from all signals
@@ -805,13 +809,13 @@ class EdfWriter:
         """
         return blockwrite_physical_samples(self.handle, data)
 
-    def blockWriteDigitalSamples(self, data):
+    def blockWriteDigitalSamples(self, data: np.ndarray) -> int:
         return blockwrite_digital_samples(self.handle, data)
 
-    def blockWriteDigitalShortSamples(self, data):
+    def blockWriteDigitalShortSamples(self, data: np.ndarray) -> int:
         return blockwrite_digital_short_samples(self.handle, data)
 
-    def writeSamples(self, data_list, digital = False):
+    def writeSamples(self, data_list: Union[List[np.ndarray], np.ndarray], digital: bool = False) -> None:
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
         The physical samples will be converted to digital samples using the values
@@ -904,7 +908,7 @@ class EdfWriter:
                 if success<0:
                     raise OSError(f'Unknown error while calling writeSamples: {success}')
 
-    def writeAnnotation(self, onset_in_seconds, duration_in_seconds, description, str_format='utf_8'):
+    def writeAnnotation(self, onset_in_seconds: float, duration_in_seconds: float, description: str, str_format: str = 'utf_8') -> int:
         """
         Writes an annotation/event to the file
         """
@@ -921,18 +925,20 @@ class EdfWriter:
                 return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, du(description))
         else:
             if duration_in_seconds >= 0:
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), u(description).encode('latin1'))
+                # FIX: description must be bytes. string will fail in u function
+                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), u(description).encode('latin1'))  # type: ignore
             else:
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, u(description).encode('latin1'))
+                # FIX: description must be bytes. string will fail in u function
+                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, u(description).encode('latin1'))  # type: ignore
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the file.
         """
         close_file(self.handle)
         self.handle = -1
 
-    def get_smp_per_record(self, ch_idx):
+    def get_smp_per_record(self, ch_idx: int) -> Optional[int]:
         """
         gets the calculated number of samples that need to be fit into one
         record (i.e. window/block of data) with the given record duration.
@@ -950,7 +956,7 @@ class EdfWriter:
         return int(np.round(smp_per_record))
 
 
-    def _calculate_optimal_record_duration(self):
+    def _calculate_optimal_record_duration(self) -> None:
         """
         calculate optimal denominator (record duration in seconds)
         for all sample frequencies such that smp_per_record is an integer
@@ -978,7 +984,7 @@ class EdfWriter:
         assert record_duration<=60, 'record duration must be below 60 seconds'
         self.record_duration = record_duration
 
-    def _get_sample_frequency(self, channelIndex):
+    def _get_sample_frequency(self, channelIndex: int) -> Optional[Union[int, float]]:
         # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
         # in favor of 'sample_frequency', supporting the use of either to give
         # users time to switch to the new interface.
