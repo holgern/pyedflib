@@ -24,6 +24,7 @@ import os
 import warnings
 from copy import deepcopy
 from datetime import datetime, timedelta
+from typing import Optional, Any, Union, Iterable, List, Tuple
 
 import numpy as np
 
@@ -33,7 +34,7 @@ import pyedflib
 # from . import EdfReader
 
 
-def _get_sample_frequency(signal_header):
+def _get_sample_frequency(signal_header: dict) -> int:
     # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
     # in favor of 'sample_frequency', supporting the use of either to give
     # users time to switch to the new interface.
@@ -42,7 +43,7 @@ def _get_sample_frequency(signal_header):
             else signal_header['sample_frequency'])
 
 
-def tqdm(iterable, *args, **kwargs):
+def tqdm(iterable: Iterable, *args: Any, **kwargs: Any) -> Iterable:
     """
     These is an optional dependency that shows a progress bar for some
     of the functions, e.g. loading.
@@ -58,7 +59,7 @@ def tqdm(iterable, *args, **kwargs):
         return iterable
 
 
-def _parse_date(string):
+def _parse_date(string: str) -> datetime:
     """
     A simple dateparser that detects common  date formats
 
@@ -90,7 +91,7 @@ def _parse_date(string):
         raise ValueError('birthdate must be datetime object or of format'\
                          ' `%d-%m-%Y`, eg. `24-01-2020`')
 
-def dig2phys(signal, dmin, dmax, pmin, pmax):
+def dig2phys(signal: Union[np.ndarray, int], dmin: int, dmax: int, pmin: float, pmax: float) -> Union[np.ndarray, float]:
     """
     converts digital edf values to physical values
 
@@ -119,7 +120,13 @@ def dig2phys(signal, dmin, dmax, pmin, pmax):
     return physical
 
 
-def phys2dig(signal, dmin, dmax, pmin, pmax):
+def phys2dig(
+    signal: Union[np.ndarray, int],
+    dmin: int,
+    dmax: int,
+    pmin: float,
+    pmax: float
+) -> Union[np.ndarray, int]:
     """
     converts physical values to digital values
 
@@ -149,10 +156,19 @@ def phys2dig(signal, dmin, dmax, pmin, pmax):
 
 
 
-def make_header(technician='', recording_additional='', patientname='',
-                patient_additional='', patientcode= '', equipment= '',
-                admincode= '', sex= '', startdate=None, birthdate= '',
-                gender=None):
+def make_header(
+    technician: str = '',
+    recording_additional: str = '',
+    patientname: str = '',
+    patient_additional: str = '',
+    patientcode: str = '',
+    equipment: str = '',
+    admincode: str = '',
+    sex: str = '',
+    startdate: Optional[datetime] = None,
+    birthdate: Union[str, datetime] = '',
+    gender: Optional[str] = None
+) -> dict:
     """
     A convenience function to create an EDF header (a dictionary) that
     can be used by pyedflib to update the main header of the EDF
@@ -217,9 +233,18 @@ def make_header(technician='', recording_additional='', patientname='',
     return header
 
 
-def make_signal_header(label, dimension='uV', sample_rate=256, sample_frequency=None,
-                       physical_min=-200, physical_max=200, digital_min=-32768,
-                       digital_max=32767, transducer='', prefiler=''):
+def make_signal_header(
+    label: str,
+    dimension: str = 'uV',
+    sample_rate: int = 256,
+    sample_frequency: Optional[int] = None,
+    physical_min: float = -200,
+    physical_max: float = 200,
+    digital_min: int = -32768,
+    digital_max: int = 32767,
+    transducer: str = '',
+    prefiler: str = ''
+) -> dict:
     """
     A convenience function that creates a signal header for a given signal.
     This can be used to create a list of signal headers that is used by
@@ -269,10 +294,18 @@ def make_signal_header(label, dimension='uV', sample_rate=256, sample_frequency=
     return signal_header
 
 
-def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
-                       sample_frequency=None, physical_min=-200.0, physical_max=200.0,
-                       digital_min=-32768, digital_max=32767,
-                       transducer='', prefiler=''):
+def make_signal_headers(
+    list_of_labels: List[str],
+    dimension: str = 'uV',
+    sample_rate: int = 256,
+    sample_frequency: Optional[int] = None,
+    physical_min: float = -200.0,
+    physical_max: float = 200.0,
+    digital_min: int = -32768,
+    digital_max: int = 32767,
+    transducer: str = '',
+    prefiler: str = ''
+) -> List[dict]:
     """
     A function that creates signal headers for a given list of channel labels.
     This can only be used if each channel has the same sampling frequency
@@ -317,7 +350,13 @@ def make_signal_headers(list_of_labels, dimension='uV', sample_rate=256,
     return signal_headers
 
 
-def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False):
+def read_edf(
+    edf_file: str,
+    ch_nrs: Optional[List[int]] = None,
+    ch_names: Optional[List[str]] = None,
+    digital: bool = False,
+    verbose: bool = False
+) -> Tuple[Union[np.ndarray, List[np.ndarray]], List[dict], dict]:
     """
     Convenience function for reading EDF+/BDF data with pyedflib.
 
@@ -408,8 +447,14 @@ def read_edf(edf_file, ch_nrs=None, ch_names=None, digital=False, verbose=False)
     return  signals, signal_headers, header
 
 
-def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
-              file_type=-1):
+def write_edf(
+    edf_file: str,
+    signals: Union[np.ndarray, List[np.ndarray]],
+    signal_headers: List[dict],
+    header: Optional[dict] = None,
+    digital: bool = False,
+    file_type: int = -1
+) -> bool:
     """
     Write signals to an edf_file. Header can be generated on the fly with
     generic values. EDF+/BDF+ is selected based on the filename extension,
@@ -507,7 +552,12 @@ def write_edf(edf_file, signals, signal_headers, header=None, digital=False,
     return os.path.isfile(edf_file)
 
 
-def write_edf_quick(edf_file, signals, sfreq, digital=False):
+def write_edf_quick(
+    edf_file: str,
+    signals: np.ndarray,
+    sfreq: int,
+    digital: bool = False,
+) -> bool:
     """
     wrapper for write_pyedf without creating headers.
     Use this if you don't care about headers or channel names and just
@@ -539,7 +589,10 @@ def write_edf_quick(edf_file, signals, sfreq, digital=False):
     return write_edf(edf_file, signals, signal_headers, header, digital=digital)
 
 
-def read_edf_header(edf_file, read_annotations=True):
+def read_edf_header(
+    edf_file: str,
+    read_annotations: bool = True
+) -> dict:
     """
     Reads the header and signal headers of an EDF file and it's annotations
 
@@ -569,7 +622,11 @@ def read_edf_header(edf_file, read_annotations=True):
     return summary
 
 
-def compare_edf(edf_file1, edf_file2, verbose=False):
+def compare_edf(
+    edf_file1: str,
+    edf_file2: str,
+    verbose: bool = False,
+) -> bool:
     """
     Loads two edf files and checks whether the values contained in
     them are the same. Does not check the header or annotations data.
@@ -632,8 +689,13 @@ def compare_edf(edf_file1, edf_file2, verbose=False):
     return True
 
 
-def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
-                  verbose=False):
+def drop_channels(
+    edf_source: str,
+    edf_target: Optional[str] = None,
+    to_keep: Optional[Union[List[str], List[int]]] = None,
+    to_drop: Optional[Union[List[str], List[int]]] = None,
+    verbose: bool = False,
+) -> str:
     """
     Remove channels from an edf file. Save the file.
     For safety reasons, no source files can be overwritten.
@@ -715,9 +777,14 @@ def drop_channels(edf_source, edf_target=None, to_keep=None, to_drop=None,
     return edf_target
 
 
-def anonymize_edf(edf_file, new_file=None,
-                  to_remove=['patientname', 'birthdate'],
-                  new_values=['xxx', ''], verify=False, verbose=False):
+def anonymize_edf(
+    edf_file: str,
+    new_file: Optional[str] = None,
+    to_remove: List[str] = ['patientname', 'birthdate'],
+    new_values: List[str] = ['xxx', ''],
+    verify: bool = False,
+    verbose: bool = False,
+) -> bool:
     """Anonymize an EDF file by replacing values of header fields.
 
     This function can be used to overwrite all header information that is
@@ -771,15 +838,15 @@ def anonymize_edf(edf_file, new_file=None,
 
 
 def crop_edf(
-    edf_file,
+    edf_file: str,
     *,
-    new_file=None,
-    start=None,
-    stop=None,
-    start_format="datetime",
-    stop_format="datetime",
-    verbose=True,
-):
+    new_file: Optional[str] = None,
+    start: Optional[Union[datetime, int, float]] = None,
+    stop: Optional[Union[datetime, int, float]] = None,
+    start_format: str = "datetime",
+    stop_format: str = "datetime",
+    verbose: bool = True
+) -> None:
     """Crop an EDF file to desired start/stop times.
 
     The new start/end times can be either specified as a datetime.datetime or
@@ -848,7 +915,7 @@ def crop_edf(
         else:
             pass
     assert stop <= current_stop, 'new stop value must not be after current end of recording'
-    
+
     assert start < current_stop, 'new start value must not be after current end of recording'
     assert stop > current_start, 'new stop value must not be before current start of recording'
     stop_diff_from_start = (stop - current_start).total_seconds()
@@ -888,7 +955,12 @@ def crop_edf(
         print(f"Succesfully written file: {new_file}")
 
 
-def rename_channels(edf_file, mapping, new_file=None, verbose=False):
+def rename_channels(
+    edf_file: str,
+    mapping: dict,
+    new_file: Optional[str] = None,
+    verbose: bool = False,
+) -> bool:
     """
     A convenience function to rename channels in an EDF file.
 
@@ -935,8 +1007,13 @@ def rename_channels(edf_file, mapping, new_file=None, verbose=False):
     return write_edf(new_file, signals, signal_headers, header, digital=True)
 
 
-def change_polarity(edf_file, channels, new_file=None, verify=True,
-                    verbose=False):
+def change_polarity(
+    edf_file: str,
+    channels: List[Union[str, int]],
+    new_file: Optional[str] = None,
+    verify: bool = True,
+    verbose: bool = False,
+) -> bool:
     """
     Change polarity of certain channels
 
