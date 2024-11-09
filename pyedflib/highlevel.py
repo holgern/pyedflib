@@ -555,7 +555,7 @@ def write_edf(
 def write_edf_quick(
     edf_file: str,
     signals: np.ndarray,
-    sfreq: int,
+    sfreq: Union[float, int],
     digital: bool = False,
 ) -> bool:
     """
