@@ -301,8 +301,8 @@ def make_signal_headers(
     sample_frequency: Optional[Union[int, float]] = None,
     physical_min: float = -200.0,
     physical_max: float = 200.0,
-    digital_min: int = -32768,
-    digital_max: int = 32767,
+    digital_min: Union[float,int] = -32768,
+    digital_max: Union[float, int] = 32767,
     transducer: str = '',
     prefiler: str = ''
 ) -> List[dict]:
