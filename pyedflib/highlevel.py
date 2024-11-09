@@ -236,8 +236,8 @@ def make_header(
 def make_signal_header(
     label: str,
     dimension: str = 'uV',
-    sample_rate: int = 256,
-    sample_frequency: Optional[int] = None,
+    sample_rate: Union[int, float] = 256,
+    sample_frequency: Optional[Union[int, float]] = None,
     physical_min: float = -200,
     physical_max: float = 200,
     digital_min: int = -32768,
