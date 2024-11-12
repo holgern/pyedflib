@@ -158,7 +158,7 @@ class EdfReader(CyEdfReader):
         return result
 
     # FIX: Seems s must always be bytes because string has no decode method
-    def _convert_string(self, s: Union[bytes, str]) -> str:
+    def _convert_string(self, s: bytes) -> str:
         if isinstance(s, bytes):
             return s.decode("latin")
         else:
@@ -735,7 +735,7 @@ class EdfReader(CyEdfReader):
                 )
             )
 
-    def getPhysicalDimension(self, chn: int):
+    def getPhysicalDimension(self, chn: int) -> str:
         """
         Returns the physical dimension of signal edfsignal ("uV", "BPM", "mA", "Degr.", etc.)
 
@@ -764,7 +764,7 @@ class EdfReader(CyEdfReader):
 
     def readSignal(
         self, chn: int, start: int = 0, n: Optional[int] = None, digital: bool = False
-    ):
+    ) -> np.ndarray:
         """
         Returns the physical data of signal chn. When start and n is set, a subset is returned
 
