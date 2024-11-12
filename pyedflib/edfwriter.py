@@ -9,7 +9,7 @@ import sys
 import warnings
 from datetime import date, datetime
 from types import TracebackType
-from typing import Any, Union, Optional, List, Dict
+from typing import Any, Union, Optional, List, Dict, Type
 
 import numpy as np
 
