@@ -683,7 +683,7 @@ def __exit__(
                 digMax[i] = self.digital_max(i)
             return digMax
 
-    def getDigitalMinimum(self, chn: Optional[int] = None):
+    def getDigitalMinimum(self, chn: Optional[int] = None) -> Union[int, np.ndarray]:
         """
         Returns the minimum digital value of signal edfsignal.
 
