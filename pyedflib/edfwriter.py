@@ -200,6 +200,9 @@ class WrongInputSize(Exception):
 
 class EdfWriter:
     def __exit__(self, exc_type: Optional[type], exc_val: Optional[BaseException], ex_tb: Optional[BaseException]) -> None:
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
+)
+    
         self.close()
 
     def __enter__(self) -> 'EdfWriter':

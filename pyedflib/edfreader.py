@@ -110,7 +110,12 @@ class EdfReader(CyEdfReader):
     def __del__(self) -> None:
         self._close()
 
-    def __exit__(self, exc_type, exc_val, ex_tb) -> None:
+def __exit__(
+    self,
+    exc_type: Optional[Type[BaseException]],
+    exc_val: Optional[BaseException],
+    exc_tb: Optional[TracebackType],
+) -> None:
         self._close()  # cleanup the file
 
     def close(self) -> None:
