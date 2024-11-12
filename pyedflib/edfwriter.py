@@ -340,7 +340,7 @@ class EdfWriter:
         self.birthdate = fileHeader["birthdate"]
         self.update_header()
 
-    def setSignalHeader(self, edfsignal: int, channel_info: Dict[str, Union[str, int, float]]) -> None:
+    def setSignalHeader(self, edfsignal: int, channel_info: Dict[str, Union[str, int, float, None]]) -> None:
         """
         Sets the parameter for signal edfsignal.
 
@@ -361,7 +361,7 @@ class EdfWriter:
         self.channels[edfsignal].update(channel_info)
         self.update_header()
 
-    def setSignalHeaders(self, signalHeaders: List[Dict[str, Union[str, int, float]]]) -> None:
+    def setSignalHeaders(self, signalHeaders: List[Dict[str, Union[str, int, float, None]]]) -> None:
         """
         Sets the parameter for all signals
 
