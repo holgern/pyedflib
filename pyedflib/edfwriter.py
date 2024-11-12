@@ -243,7 +243,7 @@ class EdfWriter:
         self.record_duration: float = 1  # length of one data record in seconds
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
-        self.channels: List[Dict[str, Union[str, float, None]]] = []
+        self.channels: List[Dict[str, Union[str, int, float, None]]] = []
         self.sample_buffer: List[List] = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
@@ -324,7 +324,7 @@ class EdfWriter:
             set_transducer(self.handle, i, du(self.channels[i]['transducer']))
             set_prefilter(self.handle, i, du(self.channels[i]['prefilter']))
 
-    def setHeader(self, fileHeader: Dict[str, Any]) -> None:
+    def setHeader(self, fileHeader: Dict[str, Union[str, float, int, None]]) -> None:
         """
         Sets the file header
         """
@@ -499,7 +499,7 @@ class EdfWriter:
         self.sex = sex2int(gender)
         self.update_header()
 
-    def setDatarecordDuration(self, record_duration: float) -> None:
+    def setDatarecordDuration(self, record_duration: Union[float, int]) -> None:
         """
         Sets the datarecord duration. The default value is 1 second.
         The datarecord duration must be in the range 0.001 to 60  seconds.
@@ -561,7 +561,7 @@ class EdfWriter:
         self.recording_start_time = recording_start_time
         self.update_header()
 
-    def setBirthdate(self, birthdate: date) -> None:
+    def setBirthdate(self, birthdate: Union[str, date]) -> None:
         """
         Sets the birthdate.
 
@@ -610,7 +610,7 @@ class EdfWriter:
         self.channels[edfsignal]['sample_frequency'] = samplefrequency
         self.update_header()
 
-    def setPhysicalMaximum(self, edfsignal: int, physical_maximum: float) -> None:
+    def setPhysicalMaximum(self, edfsignal: int, physical_maximum: Union[int, float]) -> None:
         """
         Sets the physical_maximum of signal edfsignal.
 
@@ -630,7 +630,7 @@ class EdfWriter:
         self.channels[edfsignal]['physical_max'] = physical_maximum
         self.update_header()
 
-    def setPhysicalMinimum(self, edfsignal: int, physical_minimum: float) -> None:
+    def setPhysicalMinimum(self, edfsignal: int, physical_minimum: Union[in, float]) -> None:
         """
         Sets the physical_minimum of signal edfsignal.
 
@@ -908,7 +908,7 @@ class EdfWriter:
                 if success<0:
                     raise OSError(f'Unknown error while calling writeSamples: {success}')
 
-    def writeAnnotation(self, onset_in_seconds: float, duration_in_seconds: float, description: str, str_format: str = 'utf_8') -> int:
+    def writeAnnotation(self, onset_in_seconds: Union[int, float], duration_in_seconds: Union[int, float], description: str, str_format: str = 'utf_8') -> int:
         """
         Writes an annotation/event to the file
         """
@@ -938,7 +938,7 @@ class EdfWriter:
         close_file(self.handle)
         self.handle = -1
 
-    def get_smp_per_record(self, ch_idx: int) -> Optional[int]:
+    def get_smp_per_record(self, ch_idx: int) -> int:
         """
         gets the calculated number of samples that need to be fit into one
         record (i.e. window/block of data) with the given record duration.
@@ -984,7 +984,7 @@ class EdfWriter:
         assert record_duration<=60, 'record duration must be below 60 seconds'
         self.record_duration = record_duration
 
-    def _get_sample_frequency(self, channelIndex: int) -> Optional[Union[int, float]]:
+    def _get_sample_frequency(self, channelIndex: int) -> Union[int, float]:
         # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
         # in favor of 'sample_frequency', supporting the use of either to give
         # users time to switch to the new interface.
