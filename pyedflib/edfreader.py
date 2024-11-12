@@ -164,9 +164,11 @@ def __exit__(
         return result
 
     # FIX: Seems s must always be bytes because string has no decode method
-    def _convert_string(self, s: bytes) -> str:
+    def _convert_string(self, s: Union[bytes, str]) -> str:
         if isinstance(s, bytes):
             return s.decode("latin")
+        elif isinstance(s, str):
+            return s
         else:
             return s.decode("utf_8", "strict")  # type: ignore
 
