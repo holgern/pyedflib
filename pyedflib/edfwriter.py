@@ -636,7 +636,7 @@ class EdfWriter:
         self.channels[edfsignal]['physical_max'] = physical_maximum
         self.update_header()
 
-    def setPhysicalMinimum(self, edfsignal: int, physical_minimum: Union[in, float]) -> None:
+    def setPhysicalMinimum(self, edfsignal: int, physical_minimum: Union[int, float]) -> None:
         """
         Sets the physical_minimum of signal edfsignal.
 
