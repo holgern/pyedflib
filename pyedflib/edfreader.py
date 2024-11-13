@@ -436,11 +436,10 @@ class EdfReader(CyEdfReader):
 
     def getBirthdate(self, string: bool = True) -> Union[str, datetime]:
         """
-        Returns the birthdate as string object
+        Returns the birthdate as a string.
 
         Parameters
         ----------
-        None
 
         Examples
         --------
@@ -461,7 +460,9 @@ class EdfReader(CyEdfReader):
 
     def getSampleFrequencies(self) -> np.ndarray:
         """
-        Returns  samplefrequencies of all signals.
+        Returns the number of samples for all channels.
+
+        The effective sample frequency is samplefrequency / duration.
 
         Parameters
         ----------
@@ -482,7 +483,9 @@ class EdfReader(CyEdfReader):
 
     def getSampleFrequency(self, chn: int) -> float:
         """
-        Returns the samplefrequency of signal edfsignal.
+        Returns the number of samples in given channel.
+
+        The effective sample frequency is samplefrequency / duration.
 
         Parameters
         ----------
