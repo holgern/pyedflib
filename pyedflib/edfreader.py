@@ -110,12 +110,12 @@ class EdfReader(CyEdfReader):
     def __del__(self) -> None:
         self._close()
 
-def __exit__(
-    self,
-    exc_type: Optional[Type[BaseException]],
-    exc_val: Optional[BaseException],
-    exc_tb: Optional[TracebackType],
-) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         self._close()  # cleanup the file
 
     def close(self) -> None:
@@ -163,7 +163,6 @@ def __exit__(
                 result[i] = float(v[i])
         return result
 
-    # FIX: Seems s must always be bytes because string has no decode method
     def _convert_string(self, s: Union[bytes, str]) -> str:
         if isinstance(s, bytes):
             return s.decode("latin")
