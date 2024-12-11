@@ -531,12 +531,12 @@ def write_edf(
             assert pmin != pmax, \
             f'physical_min {pmin} should be different from physical_max {pmax}'
         else: # only warning, as this will not lead to clipping
-            assert pmin<=sig.min(), \
-            'phys_min is {}, but signal_min is {} ' \
-            'for channel {}'.format(pmin, sig.min(), label)
-            assert pmax>=sig.max(), \
-            'phys_max is {}, but signal_max is {} ' \
-            'for channel {}'.format(pmax, sig.max(), label)
+            if pmin > sig.min():
+                warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} ' \
+                'for channel {label}')
+            if pmax < sig.max():
+                warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} ' \
+                'for channel {label}')
 
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
