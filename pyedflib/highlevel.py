@@ -530,13 +530,23 @@ def write_edf(
             'for channel {}'.format(dmax, sig.max(), label)
             assert pmin != pmax, \
             f'physical_min {pmin} should be different from physical_max {pmax}'
-        else: # only warning, as this will not lead to clipping
-            if pmin > sig.min():
+        else: # only warning if difference is larger than the rounding error (which is quite large as edf scales data between phys_min and phys_max using -dig_min and +dig_max)
+            edf_accuracy = min([sig.max()/dmax, sig.min()/dmin])
+            if abs(pmin - sig.min()) < edf_accuracy:
                 warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} ' \
                 'for channel {label}', category=UserWarning)
-            if pmax < sig.max():
+            else: # difference is > edf_accuracy
+                assert pmin<=sig.min(), \
+                'phys_min is {}, but signal_min is {} ' \
+                'for channel {}'.format(pmin, sig.min(), label)
+            if abs(sig.max() - pmax) < edf_accuracy:
                 warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} ' \
                 'for channel {label}', category=UserWarning)
+            else:
+                assert pmax>=sig.max(), \
+                'phys_max is {}, but signal_max is {} ' \
+                'for channel {}'.format(pmax, sig.max(), label)
+
 
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])
