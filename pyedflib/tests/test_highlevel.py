@@ -244,8 +244,8 @@ class TestHighLevel(unittest.TestCase):
         #   (whichever is smallest). digital_max = 2^16 / 2
         edf_accuracy = min([max(signals[0])/sheaders[0]['digital_max'], min(signals[0])/sheaders[0]['digital_min']]).astype(np.float16)
 
-        sheaders[0]['physical_min'] = min(signals[0]) - edf_accuracy
-        sheaders[0]['physical_max'] = max(signals[0]) + edf_accuracy
+        sheaders[0]['physical_min'] = min(signals[0]) + 0.999 * edf_accuracy
+        sheaders[0]['physical_max'] = max(signals[0]) - 0.999 * edf_accuracy
 
         with self.assertWarnsRegex(expected_warning=UserWarning, expected_regex="phys_min is.*"):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
