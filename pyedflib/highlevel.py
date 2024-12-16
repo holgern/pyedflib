@@ -533,10 +533,10 @@ def write_edf(
         else: # only warning, as this will not lead to clipping
             if pmin > sig.min():
                 warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} ' \
-                'for channel {label}')
+                'for channel {label}', category=UserWarning)
             if pmax < sig.max():
                 warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} ' \
-                'for channel {label}')
+                'for channel {label}', category=UserWarning)
 
     # get annotations, in format [[timepoint, duration, description], [...]]
     annotations = header.get('annotations', [])

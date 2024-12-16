@@ -234,7 +234,7 @@ class TestHighLevel(unittest.TestCase):
         sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['physical_min'] = -200
         sheaders[0]['physical_max'] = 200
-        with self.assertRaises(AssertionError):
+        with self.assertWarnsRegex(expected_warning=UserWarning, expected_regex="phys_min is.*"):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
 
 
