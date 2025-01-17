@@ -226,7 +226,6 @@ class EdfWriter:
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
             'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -253,13 +252,13 @@ class EdfWriter:
         self.sample_buffer: List[List] = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
-                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': None,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
-                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': None,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
 
@@ -949,7 +948,7 @@ class EdfWriter:
         gets the calculated number of samples that need to be fit into one
         record (i.e. window/block of data) with the given record duration.
         """
-        fs = self._get_sample_frequency(ch_idx)
+        fs = self.channels[ch_idx]['sample_frequency']
         if fs is None: return None
 
         record_duration = self.record_duration
@@ -972,7 +971,7 @@ class EdfWriter:
         """
         if self._enforce_record_duration: return
         allint = lambda int_list: all([n==int(n) for n in int_list])
-        all_fs = [self._get_sample_frequency(i) for i,_ in enumerate(self.channels)]
+        all_fs = [self.channels[i]['sample_frequency'] for i,_ in enumerate(self.channels)]
 
         # calculate the optimal record duration to represent all frequencies.
         # this is achieved when fs*duration=int, i.e. the number of samples
@@ -989,14 +988,3 @@ class EdfWriter:
         assert record_duration>0, f'cannot accurately represent sampling frequencies with data record durations between 1-60s: {all_fs}'
         assert record_duration<=60, 'record duration must be below 60 seconds'
         self.record_duration = record_duration
-
-    def _get_sample_frequency(self, channelIndex: int) -> Union[int, float]:
-        # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
-        # in favor of 'sample_frequency', supporting the use of either to give
-        # users time to switch to the new interface.
-        if 'sample_rate' in self.channels[channelIndex]:
-            warnings.warn("`sample_rate` is deprecated and will be removed in a future release. \
-                          Please use `sample_frequency` instead", DeprecationWarning)
-        return (self.channels[channelIndex]['sample_rate']
-                if self.channels[channelIndex].get('sample_frequency') is None
-                else self.channels[channelIndex]['sample_frequency'])

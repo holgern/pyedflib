@@ -260,9 +260,10 @@ class TestEdfReader(unittest.TestCase):
 
         del f
 
+
     def test_EdfReader_Check_Size(self):
         sample_frequency = 100
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+        channel_info = {'label': 'test_label', 'dimension': 'mV',
                         'sample_frequency': sample_frequency, 'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -276,19 +277,18 @@ class TestEdfReader(unittest.TestCase):
 
         f = pyedflib.EdfReader(self.bdf_broken_file, pyedflib.READ_ALL_ANNOTATIONS, pyedflib.DO_NOT_CHECK_FILE_SIZE)
         np.testing.assert_equal(f.getTechnician(), 'tec1')
-
         np.testing.assert_equal(f.getLabel(0), 'test_label')
         np.testing.assert_equal(f.getPhysicalDimension(0), 'mV')
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
         np.testing.assert_equal(f.getSampleFrequency(0), sample_frequency)
 
-        # When both 'sample_rate' and 'sample_frequency' are present, we write
-        # the file using the latter, which means that when we read it back,
-        # only the 'sample_frequency' value is present.
-        expected_signal_header = {**channel_info, 'sample_rate': sample_frequency}
-        np.testing.assert_equal(f.getSignalHeader(0), expected_signal_header)
-        np.testing.assert_equal(f.getSignalHeaders(), [expected_signal_header])
+        # sample_rate was deprecated, check that it does not appear anymore
+        sheads = f.getSignalHeaders()
+        for shead in sheads:
+            assert not 'sample_rate' in shead
+            assert 'sample_frequency' in shead
+
         del f
 
     def test_EdfReader_Close_file(self):
@@ -327,12 +327,11 @@ class TestEdfReader(unittest.TestCase):
         np.testing.assert_equal(f.getPrefilter(0), 'pre1')
         np.testing.assert_equal(f.getTransducer(0), 'trans1')
 
-        # When both 'sample_rate' and 'sample_frequency' are present, we write
-        # the file using the latter, which means that when we read it back,
-        # only the 'sample_frequency' value is present.
-        expected_signal_header = {**channel_info, 'sample_rate': sample_frequency}
-        np.testing.assert_equal(f.getSignalHeader(0), expected_signal_header)
-        np.testing.assert_equal(f.getSignalHeaders(), [expected_signal_header])
+        # sample_rate was deprecated, check that it does not appear anymore
+        sheads = f.getSignalHeaders()
+        for shead in sheads:
+            assert not 'sample_rate' in shead
+            assert 'sample_frequency' in shead
         del f
 
 
