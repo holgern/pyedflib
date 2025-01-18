@@ -10,9 +10,9 @@ jobs:
       OS: ${{ matrix.os }}
       PYTHON: '3.9'
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v4
     - name: Setup Python
-      uses: actions/setup-python@master
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
     - name: Generate coverage report
@@ -23,7 +23,7 @@ jobs:
         pip install -r requirements-test.txt
         pytest --cov=./pyedflib/ --cov-report=xml --cov-config=.coveragerc
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         directory: .
         env_vars: OS,PYTHON
