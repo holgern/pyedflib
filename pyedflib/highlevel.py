@@ -388,7 +388,7 @@ def read_edf(
         if ch_names is not None:
             ch_nrs = []
             for ch in ch_names:
-                if not ch.upper() in available_chs:
+                if ch.upper() not in available_chs:
                     warnings.warn('{} is not in source file (contains {})'\
                                   .format(ch, available_chs))
                     print('will be ignored.')
