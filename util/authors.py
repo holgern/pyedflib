@@ -54,9 +54,8 @@ def main():
             name = m.group(1)
             line = line[m.end():]
             name = NAME_MAP.get(name, name)
-            if disp:
-                if name not in names:
-                    stdout_b.write(("    - Author: %s\n" % name).encode())
+            if disp and name not in names:
+                stdout_b.write(("    - Author: %s\n" % name).encode())
             names.update((name,))
 
         # Look for "thanks to" messages in the commit log

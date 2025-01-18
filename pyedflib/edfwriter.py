@@ -945,9 +945,8 @@ class EdfWriter:
                           'transfer to C order for compatibility with edflib.')
             data_list = np.ascontiguousarray(data_list)
 
-        if digital:
-            if any(not np.issubdtype(a.dtype, np.integer) for a in data_list):
-                raise TypeError('Digital = True requires all signals in int')
+        if digital and any(not np.issubdtype(a.dtype, np.integer) for a in data_list):
+            raise TypeError('Digital = True requires all signals in int')
 
         # Check that all channels have different physical_minimum and physical_maximum
         for chan in self.channels:
