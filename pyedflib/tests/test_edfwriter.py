@@ -922,16 +922,17 @@ class TestEdfWriter(unittest.TestCase):
         digMax = 32767
         digMin = -digMax
 
-        base_signal_header = lambda idx: {
-            'label': f'test_label{idx}',
-            'dimension': 'mV',
-            'physical_min': physMin,
-            'physical_max': physMax,
-            'digital_min': digMin,
-            'digital_max': digMax,
-            'transducer': f'trans{idx}',
-            'prefilter': f'pre{idx}'
-        }
+        def base_signal_header(idx):
+            return {
+                    'label': f'test_label{idx}',
+                    'dimension': 'mV',
+                    'physical_min': physMin,
+                    'physical_max': physMax,
+                    'digital_min': digMin,
+                    'digital_max': digMax,
+                    'transducer': f'trans{idx}',
+                    'prefilter': f'pre{idx}'
+                }
 
         f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
         f.setDatarecordDuration(record_duration)
