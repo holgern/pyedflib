@@ -107,7 +107,7 @@ def main():
         n_authors = list(new_authors)
         n_authors.sort(key=name_key)
         # Print some empty lines to separate
-        stdout_b.write(("\n\n").encode())
+        stdout_b.write(b"\n\n")
         for author in n_authors:
             stdout_b.write(("- %s\n" % author).encode())
         # return for early exit so we only print new authors
@@ -143,8 +143,8 @@ This list of names is automatically generated, and may not be fully complete.
 
 """ % dict(count=len(authors))).encode())
 
-    stdout_b.write(("\nNOTE: Check this list manually! It is automatically generated "
-                    "and some names\n      may be missing.\n").encode())
+    stdout_b.write(b"\nNOTE: Check this list manually! It is automatically generated "
+                    b"and some names\n      may be missing.\n")
 
 
 def load_name_map(filename):
