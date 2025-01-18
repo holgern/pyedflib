@@ -140,7 +140,7 @@ A total of %(count)d people contributed to this release.
 People with a "+" by their names contributed a patch for the first time.
 This list of names is automatically generated, and may not be fully complete.
 
-""" % dict(count=len(authors))).encode())
+""" % {"count": len(authors)}).encode())
 
     stdout_b.write(b"\nNOTE: Check this list manually! It is automatically generated "
                     b"and some names\n      may be missing.\n")
@@ -203,12 +203,12 @@ class Cmd:
 
     def pipe(self, command, *a, **kw):
         stdin = kw.pop('stdin', None)
-        p = self._call(command, a, dict(stdin=stdin, stdout=subprocess.PIPE),
+        p = self._call(command, a, {"stdin": stdin, "stdout": subprocess.PIPE},
                       call=False, **kw)
         return p.stdout
 
     def read(self, command, *a, **kw):
-        p = self._call(command, a, dict(stdout=subprocess.PIPE),
+        p = self._call(command, a, {"stdout": subprocess.PIPE},
                       call=False, **kw)
         out, err = p.communicate()
         if p.returncode != 0:
@@ -220,8 +220,8 @@ class Cmd:
         return out.rstrip("\n").split("\n")
 
     def test(self, command, *a, **kw):
-        ret = self._call(command, a, dict(stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE),
+        ret = self._call(command, a, {"stdout": subprocess.PIPE,
+                                          "stderr": subprocess.PIPE},
                         call=True, **kw)
         return (ret == 0)
 
