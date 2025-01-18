@@ -194,7 +194,7 @@ def make_header(
 
     """
 
-    if not birthdate=='' and isinstance(birthdate, str):
+    if birthdate != '' and isinstance(birthdate, str):
         birthdate = _parse_date(birthdate)
     if startdate is None:
         now = datetime.now()
