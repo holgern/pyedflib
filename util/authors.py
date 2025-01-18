@@ -91,12 +91,9 @@ def main():
         else:
             forename = ""
             surname = fullname.strip()
-        if surname.startswith('van der '):
-            surname = surname[8:]
-        if surname.startswith('de '):
-            surname = surname[3:]
-        if surname.startswith('von '):
-            surname = surname[4:]
+        surname = surname.removeprefix('van der ')
+        surname = surname.removeprefix('de ')
+        surname = surname.removeprefix('von ')
         return (surname.lower(), forename.lower())
 
     # generate set of all new authors
