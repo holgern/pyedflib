@@ -119,7 +119,7 @@ def find_names(module, names_dict):
             res = re.match(pattern, line)
             if res is not None:
                 name = res.group(1)
-                entry = '.'.join([module_name, name])  # noqa: F841
+                entry = f'{module_name}.{name}'  # noqa: F841
                 names_dict.setdefault(module_name, set()).add(name)
                 break
 
