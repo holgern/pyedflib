@@ -15,6 +15,7 @@ import numpy as np
 import pyedflib
 from pyedflib.edfreader import EdfReader
 from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter, WrongInputSize
+from pyedflib.edfwriter import _calculate_record_duration
 
 
 class TestEdfWriter(unittest.TestCase):
@@ -867,14 +868,56 @@ class TestEdfWriter(unittest.TestCase):
         f.close()
         del f
 
-    def test_sample_rate_backwards_compatibility(self):
+
+    def test_force_record_duration(self):
+        """forcing a specific record duration should alter the sample_freq"""
+        channel_count = 4
+        record_duration = 0.33333  # should not be able to represent 256 Hz
+        samples_per_record = 256
+        sample_frequency = 256
+        sample_freq_exp = int(256*record_duration)/record_duration
+        record_count = 4
+
+        f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+        with self.assertWarns(UserWarning):
+            f.setDatarecordDuration(record_duration)
+
+        physMax = 1
+        physMin = -physMax
+        digMax = 32767
+        digMin = -digMax
+
+        f.setSignalHeaders([{
+            'label': f'test_label{idx}',
+            'sample_frequency': sample_frequency,
+            'dimension': 'mV',
+            'physical_min': physMin,
+            'physical_max': physMax,
+            'digital_min': digMin,
+            'digital_max': digMax,
+            'transducer': f'trans{idx}',
+            'prefilter': f'pre{idx}'
+        } for idx in range(channel_count)])
+
+        f.writeSamples(np.random.rand(channel_count, samples_per_record*4))
+        f.close()
+        del f
+
+        f = pyedflib.EdfReader(self.edf_data_file)
+
+        for signal_header in f.getSignalHeaders():
+            self.assertEqual(signal_header['sample_frequency'], sample_freq_exp)
+
+        self.assertEqual(f.datarecord_duration, record_duration)
+        f.close()
+        del f
+
+
+    def test_sample_rate_deprecation(self):
         channel_count = 4
         record_duration = 1
         # Choosing a weird sample rate to make sure it doesn't equal any defaults
         sample_rate = 42
-        record_count = 10
-        sample_count_per_channel = sample_rate * record_count
-
 
         physMax = 1
         physMin = -physMax
@@ -892,42 +935,15 @@ class TestEdfWriter(unittest.TestCase):
             'prefilter': f'pre{idx}'
         }
 
-        with self.subTest("when 'sample_frequency' param is missing"):
-            f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
-            f.setDatarecordDuration(record_duration)
-
+        f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
+        f.setDatarecordDuration(record_duration)
+        with self.assertRaises(ValueError):
             f.setSignalHeaders([{
                 'sample_rate': sample_rate,
                 **base_signal_header(idx)
             } for idx in range(channel_count)])
+        del f
 
-            with self.assertWarnsRegex(DeprecationWarning, "'sample_rate' parameter is deprecated"):
-                f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
-                del f
-
-            f = pyedflib.EdfReader(self.edf_data_file)
-
-            for signal_header in f.getSignalHeaders():
-                self.assertEqual(signal_header['sample_rate'], sample_rate)
-
-            del f
-
-        with self.subTest("when 'sample_frequency' param is present"):
-            f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
-            f.setDatarecordDuration(record_duration)
-            f.setSignalHeaders([{
-                'sample_frequency': sample_rate,
-                **base_signal_header(idx)
-            } for idx in range(channel_count)])
-            f.writeSamples(np.random.rand(channel_count, sample_count_per_channel))
-
-            del f
-
-            f = pyedflib.EdfReader(self.edf_data_file)
-            for signal_header in f.getSignalHeaders():
-                self.assertEqual(signal_header['sample_frequency'], sample_rate)
-
-            del f
 
 
     def test_EdfWriter_more_than_80_chars(self):
@@ -1126,8 +1142,7 @@ class TestEdfWriter(unittest.TestCase):
         with EdfWriter(self.edf_data_file, len(ch_names)) as f:
             f.setSignalHeaders([{'label': 'EEG1',
               'dimension': 'uV',
-              'sample_rate': 256,
-              'sample_frequency': None,
+              'sample_frequency': 256,
               'physical_min': -200.0,
               'physical_max': 200.0,
               'digital_min': -32768,
@@ -1136,8 +1151,7 @@ class TestEdfWriter(unittest.TestCase):
               'prefilter': ''},
              {'label': 'EEG2',
               'dimension': 'uV',
-              'sample_rate': 256,
-              'sample_frequency': None,
+              'sample_frequency': 256,
               'physical_min': -200.0,
               'physical_max': 200.0,
               'digital_min': -32768,
@@ -1154,6 +1168,29 @@ class TestEdfWriter(unittest.TestCase):
             self.assertEqual( len(annotations[0]), 48)
             np.testing.assert_array_equal(annotations[0], np.arange(0, 342000, 3600*2))
 
+    def test_find_record_duration(self):
+        """check that _calculate_record_duration finds optimal values"""
+        freqs = np.arange(10)
+        duration = _calculate_record_duration(freqs)
+        assert duration==1
+
+        freqs = np.arange(10)/3
+        duration = _calculate_record_duration(freqs)
+        assert duration==3
+
+        freqs = np.array([0.32, 1.4, 2.3, 6.4, 3.1])
+        duration = _calculate_record_duration(freqs)
+        assert duration == 50
+
+        # float rounding errors should be handled correctly
+        freqs = np.array([199.99999999, 255.99999999])
+        duration = _calculate_record_duration(freqs)
+        assert duration == 1
+
+        for _ in range(10):
+            freqs = np.random.randint(1, 10000, 25,).astype(int)
+            duration = _calculate_record_duration(freqs)
+            assert duration == 1
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

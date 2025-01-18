@@ -308,7 +308,7 @@ class TestEdfReader(unittest.TestCase):
 
     def test_BdfReader_Read_accented_file(self):
         sample_frequency = 100
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+        channel_info = {'label': 'test_label', 'dimension': 'mV',
                         'sample_frequency': sample_frequency, 'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
                         'prefilter': 'pre1', 'transducer': 'trans1'}
@@ -351,7 +351,7 @@ class TestEdfReader(unittest.TestCase):
         # now we create a file that is not EDF/BDF compliant
         # this should raise an OSError and not a FileNotFoundError
         with self.assertRaises(OSError) as cm:
-            channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_rate': 256,
+            channel_info = {'label': 'test_label', 'dimension': 'mV',
                             'sample_frequency': 100, 'physical_max': 1.0, 'physical_min': -1.0,
                             'digital_max': 8388607, 'digital_min': -8388608,
                             'prefilter': 'pre1', 'transducer': 'trans1'}

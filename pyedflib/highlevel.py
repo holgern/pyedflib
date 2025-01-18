@@ -34,15 +34,6 @@ import pyedflib
 # from . import EdfReader
 
 
-def _get_sample_frequency(signal_header: dict) -> int:
-    # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
-    # in favor of 'sample_frequency', supporting the use of either to give
-    # users time to switch to the new interface.
-    return (signal_header['sample_rate']
-            if signal_header.get('sample_frequency') is None
-            else signal_header['sample_frequency'])
-
-
 def tqdm(iterable: Iterable, *args: Any, **kwargs: Any) -> Iterable:
     """
     These is an optional dependency that shows a progress bar for some
@@ -236,8 +227,7 @@ def make_header(
 def make_signal_header(
     label: str,
     dimension: str = 'uV',
-    sample_rate: Union[int, float] = 256,
-    sample_frequency: Optional[Union[int, float]] = None,
+    sample_frequency: Optional[Union[int, float]] = 256,
     physical_min: float = -200,
     physical_max: float = 200,
     digital_min: Union[float, int] = -32768,
@@ -257,8 +247,6 @@ def make_signal_header(
         the name of the channel.
     dimension : str, optional
         dimension, eg mV. The default is 'uV'.
-    sample_rate : int, optional
-        sampling frequency. The default is 256. Deprecated: use 'sample_frequency' instead.
     sample_frequency : int, optional
         sampling frequency. The default is 256.
     physical_min : float, optional
@@ -283,7 +271,6 @@ def make_signal_header(
 
     signal_header = {'label': label,
                'dimension': dimension,
-               'sample_rate': sample_rate,
                'sample_frequency': sample_frequency,
                'physical_min': physical_min,
                'physical_max': physical_max,
@@ -297,8 +284,7 @@ def make_signal_header(
 def make_signal_headers(
     list_of_labels: List[str],
     dimension: str = 'uV',
-    sample_rate: int = 256,
-    sample_frequency: Optional[Union[int, float]] = None,
+    sample_frequency: Optional[Union[int, float]] = 256,
     physical_min: float = -200.0,
     physical_max: float = 200.0,
     digital_min: Union[float,int] = -32768,
@@ -316,8 +302,6 @@ def make_signal_headers(
         A list with labels for each channel.
     dimension : str, optional
         dimension, eg mV. The default is 'uV'.
-    sample_rate : int, optional
-        sampling frequency. The default is 256.  Deprecated: use 'sample_frequency' instead.
     sample_frequency : int, optional
         sampling frequency. The default is 256.
     physical_min : float, optional
@@ -341,7 +325,7 @@ def make_signal_headers(
     """
     signal_headers = []
     for label in list_of_labels:
-        header = make_signal_header(label, dimension=dimension, sample_rate=sample_rate,
+        header = make_signal_header(label, dimension=dimension,
                                     sample_frequency=sample_frequency,
                                     physical_min=physical_min, physical_max=physical_max,
                                     digital_min=digital_min, digital_max=digital_max,
@@ -435,7 +419,7 @@ def read_edf(
             signals.append(signal)
 
         # we can only return a np.array if all signals have the same samplefreq
-        sfreqs = [_get_sample_frequency(shead) for shead in signal_headers]
+        sfreqs = [shead['sample_frequency'] for shead in signal_headers]
         all_sfreq_same = sfreqs[1:]==sfreqs[:-1]
         if all_sfreq_same:
             dtype = np.int32 if digital else float
@@ -518,6 +502,9 @@ def write_edf(
 
     # check dmin, dmax and pmin, pmax dont exceed signal min/max
     for sig, shead in zip(signals, signal_headers):
+        if 'sample_rate' in shead:
+            raise ValueError('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
+
         dmin, dmax = shead['digital_min'], shead['digital_max']
         pmin, pmax = shead['physical_min'], shead['physical_max']
         label = shead['label']
