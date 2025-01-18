@@ -414,8 +414,7 @@ def read_edf(
 
 
         signals = []
-        for i,c in enumerate(tqdm(ch_nrs, desc='Reading Channels',
-                                  disable=not verbose)):
+        for c in tqdm(ch_nrs, desc='Reading Channels', disable=not verbose):
             signal = f.readSignal(c, digital=digital)
             signals.append(signal)
 
