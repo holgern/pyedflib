@@ -954,10 +954,8 @@ class EdfWriter:
             'In chan {} physical_min {} should be different from '\
             'physical_max {}'.format(chan['label'], chan['physical_min'], chan['physical_max'])
 
-        ind = []
+        ind = [0 for i in np.arange(len(data_list))]
         notAtEnd = True
-        for i in np.arange(len(data_list)):
-            ind.append(0)
 
         sampleLength = 0
         smp_per_record = np.zeros(len(data_list), dtype=np.int32)

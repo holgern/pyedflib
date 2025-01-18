@@ -95,14 +95,13 @@ def get_issues(getter, project, milestone):
             continue
         break
 
-    issues = []
-
-    for raw_data in raw_datas:
-        data = json.loads(raw_data)
-        for issue_data in data:
-            issues.append(Issue(issue_data['number'],
-                                issue_data['title'],
-                                issue_data['html_url']))
+    issues = [
+        Issue(issue_data['number'],
+              issue_data['title'],
+              issue_data['html_url'])
+        for raw_data in raw_datas
+        for issue_data in json.loads(raw_data)
+    ]
     return issues
 
 
