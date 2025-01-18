@@ -13,7 +13,6 @@ repository.
 # Author: Pauli Virtanen <pav@iki.fi>. This script is in the public domain.
 
 import collections
-import io
 import optparse
 import os
 import re
@@ -150,7 +149,7 @@ This list of names is automatically generated, and may not be fully complete.
 def load_name_map(filename):
     name_map = {}
 
-    with io.open(filename, 'r', encoding='utf-8') as f:
+    with open(filename, encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if line.startswith(u"#") or not line:
