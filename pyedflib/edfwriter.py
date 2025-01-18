@@ -1039,9 +1039,6 @@ class EdfWriter:
         record (i.e. window/block of data) with the given record duration.
         """
         fs = self.channels[ch_idx]['sample_frequency']
-        # if fs is None:
-        #     print('NONE')
-        #     return None
 
         record_duration = self.record_duration
         smp_per_record = fs*record_duration
