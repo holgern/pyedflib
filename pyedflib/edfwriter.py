@@ -365,10 +365,10 @@ class EdfWriter:
                        + len('Startdate') + 3 + 11 # 3 spaces 11 birthdate
 
         if patient_ident>80:
-            warnings.warn('Patient code, name, sex and birthdate combined must not be larger than 80 chars. ' +
+            warnings.warn('Patient code, name, sex and birthdate combined must not be larger than 80 chars. '
                           f'Currently has len of {patient_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
         if record_ident>80:
-            warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
+            warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. '
                           f'Currently has len of {record_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
 
         # all data records (i.e. blocks of data of a channel) have one singular
@@ -1045,7 +1045,7 @@ class EdfWriter:
         smp_per_record = fs*record_duration
 
         if not np.isclose(np.round(smp_per_record), np.round(smp_per_record, 6)):
-            warnings.warn(f'Sample frequency {fs} can not be represented accurately. \n' +
-                          f'smp_per_record={smp_per_record}, record_duration={record_duration} seconds,' +
+            warnings.warn(f'Sample frequency {fs} can not be represented accurately. \n'
+                          f'smp_per_record={smp_per_record}, record_duration={record_duration} seconds,'
                           f'calculated sample_frequency will be {np.round(smp_per_record)/record_duration}')
         return int(np.round(smp_per_record))
