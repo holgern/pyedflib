@@ -242,12 +242,12 @@ def validate_rst_syntax(text, name, dots=True):
             output_dot('E')
         return False, f"ERROR: {name}: no documentation"
 
-    ok_unknown_items = set([
+    ok_unknown_items = {
         'mod', 'currentmodule', 'autosummary', 'data',
         'obj', 'versionadded', 'versionchanged', 'module', 'class',
         'ref', 'func', 'toctree', 'moduleauthor',
         'sectionauthor', 'codeauthor', 'eq',
-    ])
+    }
 
     # Run through docutils
     error_stream = io.StringIO()
@@ -669,10 +669,10 @@ def check_doctests_testfile(fname, verbose, ns=None,
     full_name = fname
     text = open(fname).read()
 
-    PSEUDOCODE = set(['some_function', 'some_module', 'import example',
+    PSEUDOCODE = {'some_function', 'some_module', 'import example',
                       'ctypes.CDLL',     # likely need compiling, skip it
                       'integrate.nquad(func,'  # ctypes integrate tutotial
-    ])
+    }
 
     # split the text into "blocks" and try to detect and omit pseudocode blocks.
     parser = doctest.DocTestParser()
