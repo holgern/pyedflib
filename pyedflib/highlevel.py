@@ -374,9 +374,10 @@ def read_edf(
     """
     assert (ch_nrs is  None) or (ch_names is None), \
            'names xor numbers should be supplied'
-    if ch_nrs is not None and not isinstance(ch_nrs, list): ch_nrs = [ch_nrs]
-    if ch_names is not None and \
-        not isinstance(ch_names, list): ch_names = [ch_names]
+    if ch_nrs is not None and not isinstance(ch_nrs, list):
+        ch_nrs = [ch_nrs]
+    if ch_names is not None and not isinstance(ch_names, list):
+        ch_names = [ch_names]
 
     with pyedflib.EdfReader(edf_file) as f:
         # see which channels we want to load
@@ -650,10 +651,12 @@ def compare_edf(
 
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         s1 = np.abs(s1)
         s2 = np.abs(s2)
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         close =  np.mean(np.isclose(s1, s2))
         assert close>0.99, 'Error, digital values of {}'\
               ' and {} for ch {}: {} are not the same: {:.3f}'.format(
@@ -673,10 +676,12 @@ def compare_edf(
         s2 = dig2phys(s2, dmin2, dmax2, pmin2, pmax2)
 
         # compare absolutes in case of inverted signals
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         s1 = np.abs(s1)
         s2 = np.abs(s2)
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         min_dist = np.abs(dig2phys(1, dmin1, dmax1, pmin1, pmax1))
         close =  np.mean(np.isclose(s1, s2, atol=min_dist))
         assert close>0.99, 'Error, physical values of {}'\
@@ -723,8 +728,10 @@ def drop_channels(
     """
 
     # convert to list if necessary
-    if isinstance(to_keep, (int, str)): to_keep = [to_keep]
-    if isinstance(to_drop, (int, str)): to_drop = [to_drop]
+    if isinstance(to_keep, (int, str)):
+        to_keep = [to_keep]
+    if isinstance(to_drop, (int, str)):
+        to_drop = [to_drop]
 
     # check all parameters are good
     assert to_keep is None or to_drop is None,'Supply only to_keep xor to_drop'
@@ -992,12 +999,14 @@ def rename_channels(
         signal, signal_header, _ = read_edf(edf_file, digital=True,
                                             ch_nrs=ch_nr, verbose=verbose)
         ch = signal_header[0]['label']
-        if ch in mapping :
-            if verbose: print(f'{ch} to {mapping[ch]}')
+        if ch in mapping:
+            if verbose:
+                print(f'{ch} to {mapping[ch]}')
             ch = mapping[ch]
             signal_header[0]['label']=ch
         else:
-            if verbose: print(f'no mapping for {ch}, leave as it is')
+            if verbose:
+                print(f'no mapping for {ch}, leave as it is')
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
 
@@ -1037,7 +1046,8 @@ def change_polarity(
     if new_file is None:
         new_file = os.path.splitext(edf_file)[0] + '.edf'
 
-    if isinstance(channels, str): channels=[channels]
+    if isinstance(channels, str):
+        channels=[channels]
     channels = [c.lower() for c in channels]
 
     signals, signal_headers, header = read_edf(edf_file, digital=True,
@@ -1045,9 +1055,11 @@ def change_polarity(
     for i,sig in enumerate(signals):
         label = signal_headers[i]['label'].lower()
         if label in channels:
-            if verbose: print(f'inverting {label}')
+            if verbose:
+                print(f'inverting {label}')
             signals[i] = -sig
     write_edf(new_file, signals, signal_headers, header,
               digital=True, correct=False, verbose=verbose)
-    if verify: compare_edf(edf_file, new_file)
+    if verify:
+        compare_edf(edf_file, new_file)
     return True
