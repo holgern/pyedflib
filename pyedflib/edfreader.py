@@ -504,7 +504,7 @@ class EdfReader(CyEdfReader):
             return self.samplefrequency(chn)
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -553,7 +553,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.signal_label(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -580,7 +580,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.prefilter(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -608,7 +608,7 @@ class EdfReader(CyEdfReader):
                 return self.physical_max(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -641,7 +641,7 @@ class EdfReader(CyEdfReader):
                 return self.physical_min(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -674,7 +674,7 @@ class EdfReader(CyEdfReader):
                 return self.digital_max(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -707,7 +707,7 @@ class EdfReader(CyEdfReader):
                 return self.digital_min(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -739,7 +739,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.transducer(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -766,7 +766,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.physical_dimension(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -826,7 +826,7 @@ class EdfReader(CyEdfReader):
             return x
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
