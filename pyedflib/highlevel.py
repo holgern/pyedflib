@@ -46,7 +46,7 @@ def tqdm(iterable: Iterable, *args: Any, **kwargs: Any) -> Iterable:
     try:
         from tqdm import tqdm as iterator
         return iterator(iterable, *args, **kwargs)
-    except:
+    except Exception:
         return iterable
 
 
@@ -71,12 +71,12 @@ def _parse_date(string: str) -> datetime:
     for f in formats:
         try:
             return datetime.strptime(string, f)
-        except:
+        except Exception:
             pass
     try:
         import dateparser
         return dateparser.parse(string)
-    except:
+    except Exception:
         print('dateparser is not installed. to convert strings to dates'\
               'install via `pip install dateparser`.')
         raise ValueError('birthdate must be datetime object or of format'\

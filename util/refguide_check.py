@@ -188,7 +188,7 @@ def is_deprecated(f):
             f(**{"not a kwarg": None})
         except DeprecationWarning:
             return True
-        except:
+        except Exception:
             pass
         return False
 
@@ -340,7 +340,7 @@ def check_rest(module, names, dots=True):
         else:
             try:
                 text = str(get_doc_object(obj))
-            except:
+            except Exception:
                 import traceback
                 results.append((full_name, False,
                                 "Error in docstring format!\n" +
@@ -478,7 +478,7 @@ class Checker(doctest.OutputChecker):
         try:
             a_want = eval(want, dict(self.ns))
             a_got = eval(got, dict(self.ns))
-        except:
+        except Exception:
             if not self.parse_namedtuples:
                 return False
             # suppose that "want"  is a tuple, and "got" is smth like
@@ -600,7 +600,7 @@ def check_doctests(module, verbose, ns=None,
         finder = doctest.DocTestFinder()
         try:
             tests = finder.find(obj, name, globs=dict(ns))
-        except:
+        except Exception:
             import traceback
             results.append((full_name, False,
                             "Failed to get doctests!\n" +
