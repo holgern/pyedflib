@@ -735,10 +735,10 @@ def drop_channels(
     # check all parameters are good
     assert to_keep is None or to_drop is None,'Supply only to_keep xor to_drop'
     if to_keep is not None:
-        assert all([isinstance(ch, (str, int)) for ch in to_keep]),\
+        assert all(isinstance(ch, (str, int)) for ch in to_keep),\
             'channels must be int or string'
     if to_drop is not None:
-        assert all([isinstance(ch, (str, int)) for ch in to_drop]),\
+        assert all(isinstance(ch, (str, int)) for ch in to_drop),\
             'channels must be int or string'
     assert os.path.exists(edf_source), \
             f'source file {edf_source} does not exist'

@@ -64,7 +64,7 @@ def check_is_ascii(string: str) -> None:
 
     https://www.edfplus.info/specs/edfplus.html#header
     """
-    if not all([ord(x)>32 and ord(x)<127 for x in string]):
+    if not all(ord(x)>32 and ord(x)<127 for x in string):
         warnings.warn('Invalid char: header entries should contain only ASCII'\
                       ' characters and no spaces: "{}"'.format(string))
 
@@ -383,8 +383,8 @@ class EdfWriter:
                 raise FutureWarning('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
 
         sample_freqs = [ch['sample_frequency'] for ch in self.channels]
-        if not self._enforce_record_duration and not any([f is None for f in sample_freqs]):
-            assert all([isinstance(f, (float, int)) for f in sample_freqs]), \
+        if not self._enforce_record_duration and not any(f is None for f in sample_freqs):
+            assert all(isinstance(f, (float, int)) for f in sample_freqs), \
                 f'{sample_freqs=} contains non int/float'
             self.record_duration = _calculate_record_duration(sample_freqs)
 
@@ -946,7 +946,7 @@ class EdfWriter:
             data_list = np.ascontiguousarray(data_list)
 
         if digital:
-            if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
+            if any(not np.issubdtype(a.dtype, np.integer) for a in data_list):
                 raise TypeError('Digital = True requires all signals in int')
 
         # Check that all channels have different physical_minimum and physical_maximum
