@@ -381,7 +381,7 @@ class EdfWriter:
         for ch in self.channels:
             # raise exception, can be removed in later release
             if 'sample_rate' in ch:
-                raise ValueError('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
+                raise FutureWarning('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
 
         sample_freqs = [ch['sample_frequency'] for ch in self.channels]
         if not self._enforce_record_duration and not any([f is None for f in sample_freqs]):
@@ -620,7 +620,7 @@ class EdfWriter:
         This function is NOT REQUIRED but can be called after opening a file
         in writemode and before the first sample write action. This function
         can be used when you want to use a samplefrequency which is not an
-        integer. For example, if you want to use a samplefreq of 0.5 Hz, set
+        integer. For example, if you want to use a sample frequency of 0.5 Hz, set
         the samplefrequency to 5 Hz and the datarecord duration to 10 seconds.
         Do not use this function, except when absolutely necessary!
         """

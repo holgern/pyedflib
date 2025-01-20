@@ -555,12 +555,11 @@ def set_equipment(handle, equipment):
 def set_samples_per_record(handle, edfsignal, smp_per_record ):
     """
     int set_samples_per_record(int handle, int edfsignal, int smp_per_record )
-
-    sets how many samples are in each record for this signal.
-    this is not the sampling frequency (Hz), unless record_duration=1
-    The sample frequency is calculated by smp_per_record/record_duration.
-    The function call to the C library is therefore slightly mislabeled
     """
+    # sets how many samples are in each record for this signal.
+    # this is not the sampling frequency (Hz), unless record_duration=1
+    # The sample frequency is calculated by smp_per_record/record_duration.
+    # The function call to the C library is therefore slightly mislabeled
     return c_edf.edf_set_samplefrequency(handle, edfsignal, smp_per_record)
 
 def set_admincode(handle, admincode):

@@ -503,7 +503,7 @@ def write_edf(
     # check dmin, dmax and pmin, pmax dont exceed signal min/max
     for sig, shead in zip(signals, signal_headers):
         if 'sample_rate' in shead:
-            raise ValueError('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
+            raise FutureWarning('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
 
         dmin, dmax = shead['digital_min'], shead['digital_max']
         pmin, pmax = shead['physical_min'], shead['physical_max']
