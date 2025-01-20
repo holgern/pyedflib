@@ -937,7 +937,7 @@ class TestEdfWriter(unittest.TestCase):
 
         f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
         f.setDatarecordDuration(record_duration)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(FutureWarning):
             f.setSignalHeaders([{
                 'sample_rate': sample_rate,
                 **base_signal_header(idx)

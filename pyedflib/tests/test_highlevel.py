@@ -418,7 +418,7 @@ class TestHighLevel(unittest.TestCase):
         signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
         signal_headers[0]['sample_rate'] = 256
         signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
-        with self.assertRaises(ValueError):
+        with self.assertRaises(FutureWarning):
             highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
 
 
