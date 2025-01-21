@@ -10,6 +10,9 @@ import warnings
 from datetime import date, datetime
 from types import TracebackType
 from typing import Any, Union, Optional, List, Dict, Type
+import math
+from functools import reduce
+from fractions import Fraction
 
 import numpy as np
 
@@ -182,6 +185,89 @@ def gender2int(gender: Union[int, str, None]) -> Optional[int]:
     return sex2int(gender)
 
 
+def _calculate_record_duration(freqs, max_str_len=8, max_val=60):
+    """
+    Finds a 'record duration' X in (0, max_val] such that for each freq in freqs:
+      * freq * X is an integer (or freq is zero / already integer)
+      * len(str(X).rstrip('0').rstrip('.')) <= max_str_len
+
+    Returns:
+        float: A suitable multiplier X.
+    Raises:
+        ValueError: if no suitable multiplier is found.
+    """
+    # Convert input to float just in case
+    freqs = [float(f) for f in freqs]
+
+    # Ignore frequencies that are 0.0 or already integral — these don't impose constraints
+    nonint_freqs = []
+    for f in freqs:
+        if f == 0.0:
+            continue
+        # If nearly an integer, treat it as integer
+        #   or do an exact check if you prefer: if f.is_integer():
+        if abs(f - round(f)) < 1e-12:
+            continue
+        nonint_freqs.append(f)
+
+    # If there's no non-integer frequency, X=1 is trivially fine
+    if not nonint_freqs:
+        return 1.0
+
+    # Convert each frequency to a fraction with a bounded denominator
+    frac_list = [Fraction(f).limit_denominator(10_000_000) for f in nonint_freqs]
+
+    # Compute the LCM of all denominators
+    def lcm(a, b):
+        return abs(a * b) // math.gcd(a, b)
+
+    denominators = [fr.denominator for fr in frac_list]
+    L = reduce(lcm, denominators, 1)
+
+    # For each freq_i = nᵢ / dᵢ, define Mᵢ = L / dᵢ
+    # We want X = L / d for some d that divides EVERY (nᵢ × Mᵢ).
+    numerators = [fr.numerator for fr in frac_list]
+    Ms = [L // fr.denominator for fr in frac_list]
+
+    # G = gcd of all (nᵢ × Mᵢ)
+    gcd_val = 0
+    for n, M in zip(numerators, Ms):
+        gcd_val = math.gcd(gcd_val, n * M)
+
+    # Edge case: if gcd_val == 0, just return 1.0 to avoid dividing by zero
+    if gcd_val == 0:
+        return 1.0
+
+    # Enumerate all divisors of gcd_val in ascending order
+    def all_divisors(num):
+        divs = []
+        i = 1
+        while i * i <= num:
+            if num % i == 0:
+                divs.append(i)
+                if i != num // i:
+                    divs.append(num // i)
+            i += 1
+        return sorted(divs)
+
+    divisors = all_divisors(gcd_val)
+
+    # For each divisor d, form X = L / d and see if it's <= max_val and short enough
+    for d in divisors:
+        candidate = L / d
+        if candidate <= max_val:
+            # Build a short string
+            c_str = str(candidate).rstrip('0').rstrip('.')
+            if len(c_str) <= max_str_len:
+                return float(candidate)
+
+    raise ValueError(
+        f"No suitable record_duration (≤ {max_val}) found with ≤ {max_str_len} ASCII chars "
+        f"for frequencies: {freqs}"
+    )
+
+
+
 class ChannelDoesNotExist(Exception):
     def __init__(self, value: Any) -> None:
         self.parameter = value
@@ -226,7 +312,6 @@ class EdfWriter:
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
             'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -253,13 +338,13 @@ class EdfWriter:
         self.sample_buffer: List[List] = []
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
-                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
-                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
             elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
-                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_rate': 100,
-                                      'sample_frequency': None, 'physical_max': 1.0, 'physical_min': -1.0,
+                self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
+                                      'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
 
@@ -292,7 +377,17 @@ class EdfWriter:
         # the channels, we need to find a common denominator so that all sample
         # frequencies can be represented accurately.
         # this can be overwritten by explicitly calling setDatarecordDuration
-        self._calculate_optimal_record_duration()
+
+        for ch in self.channels:
+            # raise exception, can be removed in later release
+            if 'sample_rate' in ch:
+                raise FutureWarning('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
+
+        sample_freqs = [ch['sample_frequency'] for ch in self.channels]
+        if not self._enforce_record_duration and not any([f is None for f in sample_freqs]):
+            assert all([isinstance(f, (float, int)) for f in sample_freqs]), \
+                f'{sample_freqs=} contains non int/float'
+            self.record_duration = _calculate_record_duration(sample_freqs)
 
         set_technician(self.handle, du(self.technician))
         set_recording_additional(self.handle, du(self.recording_additional))
@@ -330,6 +425,8 @@ class EdfWriter:
             set_transducer(self.handle, i, du(self.channels[i]['transducer']))
             set_prefilter(self.handle, i, du(self.channels[i]['prefilter']))
 
+
+
     def setHeader(self, fileHeader: Dict[str, Union[str, float, int, None]]) -> None:
         """
         Sets the file header
@@ -355,7 +452,6 @@ class EdfWriter:
 
             'label' : channel label (string, <= 16 characters, must be unique)
             'dimension' : physical dimension (e.g., mV) (string, <= 8 characters)
-            'sample_rate' : sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
             'sample_frequency' : number of samples per record (int)
             'physical_max' : maximum physical value (float)
             'physical_min' : minimum physical value (float)
@@ -379,8 +475,6 @@ class EdfWriter:
                           channel label (string, <= 16 characters, must be unique)
                 'dimension' : str
                           physical dimension (e.g., mV) (string, <= 8 characters)
-                'sample_rate' :
-                          sample frequency in hertz (int). Deprecated: use 'sample_frequency' instead.
                 'sample_frequency' : int
                           number of samples per record
                 'physical_max' : float
@@ -526,10 +620,11 @@ class EdfWriter:
         This function is NOT REQUIRED but can be called after opening a file
         in writemode and before the first sample write action. This function
         can be used when you want to use a samplefrequency which is not an
-        integer. For example, if you want to use a samplerate of 0.5 Hz, set
+        integer. For example, if you want to use a sample frequency of 0.5 Hz, set
         the samplefrequency to 5 Hz and the datarecord duration to 10 seconds.
         Do not use this function, except when absolutely necessary!
         """
+        warnings.warn('Forcing a specific record_duration might alter calculated sample_frequencies when reading the file')
         self._enforce_record_duration = True
         self.record_duration = record_duration
         self.update_header()
@@ -837,12 +932,6 @@ class EdfWriter:
 
         All parameters must be already written into the bdf/edf-file.
         """
-        there_are_blank_sample_frequencies = any([channel.get('sample_frequency') is None
-                                                 for channel in self.channels])
-        if there_are_blank_sample_frequencies:
-            warnings.warn("The 'sample_rate' parameter is deprecated. Please use "
-                          "'sample_frequency' instead.", DeprecationWarning)
-
         if (len(data_list)) == 0:
             raise WrongInputSize('Data list is empty')
         if (len(data_list) != len(self.channels)):
@@ -949,8 +1038,7 @@ class EdfWriter:
         gets the calculated number of samples that need to be fit into one
         record (i.e. window/block of data) with the given record duration.
         """
-        fs = self._get_sample_frequency(ch_idx)
-        if fs is None: return None
+        fs = self.channels[ch_idx]['sample_frequency']
 
         record_duration = self.record_duration
         smp_per_record = fs*record_duration
@@ -960,43 +1048,3 @@ class EdfWriter:
                           f'smp_per_record={smp_per_record}, record_duration={record_duration} seconds,' +
                           f'calculated sample_frequency will be {np.round(smp_per_record)/record_duration}')
         return int(np.round(smp_per_record))
-
-
-    def _calculate_optimal_record_duration(self) -> None:
-        """
-        calculate optimal denominator (record duration in seconds)
-        for all sample frequencies such that smp_per_record is an integer
-        for all channels.
-
-        If all sampling frequencies are integers, this will simply be 1.
-        """
-        if self._enforce_record_duration: return
-        allint = lambda int_list: all([n==int(n) for n in int_list])
-        all_fs = [self._get_sample_frequency(i) for i,_ in enumerate(self.channels)]
-
-        # calculate the optimal record duration to represent all frequencies.
-        # this is achieved when fs*duration=int, i.e. the number of samples
-        # in one data record can be represented by an int (smp_per_record)
-        # if all sampling frequencies are ints, this will be simply 1
-        # for now this brute force solution should cover 99% of cases.
-        # TODO: optimize this process
-
-        record_duration = 0
-        for i in range(1, 60):
-            if allint([x*i for x in all_fs]):
-                record_duration = i
-                break
-        assert record_duration>0, f'cannot accurately represent sampling frequencies with data record durations between 1-60s: {all_fs}'
-        assert record_duration<=60, 'record duration must be below 60 seconds'
-        self.record_duration = record_duration
-
-    def _get_sample_frequency(self, channelIndex: int) -> Union[int, float]:
-        # Temporary conditional assignment while we deprecate 'sample_rate' as a channel attribute
-        # in favor of 'sample_frequency', supporting the use of either to give
-        # users time to switch to the new interface.
-        if 'sample_rate' in self.channels[channelIndex]:
-            warnings.warn("`sample_rate` is deprecated and will be removed in a future release. \
-                          Please use `sample_frequency` instead", DeprecationWarning)
-        return (self.channels[channelIndex]['sample_rate']
-                if self.channels[channelIndex].get('sample_frequency') is None
-                else self.channels[channelIndex]['sample_frequency'])

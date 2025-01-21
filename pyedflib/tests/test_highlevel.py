@@ -119,11 +119,7 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), 5)
             self.assertEqual(len(signals2), len(signal_headers2))
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                # When only 'sample_rate' is present, we use its value to write
-                # the file, ignoring 'sample_frequency', which means that when
-                # we read it back only the 'sample_rate' value is present.
-                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
-                                     shead2)
+                self.assertDictEqual(shead1,  shead2)
             np.testing.assert_allclose(signals, signals2, atol=0.01)
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -141,11 +137,8 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), len(signal_headers2))
             np.testing.assert_array_equal(signals, signals2)
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                # When only 'sample_rate' is present, we use its value to write
-                # the file, ignoring 'sample_frequency', which means that when
-                # we read it back only the 'sample_rate' value is present.
-                self.assertDictEqual({**shead1, 'sample_frequency': shead1['sample_rate']},
-                                     shead2)
+                self.assertDictEqual(shead1,  shead2)
+
             # EDF/BDF header writing does not correctly work yet
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
@@ -414,6 +407,19 @@ class TestHighLevel(unittest.TestCase):
         highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
         _,_,header3 = highlevel.read_edf(self.edfplus_data_file)
         self.assertEqual(header2['annotations'], header3['annotations'])
+
+    def test_deprecated_sample_rate(self):
+        header = highlevel.make_header(technician='tech', recording_additional='radd',
+                                                patientname='name', patient_additional='padd',
+                                                patientcode='42', equipment='eeg', admincode='420',
+                                                sex='Male', birthdate='05.09.1980')
+        annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
+        header['annotations'] = annotations
+        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
+        signal_headers[0]['sample_rate'] = 256
+        signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        with self.assertRaises(FutureWarning):
+            highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
 
 
 if __name__ == '__main__':
