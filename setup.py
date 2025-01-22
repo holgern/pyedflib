@@ -3,7 +3,7 @@
 import os
 import subprocess
 import sys
-from distutils.sysconfig import get_python_inc
+import sysconfig
 from functools import partial
 
 import setuptools
@@ -219,7 +219,7 @@ if os.environ.get("CYTHON_TRACE"):
 # C files must be built once only for coverage to work
 c_lib = ('c_edf',{'sources': sources,
                  'depends': headers,
-                 'include_dirs': [make_ext_path("c"), get_python_inc()],
+                 'include_dirs': [make_ext_path("c"), sysconfig.get_path('include')],
                  'macros': c_macros,})
 
 ext_modules = [
@@ -270,7 +270,7 @@ class develop_build_clib(develop):
             setuptools.bootstrap_install_from = None
 
         # create an .egg-link in the installation dir, pointing to our egg
-        from distutils import log
+        from setuptools import log
         log.info("Creating %s (link to %s)", self.egg_link, self.egg_base)
         if not self.dry_run:
             with open(self.egg_link, "w") as f:

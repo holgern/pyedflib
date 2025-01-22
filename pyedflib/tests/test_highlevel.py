@@ -215,20 +215,36 @@ class TestHighLevel(unittest.TestCase):
     def test_assertion_dmindmax(self):
 
         # test digital and dmin wrong
-        signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int32)]
+        signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int16)]
         sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['digital_min'] = -128
         sheaders[0]['digital_max'] = 128
         with self.assertRaises(AssertionError):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
 
-        # test pmin wrong
-        signals = [np.random.randint(-2048, 2048, 256*60)]
+        # test physical min and max wrong
+        signals = [np.random.randint(-2048, 2048, 256*60).astype(np.int16)]
         sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['physical_min'] = -200
         sheaders[0]['physical_max'] = 200
+        
+        # a large difference between phys min and values should result in error
         with self.assertRaises(AssertionError):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+        
+        # A small roundoff difference between phys min and values should result in warning
+        # edf_accuracy is calculated as: max_signals / digital_max or min_signals / digital_min
+        #   (whichever is smallest). digital_max = 2^16 / 2
+        edf_accuracy = min([max(signals[0])/sheaders[0]['digital_max'], min(signals[0])/sheaders[0]['digital_min']]).astype(np.float16)
+
+        sheaders[0]['physical_min'] = min(signals[0]) + 0.999 * edf_accuracy
+        sheaders[0]['physical_max'] = max(signals[0]) - 0.999 * edf_accuracy
+
+        with self.assertWarnsRegex(expected_warning=UserWarning, expected_regex="phys_min is.*"):
+            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+        
+        # It would be nice to doublecheck the written data in the files here.
+        # However, the (rather inaccurate) data rescaling of EDF files makes this tricky.
 
 
     def test_read_write_accented(self):
