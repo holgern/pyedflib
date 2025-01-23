@@ -20,7 +20,7 @@ jobs:
     name: Make SDist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
@@ -29,8 +29,9 @@ jobs:
       run: python -m pip install build twine
     - name: Build SDist
       run: python -m build --sdist
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        merge-multiple: true
         path: dist/*.tar.gz
     - name: Check metadata
       run: twine check dist/*
@@ -42,7 +43,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v4
@@ -59,25 +60,26 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           CIBW_PRERELEASE_PYTHONS: False
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          merge-multiple: true
           path: wheelhouse/*.whl
           
   build_aarch64_wheels:
-    name: Build wheels manylinux_aarch64
+    name: Build wheels aarch64
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [37, 38, 39, 310, 311, 312]
+        python: [38, 39, 310, 311, 312, 313]
         include:
           - os: ubuntu-latest
             arch: aarch64
             platform_id: manylinux_aarch64
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
@@ -87,8 +89,9 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: ${{matrix.arch}}
           CIBW_BUILD: cp${{ matrix.python }}-${{ matrix.platform_id }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          merge-multiple: true
           path: wheelhouse/*.whl
 
   upload_pypi:
@@ -96,7 +99,7 @@ jobs:
     needs: [build_wheels, build_aarch64_wheels, make_sdist]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact
           path: dist
