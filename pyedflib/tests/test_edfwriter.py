@@ -13,7 +13,7 @@ from datetime import date, datetime
 import numpy as np
 
 import pyedflib
-from pyedflib.edfreader import EdfReader
+from pyedflib.edfreader import EdfReader, _debug_parse_header
 from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter, WrongInputSize
 from pyedflib.edfwriter import _calculate_record_duration
 
@@ -1191,6 +1191,55 @@ class TestEdfWriter(unittest.TestCase):
             freqs = np.random.randint(1, 10000, 25,).astype(int)
             duration = _calculate_record_duration(freqs)
             assert duration == 1
+
+    def test_record_durations(self):
+        """use different record durations and look in the raw header if all seems right"""
+        for record_duration in [0.001, 0.01, 0.1, 1, 10, 60]:
+            channel_count = 1
+            sample_frequency = 1/record_duration
+
+            f = pyedflib.EdfWriter(self.edf_data_file, 1,
+                                   file_type=pyedflib.FILETYPE_EDF)
+            f.setDatarecordDuration(record_duration)
+
+            digMax = 32767
+            digMin = -digMax
+
+            f.setSignalHeaders([{
+                'label': 'test_label',
+                'sample_frequency': sample_frequency,
+                'dimension': 'mV',
+                'physical_min': 0,
+                'physical_max': 1,
+                'digital_min': digMin,
+                'digital_max': digMax,
+                'transducer': '',
+                'prefilter': ''
+                }])
+
+            f.writeSamples(np.random.rand(channel_count, 1000))
+            f.close()
+            del f
+
+            header, sheader = _debug_parse_header(self.edf_data_file, printout=False)
+            self.assertEqual(float(header['record_duration']), record_duration)
+
+            with pyedflib.EdfReader(self.edf_data_file) as f:
+                self.assertEqual(f.datarecord_duration, record_duration)
+                f.close()
+
+
+        for record_duration in [0.0001,  61]:
+            channel_count = 1
+            sample_frequency = 1/record_duration
+
+            with pyedflib.EdfWriter(self.edf_data_file, 1,
+                                   file_type=pyedflib.FILETYPE_EDF) as f:
+                with self.assertRaises(ValueError):
+                    f.setDatarecordDuration(record_duration)
+
+
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

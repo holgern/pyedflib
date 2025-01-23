@@ -33,7 +33,7 @@ DO_NOT_CHECK_FILE_SIZE = 1
 REPAIR_FILE_SIZE_IF_WRONG = 2
 
 
-def _debug_parse_header(filename: str) -> None:  # pragma: no cover
+def _debug_parse_header(filename: str, printout=True) -> None:  # pragma: no cover
     """
     A debug function that reads a header and outputs everything that
     is contained in the header
@@ -55,8 +55,9 @@ def _debug_parse_header(filename: str) -> None:  # pragma: no cover
         header["record_duration"] = f.read(8).decode()
         header["n_signals"] = f.read(4).decode()
 
-        print("\n##### Header")
-        print(json.dumps(header, indent=2))
+        if printout:
+            print("\n##### Header")
+            print(json.dumps(header, indent=2))
 
         nsigs = int(header["n_signals"])
         label = [f.read(16).decode() for i in range(nsigs)]
@@ -95,8 +96,10 @@ def _debug_parse_header(filename: str) -> None:  # pragma: no cover
         "reserved",
     ]
     sheaders = [{field: values[field][i] for field in fields} for i in range(nsigs)]
-    print("\n##### Signal Headers")
-    print(json.dumps(sheaders, indent=2))
+    if printout:
+        print("\n##### Signal Headers")
+        print(json.dumps(sheaders, indent=2))
+    return header, sheaders
 
 
 class EdfReader(CyEdfReader):

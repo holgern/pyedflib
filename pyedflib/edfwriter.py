@@ -257,7 +257,7 @@ def _calculate_record_duration(freqs, max_str_len=8, max_val=60):
         candidate = L / d
         if candidate <= max_val:
             # Build a short string
-            c_str = str(candidate).rstrip('0').rstrip('.')
+            c_str = f'{candidate:f}'.rstrip('0').rstrip('.')
             if len(c_str) <= max_str_len:
                 return float(candidate)
 
@@ -602,7 +602,7 @@ class EdfWriter:
     def setDatarecordDuration(self, record_duration: Union[float, int]) -> None:
         """
         Sets the datarecord duration. The default value is 1 second.
-        The datarecord duration must be in the range 0.00001 to 60 seconds.
+        The datarecord duration must be in the range 0.001 to 60 seconds.
         Usually, the datarecord duration is calculated automatically to
         ensure that all sample frequencies are representable, nevertheless,
         you can overwrite the datarecord duration manually. This can, however,
@@ -626,6 +626,8 @@ class EdfWriter:
         """
         warnings.warn('Forcing a specific record_duration might alter calculated sample_frequencies when reading the file')
         self._enforce_record_duration = True
+        if 0.001 > record_duration or record_duration > 60:
+            raise ValueError('record_duration must be between 0.001 and 60 seconds')
         self.record_duration = record_duration
         self.update_header()
 
