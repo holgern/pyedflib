@@ -227,11 +227,11 @@ class TestHighLevel(unittest.TestCase):
         sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
         sheaders[0]['physical_min'] = -200
         sheaders[0]['physical_max'] = 200
-        
+
         # a large difference between phys min and values should result in error
         with self.assertRaises(AssertionError):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
-        
+
         # A small roundoff difference between phys min and values should result in warning
         # edf_accuracy is calculated as: max_signals / digital_max or min_signals / digital_min
         #   (whichever is smallest). digital_max = 2^16 / 2
@@ -242,7 +242,7 @@ class TestHighLevel(unittest.TestCase):
 
         with self.assertWarnsRegex(expected_warning=UserWarning, expected_regex="phys_min is.*"):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
-        
+
         # It would be nice to doublecheck the written data in the files here.
         # However, the (rather inaccurate) data rescaling of EDF files makes this tricky.
 
