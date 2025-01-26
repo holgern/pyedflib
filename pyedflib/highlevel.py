@@ -77,9 +77,9 @@ def _parse_date(string: str) -> datetime:
         import dateparser
         return dateparser.parse(string)
     except Exception:
-        print('dateparser is not installed. to convert strings to dates'\
-              'install via `pip install dateparser`.')
-        raise ValueError('birthdate must be datetime object or of format'\
+        print('dateparser is not installed. to convert strings to dates'
+              ' install via `pip install dateparser`.')
+        raise ValueError('birthdate must be datetime object or of format'
                          ' `%d-%m-%Y`, eg. `24-01-2020`')
 
 def dig2phys(signal: Union[np.ndarray, int], dmin: int, dmax: int, pmin: float, pmax: float) -> Union[np.ndarray, float]:
@@ -520,15 +520,15 @@ def write_edf(
         else: # only warning if difference is larger than the rounding error (which is quite large as edf scales data between phys_min and phys_max using -dig_min and +dig_max)
             edf_accuracy = min([sig.max()/dmax, sig.min()/dmin])
             if abs(pmin - sig.min()) < edf_accuracy:
-                warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} ' \
-                'for channel {label}', category=UserWarning)
+                warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} '
+                f'for channel {label}', category=UserWarning)
             else: # difference is > edf_accuracy
                 assert pmin<=sig.min(), \
                 'phys_min is {}, but signal_min is {} ' \
                 'for channel {}'.format(pmin, sig.min(), label)
             if abs(sig.max() - pmax) < edf_accuracy:
-                warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} ' \
-                'for channel {label}', category=UserWarning)
+                warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} '
+                f'for channel {label}', category=UserWarning)
             else:
                 assert pmax>=sig.max(), \
                 'phys_max is {}, but signal_max is {} ' \

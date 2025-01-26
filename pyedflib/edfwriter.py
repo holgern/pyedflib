@@ -65,7 +65,7 @@ def check_is_ascii(string: str) -> None:
     https://www.edfplus.info/specs/edfplus.html#header
     """
     if not all(ord(x)>32 and ord(x)<127 for x in string):
-        warnings.warn('Invalid char: header entries should contain only ASCII'\
+        warnings.warn('Invalid char: header entries should contain only ASCII'
                       ' characters and no spaces: "{}"'.format(string))
 
 
@@ -87,27 +87,27 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]
     label = ch['label']
 
     if len(ch['label'])>16:  # type: ignore
-        warnings.warn('Label of channel {} is longer than 16 ASCII chars.'\
+        warnings.warn('Label of channel {} is longer than 16 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['label'][:16] ))  # type: ignore
     if len(ch['prefilter'])>80:  # type: ignore
-        warnings.warn('prefilter of channel {} is longer than 80 ASCII chars.'\
+        warnings.warn('prefilter of channel {} is longer than 80 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['prefilter'][:80] ))  # type: ignore
     if len(ch['transducer'])>80:  # type: ignore
-        warnings.warn('transducer of channel {} is longer than 80 ASCII chars.'\
+        warnings.warn('transducer of channel {} is longer than 80 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['transducer'][:80] ))  # type: ignore
     if len(ch['dimension'])>80:  # type: ignore
-        warnings.warn('dimension of channel {} is longer than 8 ASCII chars.'\
+        warnings.warn('dimension of channel {} is longer than 8 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['dimension'][:8] ))  # type: ignore
 
     # these ones actually raise an exception
     dmin, dmax = (-8388608, 8388607) if file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF) else (-32768, 32767)
     if ch['digital_min']<dmin:  # type: ignore
-        raise ValueError('Digital minimum for channel {} ({}) is {},'\
+        raise ValueError('Digital minimum for channel {} ({}) is {}, '
                          'but minimum allowed value is {}'.format(i, label,
                                                                   ch['digital_min'],
                                                                   dmin))
     if ch['digital_max']>dmax:  # type: ignore
-        raise ValueError('Digital maximum for channel {} ({}) is {},'\
+        raise ValueError('Digital maximum for channel {} ({}) is {}, '
                          'but maximum allowed value is {}'.format(i, label,
                                                                   ch['digital_max'],
                                                                   dmax))
@@ -116,29 +116,29 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]
     # if we truncate the physical min before the dot, we potentitally
     # have all the signals incorrect by an order of magnitude.
     if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:  # type: ignore
-        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '
                          'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min']))))
     if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:  # type: ignore
-        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '
                          'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
                                                                       ch['physical_max'],
                                                                       len(str(ch['physical_max']))))
     # if we truncate the physical min behind the dot, we just lose precision,
     # in this case only a warning is enough
     if len(str(ch['physical_min']))>8:
-        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '
                          'some loss of precision is to be expected'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min'])),
                                                                       str(ch['physical_min'])[:8]))
     if len(str(ch['physical_max']))>8:
-        warnings.warn('Physical maximum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+        warnings.warn('Physical maximum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '
                          'some loss of precision is to be expected.'.format(i, label,
                                                                       ch['physical_max'],
                                                                       len(str(ch['physical_max'])),
