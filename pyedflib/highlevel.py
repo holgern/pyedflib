@@ -210,7 +210,7 @@ def make_header(
             sex = gender
             warnings.warn("Parameter 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
         elif sex != gender:
-            raise ValueError("Defined both parameters 'sex' and 'gender', with different values: {sex} != {gender}")
+            raise ValueError(f"Defined both parameters 'sex' and 'gender', with different values: {sex} != {gender}")
     gender = sex
 
     local = locals()

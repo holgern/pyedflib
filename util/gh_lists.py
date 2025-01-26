@@ -80,7 +80,7 @@ def get_issues(getter, project, milestone):
     milestones = get_milestones(getter, project)
     mid = milestones[milestone]
 
-    url = "https://api.github.com/repos/{project}/issues?milestone={mid}&state=closed&sort=created&direction=asc"
+    url = "https://api.github.com/repos/{project}/issues?milestone={mid}&state=closed&sort=created&direction=asc"  # noqa: RUF027
     url = url.format(project=project, mid=mid)
 
     raw_datas = []
