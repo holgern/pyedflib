@@ -69,7 +69,7 @@ def check_is_ascii(string: str) -> None:
                       ' characters and no spaces: "{}"'.format(string))
 
 
-def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]]], i: int, file_type: int) -> None:
+def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]]], i: int, file_type: int) -> None:
     """
     helper function  to check if all entries in the channel dictionary are fine.
 
