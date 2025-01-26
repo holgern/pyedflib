@@ -285,7 +285,7 @@ def validate_rst_syntax(text, name, dots=True):
         if m and m.group(1) in ok_unknown_items:
             continue
 
-        m = re.match(r'.*Error in "math" directive:.*unknown option: "label"', " ".join(lines), re.S)
+        m = re.match(r'.*Error in "math" directive:.*unknown option: "label"', " ".join(lines), re.DOTALL)
         if m:
             continue
 
