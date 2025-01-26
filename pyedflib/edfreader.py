@@ -15,13 +15,13 @@ import numpy as np
 from ._extensions._pyedflib import CyEdfReader
 
 __all__ = [
-    "EdfReader",
-    "DO_NOT_READ_ANNOTATIONS",
-    "READ_ANNOTATIONS",
-    "READ_ALL_ANNOTATIONS",
     "CHECK_FILE_SIZE",
     "DO_NOT_CHECK_FILE_SIZE",
+    "DO_NOT_READ_ANNOTATIONS",
+    "READ_ALL_ANNOTATIONS",
+    "READ_ANNOTATIONS",
     "REPAIR_FILE_SIZE_IF_WRONG",
+    "EdfReader",
 ]
 
 DO_NOT_READ_ANNOTATIONS = 0
