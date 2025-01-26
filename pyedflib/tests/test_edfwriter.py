@@ -7,14 +7,13 @@ import os
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
-import warnings
 from datetime import date, datetime
 
 import numpy as np
 
 import pyedflib
 from pyedflib.edfreader import EdfReader, _debug_parse_header
-from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter, WrongInputSize
+from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter
 from pyedflib.edfwriter import _calculate_record_duration
 
 

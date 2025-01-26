@@ -1,6 +1,5 @@
 from typing import List, Dict, Union, Optional
 import numpy as np
-from datetime import datetime
 
 __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subsecond',
            'write_annotation_latin1', 'write_annotation_utf8', 'set_technician', 'EdfAnnotation',

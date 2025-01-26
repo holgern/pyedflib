@@ -5,7 +5,6 @@
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
 
-import sys
 import warnings
 from datetime import date, datetime
 from types import TracebackType
