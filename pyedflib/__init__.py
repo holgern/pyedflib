@@ -1,5 +1,3 @@
-# flake8: noqa
-
 # Copyright (c) 2019 - 2020 Simon Kern
 # Copyright (c) 2015 - 2020 Holger Nahrstaedt
 # Copyright (c) 2016-2017 The pyedflib Developers
