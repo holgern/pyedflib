@@ -8,6 +8,7 @@ from functools import partial
 
 import setuptools
 from setuptools import Extension, setup
+from setuptools.command.develop import develop
 
 try:
     from Cython.Build import cythonize
@@ -228,8 +229,6 @@ ext_modules = [
               libraries=[c_lib[0]])
     for module, source, in zip(cython_modules, cython_sources)
 ]
-
-from setuptools.command.develop import develop
 
 
 class develop_build_clib(develop):
