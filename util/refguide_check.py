@@ -119,9 +119,11 @@ def find_names(module, names_dict):
             res = re.match(pattern, line)
             if res is not None:
                 name = res.group(1)
-                entry = '.'.join([module_name, name])
+                entry = '.'.join([module_name, name])  # noqa: F841
                 names_dict.setdefault(module_name, set()).add(name)
                 break
+
+    # FIXME: this function doesn't return anything
 
 
 def get_all_dict(module):
@@ -180,7 +182,7 @@ def compare(all_dict, others, names, module_name):
 
 
 def is_deprecated(f):
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True):
         warnings.simplefilter("error")
         try:
             f(**{"not a kwarg": None})

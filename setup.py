@@ -69,7 +69,7 @@ def get_numpy_include():
         import builtins
         builtins.__NUMPY_SETUP__ = False
         import numpy as np
-    except ImportError as e:
+    except ImportError:
         try:
             # Try to install numpy
             from setuptools import dist

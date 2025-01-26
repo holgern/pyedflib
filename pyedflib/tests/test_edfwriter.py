@@ -875,7 +875,6 @@ class TestEdfWriter(unittest.TestCase):
         samples_per_record = 256
         sample_frequency = 256
         sample_freq_exp = int(256*record_duration)/record_duration
-        record_count = 4
 
         f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
         with self.assertWarns(UserWarning):
