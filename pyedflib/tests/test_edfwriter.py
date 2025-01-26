@@ -441,9 +441,7 @@ class TestEdfWriter(unittest.TestCase):
 
         data1 = np.ones(500) * 0.1
         data2 = np.ones(500) * 0.2
-        data_list = []
-        data_list.append(data1)
-        data_list.append(data2)
+        data_list = [data1, data2]
         f.writeSamples(data_list)
         f.close()
 
@@ -497,9 +495,7 @@ class TestEdfWriter(unittest.TestCase):
             f.setSignalHeader(1,channel_info2)
             data1 = np.ones(500) * 0.1
             data2 = np.ones(500) * 0.2
-            data_list = []
-            data_list.append(data1)
-            data_list.append(data2)
+            data_list = [data1, data2]
             f.writeSamples(data_list)
 
         with pyedflib.EdfReader(self.bdfplus_data_file) as f:
@@ -533,9 +529,7 @@ class TestEdfWriter(unittest.TestCase):
 
         data1 = np.ones(500) * 0.1
         data2 = np.ones(500) * 0.2
-        data_list = []
-        data_list.append(data1)
-        data_list.append(data2)
+        data_list = [data1, data2]
         f.writeSamples(data_list)
         del f
 
@@ -571,9 +565,7 @@ class TestEdfWriter(unittest.TestCase):
 
         data1 = np.arange(500, dtype=float)
         data2 = np.arange(500, dtype=float)
-        data_list = []
-        data_list.append(data1)
-        data_list.append(data2)
+        data_list = [data1, data2]
         with  np.testing.assert_raises(TypeError):
             f.writeSamples(data_list, digital=True)
         f.close()
