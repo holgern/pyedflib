@@ -613,7 +613,7 @@ def read_edf_header(
         summary['channels'] = f.getSignalLabels()
         if read_annotations:
             annotations = f.read_annotation()
-            annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
+            annotations = [[float(t)/10000000, d or -1, x.decode()] for t,d,x in annotations]
             summary['annotations'] = annotations
     del f
     return summary
