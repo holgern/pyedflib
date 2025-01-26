@@ -49,7 +49,7 @@ def main():
         line = line.strip().decode()
 
         # Check the commit author name
-        m = re.match('^@@@([^@]*)@@@', line)
+        m = re.match(r'^@@@([^@]*)@@@', line)
         if m:
             name = m.group(1)
             line = line[m.end():]
@@ -84,7 +84,7 @@ def main():
 
     # Sort
     def name_key(fullname):
-        m = re.search(' [a-z ]*[A-Za-z-]+$', fullname)
+        m = re.search(r' [a-z ]*[A-Za-z-]+$', fullname)
         if m:
             forename = fullname[:m.start()].strip()
             surname = fullname[m.start():].strip()

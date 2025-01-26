@@ -89,7 +89,7 @@ def get_issues(getter, project, milestone):
         raw_datas.append(raw_data)
         if 'link' not in info:
             break
-        m = re.search('<(.*?)>; rel="next"', info['link'])
+        m = re.search(r'<(.*?)>; rel="next"', info['link'])
         if m:
             url = m.group(1)
             continue

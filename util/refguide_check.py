@@ -346,7 +346,7 @@ def check_rest(module, names, dots=True):
                                 traceback.format_exc()))
                 continue
 
-        m = re.search("([\x00-\x09\x0b-\x1f])", text)
+        m = re.search(r"([\x00-\x09\x0b-\x1f])", text)
         if m:
             msg = ("Docstring contains a non-printable character %r! "
                    "Maybe forgot r\"\"\"?" % (m.group(1),))
@@ -429,7 +429,7 @@ class DTRunner(doctest.DocTestRunner):
                                                     example, got)
 
 class Checker(doctest.OutputChecker):
-    obj_pattern = re.compile('at 0x[0-9a-fA-F]+>')
+    obj_pattern = re.compile(r'at 0x[0-9a-fA-F]+>')
     vanilla = doctest.OutputChecker()
     rndm_markers = {'# random', '# Random', '#random', '#Random', "# may vary"}
     stopwords = {'plt.', '.hist', '.show', '.ylim', '.subplot(',
