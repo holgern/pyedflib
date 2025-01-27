@@ -10,7 +10,7 @@ a C compiler and prepare the build environment.
 Installing Microsoft Visual C++ Compiler
 ----------------------------------------
 
-Downloading Microsoft Visual C++ Compiler from https://visualstudio.microsoft.com/fr/downloads/.
+Downloading Microsoft Visual C++ Compiler from https://visualstudio.microsoft.com/downloads/.
 
 
 After installing the Compiler and before compiling the extension you have
