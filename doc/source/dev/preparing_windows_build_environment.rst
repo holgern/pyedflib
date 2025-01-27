@@ -39,4 +39,4 @@ After completing these steps continue with
 .. _numpy: https://numpy.org/
 .. _Cython: https://cython.org/
 .. _Sphinx: https://www.sphinx-doc.org/
-.. _Microsoft Visual C++ Compiler: https://visualstudio.microsoft.com/fr/downloads/
+.. _Microsoft Visual C++ Compiler: https://visualstudio.microsoft.com/downloads/
