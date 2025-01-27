@@ -22,6 +22,6 @@ Something not working?
 ----------------------
 
 If these instructions are not clear or you need help setting up your
-development environment, go ahead and  open a ticket on GitHub_.
+development environment, go ahead and open a ticket on GitHub_.
 
 .. _GitHub: https://github.com/holgern/pyedflib

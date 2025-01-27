@@ -34,7 +34,7 @@ repository or use the upstream repository to get the source code::
 
     git clone https://github.com/holgern/pyedflib.git pyedflib
 
-Install Microsoft Visual C++ Compiler for Python 2.7 from https://www.microsoft.com/en-us/download/details.aspx?id=44266
+Install Microsoft Visual C++ Compiler from https://visualstudio.microsoft.com/downloads/
 
 Activate your Python virtual environment, go to the cloned source directory
 and type the following commands to build and install the package::

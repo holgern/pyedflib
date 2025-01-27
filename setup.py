@@ -66,12 +66,8 @@ def get_numpy_include():
         # versions.
         # setuptools forgets to unset numpy's setup flag and we get a crippled
         # version of it unless we do it ourselves.
-        try:
-            import __builtin__  # py2
-            __builtin__.__NUMPY_SETUP__ = False
-        except:
-            import builtins  # py3
-            builtins.__NUMPY_SETUP__ = False
+        import builtins
+        builtins.__NUMPY_SETUP__ = False
         import numpy as np
     except ImportError as e:
         try:

@@ -48,7 +48,7 @@ def main():
     authors = collections.Counter()
 
     def analyze_line(line, names, disp=False):
-        line = line.strip().decode('utf-8')
+        line = line.strip().decode()
 
         # Check the commit author name
         m = re.match(u'^@@@([^@]*)@@@', line)
@@ -58,7 +58,7 @@ def main():
             name = NAME_MAP.get(name, name)
             if disp:
                 if name not in names:
-                    stdout_b.write(("    - Author: %s\n" % name).encode('utf-8'))
+                    stdout_b.write(("    - Author: %s\n" % name).encode())
             names.update((name,))
 
         # Look for "thanks to" messages in the commit log
@@ -67,13 +67,13 @@ def main():
             name = m.group(2)
             if name not in (u'this',):
                 if disp:
-                    stdout_b.write("    - Log   : %s\n" % line.strip().encode('utf-8'))
+                    stdout_b.write("    - Log   : %s\n" % line.strip().encode())
                 name = NAME_MAP.get(name, name)
                 names.update((name,))
 
             line = line[m.end():].strip()
             line = re.sub(r'^(and|, and|, ) ', u'Thanks to ', line)
-            analyze_line(line.encode('utf-8'), names)
+            analyze_line(line.encode(), names)
 
     # Find all authors before the named range
     for line in git.pipe('log', '--pretty=@@@%an@@@%n@@@%cn@@@%n%b',
@@ -108,9 +108,9 @@ def main():
         n_authors = list(new_authors)
         n_authors.sort(key=name_key)
         # Print some empty lines to separate
-        stdout_b.write(("\n\n").encode('utf-8'))
+        stdout_b.write(("\n\n").encode())
         for author in n_authors:
-            stdout_b.write(("- %s\n" % author).encode('utf-8'))
+            stdout_b.write(("- %s\n" % author).encode())
         # return for early exit so we only print new authors
         return
 
@@ -133,19 +133,19 @@ Authors
         author_clean = author.strip('@')
 
         if author in all_authors:
-            stdout_b.write((f"* {author_clean} ({count})\n").encode('utf-8'))
+            stdout_b.write((f"* {author_clean} ({count})\n").encode())
         else:
-            stdout_b.write((f"* {author_clean} ({count}) +\n").encode('utf-8'))
+            stdout_b.write((f"* {author_clean} ({count}) +\n").encode())
 
     stdout_b.write(("""
 A total of %(count)d people contributed to this release.
 People with a "+" by their names contributed a patch for the first time.
 This list of names is automatically generated, and may not be fully complete.
 
-""" % dict(count=len(authors))).encode('utf-8'))
+""" % dict(count=len(authors))).encode())
 
     stdout_b.write(("\nNOTE: Check this list manually! It is automatically generated "
-                    "and some names\n      may be missing.\n").encode('utf-8'))
+                    "and some names\n      may be missing.\n").encode())
 
 
 def load_name_map(filename):

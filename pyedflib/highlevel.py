@@ -753,7 +753,7 @@ def drop_channels(
             if isinstance(ch,str):
                 ch_idx = ch_names.index(ch.lower())
                 to_keep[i] = ch_idx
-        load_channels = list(to_keep) # copy list compatible with py2.7
+        load_channels = list(to_keep)
     elif to_drop is not None:
         for i,ch in enumerate(to_drop):
             if isinstance(ch,str):

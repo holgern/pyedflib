@@ -11,7 +11,7 @@ The `GitHub repository`_ is now the main
 code repository.
 
 If you are using the Mercurial repository at Bitbucket, please switch
-to Git/GitHub and follow  for development updates.
+to Git/GitHub and follow for development updates.
 
 
 Questions and bug reports
