@@ -4,7 +4,7 @@
 
 __doc__ = """Cython wrapper for low-level C edflib implementation."""
 __all__ = ['lib_version', 'CyEdfReader', 'set_patientcode', 'set_starttime_subsecond',
-           'write_annotation_latin1', 'write_annotation_utf8', 'set_technician', 'EdfAnnotation',
+           'write_annotation_latin1_hr', 'write_annotation_utf8_hr', 'set_technician', 'EdfAnnotation',
            'get_annotation', 'read_int_samples', 'blockwrite_digital_samples', 'blockwrite_physical_samples',
            'set_recording_additional', 'write_physical_samples' ,'set_patientname', 'set_physical_minimum',
            'read_physical_samples', 'close_file', 'set_physical_maximum', 'open_file_writeonly',
@@ -274,12 +274,12 @@ cdef class CyEdfReader:
 
     property sex:
         def __get__(self):
-            return self.hdr.gender
+            return self.hdr.sex
 
     property gender:
         def __get__(self):
             warnings.warn("Variable 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
-            return self.hdr.gender
+            return self.hdr.sex
 
     property birthdate:
         def __get__(self):
@@ -438,11 +438,11 @@ def set_patientcode(int handle, char *patientcode):
     # check if rw?
     return c_edf.edf_set_patientcode(handle, patientcode)
 
-cpdef int write_annotation_latin1(int handle, long long onset, long long duration, char *description):
-        return c_edf.edfwrite_annotation_latin1(handle, onset, duration, description)
+cpdef int write_annotation_latin1_hr(int handle, long long onset, long long duration, char *description):
+        return c_edf.edfwrite_annotation_latin1_hr(handle, onset, duration, description)
 
-cpdef int write_annotation_utf8(int handle, long long onset, long long duration, char *description):
-        return c_edf.edfwrite_annotation_utf8(handle, onset, duration, description)
+cpdef int write_annotation_utf8_hr(int handle, long long onset, long long duration, char *description):
+        return c_edf.edfwrite_annotation_utf8_hr(handle, onset, duration, description)
 
 cpdef int set_technician(int handle, char *technician):
     return c_edf.edf_set_technician(handle, technician)
@@ -583,11 +583,11 @@ def rewind(handle, edfsignal):
 def set_sex(handle, sex):
     """int edf_set_sex(int handle, int sex)"""
     if sex is None: return 0 #don't set sex at all to prevent default 'F'
-    return c_edf.edf_set_gender(handle, sex)
+    return c_edf.edf_set_sex(handle, sex)
 
 def set_gender(handle, gender):
     warnings.warn("Function 'set_gender' is deprecated, use 'set_sex' instead.", DeprecationWarning, stacklevel=2)
-    return set_sex(handle, gender)
+    return c_edf.edf_set_sex(handle, gender)
 
 def set_physical_dimension(handle, edfsignal, phys_dim):
     """int edf_set_physical_dimension(int handle, int edfsignal, const char *phys_dim)"""

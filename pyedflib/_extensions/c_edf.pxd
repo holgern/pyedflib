@@ -7,8 +7,10 @@ include "edf.pxi"
 
 cdef extern from "c/edflib.h":
     int edf_set_patientcode(int, char *)
-    int edfwrite_annotation_latin1(int, long long int, long long int, char *)
-    int edfwrite_annotation_utf8(int, long long int, long long int, char *)
+    int edfwrite_annotation_utf8(int, long long, long long, const char *)
+    int edfwrite_annotation_latin1_hr(int, long long int, long long int, char *)
+    int edfwrite_annotation_latin1(int, long long, long long, const char *)
+    int edfwrite_annotation_utf8_hr(int, long long int, long long int, char *)
     int edflib_version()
     cdef struct edf_annotation_struct:
         long long int onset
@@ -55,7 +57,7 @@ cdef extern from "c/edflib.h":
         char * patient
         char * recording
         char * patientcode
-        char * gender
+        char * sex
         char * birthdate
         char * patient_name
         char * patient_additional
@@ -79,7 +81,7 @@ cdef extern from "c/edflib.h":
     int edf_blockwrite_digital_samples(int, int *)
     long long int edftell(int, int)
     void edfrewind(int, int)
-    int edf_set_gender(int, int)
+    int edf_set_sex(int, int)
     int edf_set_physical_dimension(int, int, char *)
     int edf_set_transducer(int, int, char *)
     int edf_set_prefilter(int, int, char *)
