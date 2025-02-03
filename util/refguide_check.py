@@ -119,9 +119,11 @@ def find_names(module, names_dict):
             res = re.match(pattern, line)
             if res is not None:
                 name = res.group(1)
-                entry = '.'.join([module_name, name])
+                entry = f'{module_name}.{name}'  # noqa: F841
                 names_dict.setdefault(module_name, set()).add(name)
                 break
+
+    # FIXME: this function doesn't return anything
 
 
 def get_all_dict(module):
@@ -180,13 +182,13 @@ def compare(all_dict, others, names, module_name):
 
 
 def is_deprecated(f):
-    with warnings.catch_warnings(record=True) as w:
+    with warnings.catch_warnings(record=True):
         warnings.simplefilter("error")
         try:
             f(**{"not a kwarg": None})
         except DeprecationWarning:
             return True
-        except:
+        except Exception:
             pass
         return False
 
@@ -240,12 +242,12 @@ def validate_rst_syntax(text, name, dots=True):
             output_dot('E')
         return False, f"ERROR: {name}: no documentation"
 
-    ok_unknown_items = set([
+    ok_unknown_items = {
         'mod', 'currentmodule', 'autosummary', 'data',
         'obj', 'versionadded', 'versionchanged', 'module', 'class',
         'ref', 'func', 'toctree', 'moduleauthor',
         'sectionauthor', 'codeauthor', 'eq',
-    ])
+    }
 
     # Run through docutils
     error_stream = io.StringIO()
@@ -257,16 +259,16 @@ def validate_rst_syntax(text, name, dots=True):
 
     docutils.core.publish_doctree(
         text, token,
-        settings_overrides = dict(halt_level=5,
-                                  traceback=True,
-                                  default_reference_context='title-reference',
-                                  default_role='emphasis',
-                                  link_base='',
-                                  resolve_name=resolve,
-                                  stylesheet_path='',
-                                  raw_enabled=0,
-                                  file_insertion_enabled=0,
-                                  warning_stream=error_stream))
+        settings_overrides = {'halt_level': 5,
+                                  'traceback': True,
+                                  'default_reference_context': 'title-reference',
+                                  'default_role': 'emphasis',
+                                  'link_base': '',
+                                  'resolve_name': resolve,
+                                  'stylesheet_path': '',
+                                  'raw_enabled': 0,
+                                  'file_insertion_enabled': 0,
+                                  'warning_stream': error_stream})
 
     # Print errors, disregarding unimportant ones
     error_msg = error_stream.getvalue()
@@ -280,11 +282,10 @@ def validate_rst_syntax(text, name, dots=True):
             continue
 
         m = re.match(r'.*Unknown (?:interpreted text role|directive type) "(.*)".*$', lines[0])
-        if m:
-            if m.group(1) in ok_unknown_items:
-                continue
+        if m and m.group(1) in ok_unknown_items:
+            continue
 
-        m = re.match(r'.*Error in "math" directive:.*unknown option: "label"', " ".join(lines), re.S)
+        m = re.match(r'.*Error in "math" directive:.*unknown option: "label"', " ".join(lines), re.DOTALL)
         if m:
             continue
 
@@ -338,14 +339,14 @@ def check_rest(module, names, dots=True):
         else:
             try:
                 text = str(get_doc_object(obj))
-            except:
+            except Exception:
                 import traceback
                 results.append((full_name, False,
                                 "Error in docstring format!\n" +
                                 traceback.format_exc()))
                 continue
 
-        m = re.search("([\x00-\x09\x0b-\x1f])", text)
+        m = re.search(r"([\x00-\x09\x0b-\x1f])", text)
         if m:
             msg = ("Docstring contains a non-printable character %r! "
                    "Maybe forgot r\"\"\"?" % (m.group(1),))
@@ -428,7 +429,7 @@ class DTRunner(doctest.DocTestRunner):
                                                     example, got)
 
 class Checker(doctest.OutputChecker):
-    obj_pattern = re.compile('at 0x[0-9a-fA-F]+>')
+    obj_pattern = re.compile(r'at 0x[0-9a-fA-F]+>')
     vanilla = doctest.OutputChecker()
     rndm_markers = {'# random', '# Random', '#random', '#Random', "# may vary"}
     stopwords = {'plt.', '.hist', '.show', '.ylim', '.subplot(',
@@ -476,7 +477,7 @@ class Checker(doctest.OutputChecker):
         try:
             a_want = eval(want, dict(self.ns))
             a_got = eval(got, dict(self.ns))
-        except:
+        except Exception:
             if not self.parse_namedtuples:
                 return False
             # suppose that "want"  is a tuple, and "got" is smth like
@@ -598,7 +599,7 @@ def check_doctests(module, verbose, ns=None,
         finder = doctest.DocTestFinder()
         try:
             tests = finder.find(obj, name, globs=dict(ns))
-        except:
+        except Exception:
             import traceback
             results.append((full_name, False,
                             "Failed to get doctests!\n" +
@@ -667,10 +668,10 @@ def check_doctests_testfile(fname, verbose, ns=None,
     full_name = fname
     text = open(fname).read()
 
-    PSEUDOCODE = set(['some_function', 'some_module', 'import example',
+    PSEUDOCODE = {'some_function', 'some_module', 'import example',
                       'ctypes.CDLL',     # likely need compiling, skip it
                       'integrate.nquad(func,'  # ctypes integrate tutotial
-    ])
+    }
 
     # split the text into "blocks" and try to detect and omit pseudocode blocks.
     parser = doctest.DocTestParser()

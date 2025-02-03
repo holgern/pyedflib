@@ -5,7 +5,6 @@
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
 
-import sys
 import warnings
 from datetime import date, datetime
 from types import TracebackType
@@ -65,12 +64,12 @@ def check_is_ascii(string: str) -> None:
 
     https://www.edfplus.info/specs/edfplus.html#header
     """
-    if not all([ord(x)>32 and ord(x)<127 for x in string]):
-        warnings.warn('Invalid char: header entries should contain only ASCII'\
+    if not all(ord(x)>32 and ord(x)<127 for x in string):
+        warnings.warn('Invalid char: header entries should contain only ASCII'
                       ' characters and no spaces: "{}"'.format(string))
 
 
-def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]]], i: int, file_type: int) -> None:
+def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]]], i: int, file_type: int) -> None:
     """
     helper function  to check if all entries in the channel dictionary are fine.
 
@@ -88,27 +87,27 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]
     label = ch['label']
 
     if len(ch['label'])>16:  # type: ignore
-        warnings.warn('Label of channel {} is longer than 16 ASCII chars.'\
+        warnings.warn('Label of channel {} is longer than 16 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['label'][:16] ))  # type: ignore
     if len(ch['prefilter'])>80:  # type: ignore
-        warnings.warn('prefilter of channel {} is longer than 80 ASCII chars.'\
+        warnings.warn('prefilter of channel {} is longer than 80 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['prefilter'][:80] ))  # type: ignore
     if len(ch['transducer'])>80:  # type: ignore
-        warnings.warn('transducer of channel {} is longer than 80 ASCII chars.'\
+        warnings.warn('transducer of channel {} is longer than 80 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['transducer'][:80] ))  # type: ignore
     if len(ch['dimension'])>80:  # type: ignore
-        warnings.warn('dimension of channel {} is longer than 8 ASCII chars.'\
+        warnings.warn('dimension of channel {} is longer than 8 ASCII chars. '
                 'The label will be truncated to "{}"'.format(i, ch['dimension'][:8] ))  # type: ignore
 
     # these ones actually raise an exception
     dmin, dmax = (-8388608, 8388607) if file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF) else (-32768, 32767)
     if ch['digital_min']<dmin:  # type: ignore
-        raise ValueError('Digital minimum for channel {} ({}) is {},'\
+        raise ValueError('Digital minimum for channel {} ({}) is {}, '
                          'but minimum allowed value is {}'.format(i, label,
                                                                   ch['digital_min'],
                                                                   dmin))
     if ch['digital_max']>dmax:  # type: ignore
-        raise ValueError('Digital maximum for channel {} ({}) is {},'\
+        raise ValueError('Digital maximum for channel {} ({}) is {}, '
                          'but maximum allowed value is {}'.format(i, label,
                                                                   ch['digital_max'],
                                                                   dmax))
@@ -117,29 +116,29 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, None, float]
     # if we truncate the physical min before the dot, we potentitally
     # have all the signals incorrect by an order of magnitude.
     if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:  # type: ignore
-        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '
                          'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min']))))
     if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:  # type: ignore
-        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '\
+        raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, critical precision loss is expected, '
                          'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
                                                                       ch['physical_max'],
                                                                       len(str(ch['physical_max']))))
     # if we truncate the physical min behind the dot, we just lose precision,
     # in this case only a warning is enough
     if len(str(ch['physical_min']))>8:
-        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+        warnings.warn('Physical minimum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '
                          'some loss of precision is to be expected'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min'])),
                                                                       str(ch['physical_min'])[:8]))
     if len(str(ch['physical_max']))>8:
-        warnings.warn('Physical maximum for channel {} ({}) is {}, which has {} chars, '\
-                         'however, EDF+ can only save 8 chars, will be truncated to {}, '\
+        warnings.warn('Physical maximum for channel {} ({}) is {}, which has {} chars, '
+                         'however, EDF+ can only save 8 chars, will be truncated to {}, '
                          'some loss of precision is to be expected.'.format(i, label,
                                                                       ch['physical_max'],
                                                                       len(str(ch['physical_max'])),
@@ -366,10 +365,10 @@ class EdfWriter:
                        + len('Startdate') + 3 + 11 # 3 spaces 11 birthdate
 
         if patient_ident>80:
-            warnings.warn('Patient code, name, sex and birthdate combined must not be larger than 80 chars. ' +
+            warnings.warn('Patient code, name, sex and birthdate combined must not be larger than 80 chars. '
                           f'Currently has len of {patient_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
         if record_ident>80:
-            warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. ' +
+            warnings.warn('Equipment, technician, admincode and recording_additional combined must not be larger than 80 chars. '
                           f'Currently has len of {record_ident}. See https://www.edfplus.info/specs/edfplus.html#additionalspecs')
 
         # all data records (i.e. blocks of data of a channel) have one singular
@@ -384,8 +383,8 @@ class EdfWriter:
                 raise FutureWarning('Use of `sample_rate` is deprecated, use `sample_frequency` instead')
 
         sample_freqs = [ch['sample_frequency'] for ch in self.channels]
-        if not self._enforce_record_duration and not any([f is None for f in sample_freqs]):
-            assert all([isinstance(f, (float, int)) for f in sample_freqs]), \
+        if not self._enforce_record_duration and not any(f is None for f in sample_freqs):
+            assert all(isinstance(f, (float, int)) for f in sample_freqs), \
                 f'{sample_freqs=} contains non int/float'
             self.record_duration = _calculate_record_duration(sample_freqs)
 
@@ -946,9 +945,8 @@ class EdfWriter:
                           'transfer to C order for compatibility with edflib.')
             data_list = np.ascontiguousarray(data_list)
 
-        if digital:
-            if any([not np.issubdtype(a.dtype, np.integer) for a in data_list]):
-                raise TypeError('Digital = True requires all signals in int')
+        if digital and any(not np.issubdtype(a.dtype, np.integer) for a in data_list):
+            raise TypeError('Digital = True requires all signals in int')
 
         # Check that all channels have different physical_minimum and physical_maximum
         for chan in self.channels:
@@ -956,10 +954,8 @@ class EdfWriter:
             'In chan {} physical_min {} should be different from '\
             'physical_max {}'.format(chan['label'], chan['physical_min'], chan['physical_max'])
 
-        ind = []
+        ind = [0 for i in np.arange(len(data_list))]
         notAtEnd = True
-        for i in np.arange(len(data_list)):
-            ind.append(0)
 
         sampleLength = 0
         smp_per_record = np.zeros(len(data_list), dtype=np.int32)
@@ -1046,7 +1042,7 @@ class EdfWriter:
         smp_per_record = fs*record_duration
 
         if not np.isclose(np.round(smp_per_record), np.round(smp_per_record, 6)):
-            warnings.warn(f'Sample frequency {fs} can not be represented accurately. \n' +
-                          f'smp_per_record={smp_per_record}, record_duration={record_duration} seconds,' +
+            warnings.warn(f'Sample frequency {fs} can not be represented accurately. \n'
+                          f'smp_per_record={smp_per_record}, record_duration={record_duration} seconds,'
                           f'calculated sample_frequency will be {np.round(smp_per_record)/record_duration}')
         return int(np.round(smp_per_record))

@@ -46,7 +46,7 @@ def tqdm(iterable: Iterable, *args: Any, **kwargs: Any) -> Iterable:
     try:
         from tqdm import tqdm as iterator
         return iterator(iterable, *args, **kwargs)
-    except:
+    except Exception:
         return iterable
 
 
@@ -71,15 +71,15 @@ def _parse_date(string: str) -> datetime:
     for f in formats:
         try:
             return datetime.strptime(string, f)
-        except:
+        except Exception:
             pass
     try:
         import dateparser
         return dateparser.parse(string)
-    except:
-        print('dateparser is not installed. to convert strings to dates'\
-              'install via `pip install dateparser`.')
-        raise ValueError('birthdate must be datetime object or of format'\
+    except Exception:
+        print('dateparser is not installed. to convert strings to dates'
+              ' install via `pip install dateparser`.')
+        raise ValueError('birthdate must be datetime object or of format'
                          ' `%d-%m-%Y`, eg. `24-01-2020`')
 
 def dig2phys(signal: Union[np.ndarray, int], dmin: int, dmax: int, pmin: float, pmax: float) -> Union[np.ndarray, float]:
@@ -194,7 +194,7 @@ def make_header(
 
     """
 
-    if not birthdate=='' and isinstance(birthdate, str):
+    if birthdate != '' and isinstance(birthdate, str):
         birthdate = _parse_date(birthdate)
     if startdate is None:
         now = datetime.now()
@@ -210,7 +210,7 @@ def make_header(
             sex = gender
             warnings.warn("Parameter 'gender' is deprecated, use 'sex' instead.", DeprecationWarning, stacklevel=2)
         elif sex != gender:
-            raise ValueError("Defined both parameters 'sex' and 'gender', with different values: {sex} != {gender}")
+            raise ValueError(f"Defined both parameters 'sex' and 'gender', with different values: {sex} != {gender}")
     gender = sex
 
     local = locals()
@@ -374,9 +374,10 @@ def read_edf(
     """
     assert (ch_nrs is  None) or (ch_names is None), \
            'names xor numbers should be supplied'
-    if ch_nrs is not None and not isinstance(ch_nrs, list): ch_nrs = [ch_nrs]
-    if ch_names is not None and \
-        not isinstance(ch_names, list): ch_names = [ch_names]
+    if ch_nrs is not None and not isinstance(ch_nrs, list):
+        ch_nrs = [ch_nrs]
+    if ch_names is not None and not isinstance(ch_names, list):
+        ch_names = [ch_names]
 
     with pyedflib.EdfReader(edf_file) as f:
         # see which channels we want to load
@@ -387,7 +388,7 @@ def read_edf(
         if ch_names is not None:
             ch_nrs = []
             for ch in ch_names:
-                if not ch.upper() in available_chs:
+                if ch.upper() not in available_chs:
                     warnings.warn('{} is not in source file (contains {})'\
                                   .format(ch, available_chs))
                     print('will be ignored.')
@@ -413,8 +414,7 @@ def read_edf(
 
 
         signals = []
-        for i,c in enumerate(tqdm(ch_nrs, desc='Reading Channels',
-                                  disable=not verbose)):
+        for c in tqdm(ch_nrs, desc='Reading Channels', disable=not verbose):
             signal = f.readSignal(c, digital=digital)
             signals.append(signal)
 
@@ -520,15 +520,15 @@ def write_edf(
         else: # only warning if difference is larger than the rounding error (which is quite large as edf scales data between phys_min and phys_max using -dig_min and +dig_max)
             edf_accuracy = min([sig.max()/dmax, sig.min()/dmin])
             if abs(pmin - sig.min()) < edf_accuracy:
-                warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} ' \
-                'for channel {label}', category=UserWarning)
+                warnings.warn(f'phys_min is {pmin}, but signal_min is {sig.min()} '
+                f'for channel {label}', category=UserWarning)
             else: # difference is > edf_accuracy
                 assert pmin<=sig.min(), \
                 'phys_min is {}, but signal_min is {} ' \
                 'for channel {}'.format(pmin, sig.min(), label)
             if abs(sig.max() - pmax) < edf_accuracy:
-                warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} ' \
-                'for channel {label}', category=UserWarning)
+                warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} '
+                f'for channel {label}', category=UserWarning)
             else:
                 assert pmax>=sig.max(), \
                 'phys_max is {}, but signal_max is {} ' \
@@ -613,7 +613,7 @@ def read_edf_header(
         summary['channels'] = f.getSignalLabels()
         if read_annotations:
             annotations = f.read_annotation()
-            annotations = [[float(t)/10000000, d if d else -1, x.decode()] for t,d,x in annotations]
+            annotations = [[float(t)/10000000, d or -1, x.decode()] for t,d,x in annotations]
             summary['annotations'] = annotations
     del f
     return summary
@@ -650,10 +650,12 @@ def compare_edf(
 
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         s1 = np.abs(s1)
         s2 = np.abs(s2)
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         close =  np.mean(np.isclose(s1, s2))
         assert close>0.99, 'Error, digital values of {}'\
               ' and {} for ch {}: {} are not the same: {:.3f}'.format(
@@ -673,10 +675,12 @@ def compare_edf(
         s2 = dig2phys(s2, dmin2, dmax2, pmin2, pmax2)
 
         # compare absolutes in case of inverted signals
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         s1 = np.abs(s1)
         s2 = np.abs(s2)
-        if np.array_equal(s1, s2): continue # early stopping
+        if np.array_equal(s1, s2):
+            continue # early stopping
         min_dist = np.abs(dig2phys(1, dmin1, dmax1, pmin1, pmax1))
         close =  np.mean(np.isclose(s1, s2, atol=min_dist))
         assert close>0.99, 'Error, physical values of {}'\
@@ -723,16 +727,18 @@ def drop_channels(
     """
 
     # convert to list if necessary
-    if isinstance(to_keep, (int, str)): to_keep = [to_keep]
-    if isinstance(to_drop, (int, str)): to_drop = [to_drop]
+    if isinstance(to_keep, (int, str)):
+        to_keep = [to_keep]
+    if isinstance(to_drop, (int, str)):
+        to_drop = [to_drop]
 
     # check all parameters are good
     assert to_keep is None or to_drop is None,'Supply only to_keep xor to_drop'
     if to_keep is not None:
-        assert all([isinstance(ch, (str, int)) for ch in to_keep]),\
+        assert all(isinstance(ch, (str, int)) for ch in to_keep),\
             'channels must be int or string'
     if to_drop is not None:
-        assert all([isinstance(ch, (str, int)) for ch in to_drop]),\
+        assert all(isinstance(ch, (str, int)) for ch in to_drop),\
             'channels must be int or string'
     assert os.path.exists(edf_source), \
             f'source file {edf_source} does not exist'
@@ -992,12 +998,14 @@ def rename_channels(
         signal, signal_header, _ = read_edf(edf_file, digital=True,
                                             ch_nrs=ch_nr, verbose=verbose)
         ch = signal_header[0]['label']
-        if ch in mapping :
-            if verbose: print(f'{ch} to {mapping[ch]}')
+        if ch in mapping:
+            if verbose:
+                print(f'{ch} to {mapping[ch]}')
             ch = mapping[ch]
             signal_header[0]['label']=ch
         else:
-            if verbose: print(f'no mapping for {ch}, leave as it is')
+            if verbose:
+                print(f'no mapping for {ch}, leave as it is')
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
 
@@ -1037,7 +1045,8 @@ def change_polarity(
     if new_file is None:
         new_file = os.path.splitext(edf_file)[0] + '.edf'
 
-    if isinstance(channels, str): channels=[channels]
+    if isinstance(channels, str):
+        channels=[channels]
     channels = [c.lower() for c in channels]
 
     signals, signal_headers, header = read_edf(edf_file, digital=True,
@@ -1045,9 +1054,11 @@ def change_polarity(
     for i,sig in enumerate(signals):
         label = signal_headers[i]['label'].lower()
         if label in channels:
-            if verbose: print(f'inverting {label}')
+            if verbose:
+                print(f'inverting {label}')
             signals[i] = -sig
     write_edf(new_file, signals, signal_headers, header,
               digital=True, correct=False, verbose=verbose)
-    if verify: compare_edf(edf_file, new_file)
+    if verify:
+        compare_edf(edf_file, new_file)
     return True

@@ -7,14 +7,13 @@ import os
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
-import warnings
 from datetime import date, datetime
 
 import numpy as np
 
 import pyedflib
 from pyedflib.edfreader import EdfReader, _debug_parse_header
-from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter, WrongInputSize
+from pyedflib.edfwriter import ChannelDoesNotExist, EdfWriter
 from pyedflib.edfwriter import _calculate_record_duration
 
 
@@ -442,16 +441,14 @@ class TestEdfWriter(unittest.TestCase):
 
         data1 = np.ones(500) * 0.1
         data2 = np.ones(500) * 0.2
-        data_list = []
-        data_list.append(data1)
-        data_list.append(data2)
+        data_list = [data1, data2]
         f.writeSamples(data_list)
         f.close()
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
         data1_read = f.readSignal(0)
         data2_read = f.readSignal(1)
-        f._close
+        f._close()
         np.testing.assert_equal(len(data1), len(data1_read))
         np.testing.assert_equal(len(data2), len(data2_read))
         np.testing.assert_almost_equal(data1, data1_read)
@@ -498,9 +495,7 @@ class TestEdfWriter(unittest.TestCase):
             f.setSignalHeader(1,channel_info2)
             data1 = np.ones(500) * 0.1
             data2 = np.ones(500) * 0.2
-            data_list = []
-            data_list.append(data1)
-            data_list.append(data2)
+            data_list = [data1, data2]
             f.writeSamples(data_list)
 
         with pyedflib.EdfReader(self.bdfplus_data_file) as f:
@@ -534,9 +529,7 @@ class TestEdfWriter(unittest.TestCase):
 
         data1 = np.ones(500) * 0.1
         data2 = np.ones(500) * 0.2
-        data_list = []
-        data_list.append(data1)
-        data_list.append(data2)
+        data_list = [data1, data2]
         f.writeSamples(data_list)
         del f
 
@@ -572,9 +565,7 @@ class TestEdfWriter(unittest.TestCase):
 
         data1 = np.arange(500, dtype=float)
         data2 = np.arange(500, dtype=float)
-        data_list = []
-        data_list.append(data1)
-        data_list.append(data2)
+        data_list = [data1, data2]
         with  np.testing.assert_raises(TypeError):
             f.writeSamples(data_list, digital=True)
         f.close()
@@ -876,7 +867,6 @@ class TestEdfWriter(unittest.TestCase):
         samples_per_record = 256
         sample_frequency = 256
         sample_freq_exp = int(256*record_duration)/record_duration
-        record_count = 4
 
         f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
         with self.assertWarns(UserWarning):
@@ -924,16 +914,17 @@ class TestEdfWriter(unittest.TestCase):
         digMax = 32767
         digMin = -digMax
 
-        base_signal_header = lambda idx: {
-            'label': f'test_label{idx}',
-            'dimension': 'mV',
-            'physical_min': physMin,
-            'physical_max': physMax,
-            'digital_min': digMin,
-            'digital_max': digMax,
-            'transducer': f'trans{idx}',
-            'prefilter': f'pre{idx}'
-        }
+        def base_signal_header(idx):
+            return {
+                    'label': f'test_label{idx}',
+                    'dimension': 'mV',
+                    'physical_min': physMin,
+                    'physical_max': physMax,
+                    'digital_min': digMin,
+                    'digital_max': digMax,
+                    'transducer': f'trans{idx}',
+                    'prefilter': f'pre{idx}'
+                }
 
         f = pyedflib.EdfWriter(self.edf_data_file, channel_count, file_type=pyedflib.FILETYPE_EDF)
         f.setDatarecordDuration(record_duration)

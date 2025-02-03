@@ -1,11 +1,11 @@
 pip
 setuptools
 wheel
-flake8
 nose
 coverage
 cython
 numpy
 pytest
+ruff
 dateparser
 tqdm

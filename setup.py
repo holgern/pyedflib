@@ -8,6 +8,7 @@ from functools import partial
 
 import setuptools
 from setuptools import Extension, setup
+from setuptools.command.develop import develop
 
 try:
     from Cython.Build import cythonize
@@ -69,7 +70,7 @@ def get_numpy_include():
         import builtins
         builtins.__NUMPY_SETUP__ = False
         import numpy as np
-    except ImportError as e:
+    except ImportError:
         try:
             # Try to install numpy
             from setuptools import dist
@@ -229,8 +230,6 @@ ext_modules = [
     for module, source, in zip(cython_modules, cython_sources)
 ]
 
-from setuptools.command.develop import develop
-
 
 class develop_build_clib(develop):
     """Ugly monkeypatching to get clib to build for development installs
@@ -305,10 +304,12 @@ if __name__ == '__main__':
             "Programming Language :: C",
             "Programming Language :: Python",
             "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
             "Programming Language :: Python :: 3.12",
+            "Programming Language :: Python :: 3.13",
             "Topic :: Software Development :: Libraries :: Python Modules"
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],

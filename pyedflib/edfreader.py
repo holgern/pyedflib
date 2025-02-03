@@ -15,13 +15,13 @@ import numpy as np
 from ._extensions._pyedflib import CyEdfReader
 
 __all__ = [
-    "EdfReader",
-    "DO_NOT_READ_ANNOTATIONS",
-    "READ_ANNOTATIONS",
-    "READ_ALL_ANNOTATIONS",
     "CHECK_FILE_SIZE",
     "DO_NOT_CHECK_FILE_SIZE",
+    "DO_NOT_READ_ANNOTATIONS",
+    "READ_ALL_ANNOTATIONS",
+    "READ_ANNOTATIONS",
     "REPAIR_FILE_SIZE_IF_WRONG",
+    "EdfReader",
 ]
 
 DO_NOT_READ_ANNOTATIONS = 0
@@ -504,7 +504,7 @@ class EdfReader(CyEdfReader):
             return self.samplefrequency(chn)
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -553,7 +553,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.signal_label(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -580,7 +580,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.prefilter(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -608,7 +608,7 @@ class EdfReader(CyEdfReader):
                 return self.physical_max(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -641,7 +641,7 @@ class EdfReader(CyEdfReader):
                 return self.physical_min(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -674,7 +674,7 @@ class EdfReader(CyEdfReader):
                 return self.digital_max(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -707,7 +707,7 @@ class EdfReader(CyEdfReader):
                 return self.digital_min(chn)
             else:
                 raise IndexError(
-                    "Trying to access channel {}, but only {} " "channels found".format(
+                    "Trying to access channel {}, but only {} channels found".format(
                         chn, self.signals_in_file
                     )
                 )
@@ -739,7 +739,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.transducer(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -766,7 +766,7 @@ class EdfReader(CyEdfReader):
             return self._convert_string(self.physical_dimension(chn).rstrip())
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )
@@ -826,7 +826,7 @@ class EdfReader(CyEdfReader):
             return x
         else:
             raise IndexError(
-                "Trying to access channel {}, but only {} " "channels found".format(
+                "Trying to access channel {}, but only {} channels found".format(
                     chn, self.signals_in_file
                 )
             )

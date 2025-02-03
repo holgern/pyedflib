@@ -286,7 +286,7 @@ class TestEdfReader(unittest.TestCase):
         # sample_rate was deprecated, check that it does not appear anymore
         sheads = f.getSignalHeaders()
         for shead in sheads:
-            assert not 'sample_rate' in shead
+            assert 'sample_rate' not in shead
             assert 'sample_frequency' in shead
 
         del f
@@ -330,7 +330,7 @@ class TestEdfReader(unittest.TestCase):
         # sample_rate was deprecated, check that it does not appear anymore
         sheads = f.getSignalHeaders()
         for shead in sheads:
-            assert not 'sample_rate' in shead
+            assert 'sample_rate' not in shead
             assert 'sample_frequency' in shead
         del f
 
