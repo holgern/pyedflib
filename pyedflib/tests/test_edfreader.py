@@ -22,6 +22,7 @@ class TestEdfReader(unittest.TestCase):
     def setUpClass(cls):
         # data_dir = os.path.join(os.getcwd(), 'data')
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        cls.edf_utf8 = os.path.join(data_dir, 'test_utf8.edf')
         cls.edf_data_file = os.path.join(data_dir, 'test_generator.edf')
         cls.bdf_data_file = os.path.join(data_dir, 'test_generator.bdf')
         cls.bdf_data_file_datarec_2 = os.path.join(data_dir, 'test_generator_datarec_generator_2.bdf')
@@ -392,6 +393,14 @@ class TestEdfReader(unittest.TestCase):
         with pyedflib.EdfReader(self.edf_legacy) as f:
             for attr_name, expected_value in expected_header.items():
                 self.assertEqual(getattr(f, attr_name), expected_value)
+
+
+    def test_read_annotations_utf8(self):
+        """properly test for UTF8 reading of existing file"""
+        with pyedflib.EdfReader(self.edf_utf8) as f:
+            ann_time, ann_duration, ann_text = f.readAnnotations()
+            self.assertEqual(ann_text[2], '中文测试八个字')
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
