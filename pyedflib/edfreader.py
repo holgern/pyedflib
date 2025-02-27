@@ -169,7 +169,11 @@ class EdfReader(CyEdfReader):
     def _convert_string(self, s: Union[bytes, str]) -> str:
         """decode a byte to string using utf8"""
         if isinstance(s, bytes):
-            return s.decode()
+            try:
+                return s.decode("utf_8", "strict")  # Prioritize UTF-8
+            except UnicodeDecodeError:
+                warnings.warn("Could not decode string '{s=}', using fallback latin encoding")
+                return s.decode("latin1", errors="replace")  # Fallback
         elif isinstance(s, str):
             return s
         else:
