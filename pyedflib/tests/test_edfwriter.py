@@ -671,7 +671,8 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_duration[3], -1)
         np.testing.assert_equal(ann_text[3][0:12], "annotation4_")
 
-    def test_AnnotationWritingUTF8(self):
+    def test_AnnotationWriting_latin(self):
+        """test that non-ASCII chars are simply omitted"""
         channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
                         'physical_max': 1.0, 'physical_min': -1.0,
                         'digital_max': 8388607, 'digital_min': -8388608,
@@ -704,6 +705,10 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
         np.testing.assert_equal(ann_text[2], "abc")
+
+
+
+
 
     def test_BytesChars(self):
         channel_info = {'label': b'test_label', 'dimension': b'mV', 'sample_frequency': 100,
@@ -1228,6 +1233,34 @@ class TestEdfWriter(unittest.TestCase):
                                    file_type=pyedflib.FILETYPE_EDF) as f:
                 with self.assertRaises(ValueError):
                     f.setDatarecordDuration(record_duration)
+
+
+    def test_write_annotations_utf8(self):
+        """properly test for UTF8 writing of characters, not just umlauts"""
+        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
+                        'physical_max': 1.0, 'physical_min': -1.0,
+                        'digital_max': 8388607, 'digital_min': -8388608,
+                        'prefilter': 'test', 'transducer': 'trans1'}
+        f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
+                                file_type=pyedflib.FILETYPE_BDFPLUS)
+        f.setSignalHeader(0,channel_info)
+        data = np.ones(100) * 0.1
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        f.writePhysicalSamples(data)
+        utf8_string = '中文测试八个字'
+        f.writeAnnotation(1.23, 0.2, utf8_string)
+        del f
+
+        f = pyedflib.EdfReader(self.bdfplus_data_file)
+        self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
+
+        ann_time, ann_duration, ann_text = f.readAnnotations()
+        del f
+        np.testing.assert_almost_equal(ann_time[0], 1.23)
+        np.testing.assert_almost_equal(ann_duration[0], 0.2)
+        np.testing.assert_equal(ann_text[0], utf8_string)
 
 
 

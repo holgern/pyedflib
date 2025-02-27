@@ -145,25 +145,12 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]
                                                                       str(ch['physical_max'])[:8]))
 
 
-def u(x: bytes) -> str:
-    return x.decode("utf_8", "strict")
-
-
 def du(x: Union[str, bytes]) -> bytes:
+    """encode string to unicode"""
     if isinstance(x, bytes):
         return x
     else:
         return x.encode("utf_8")
-
-
-def isstr(s: Any) -> bool:
-    warnings.warn("Function 'isstr' is deprecated.", DeprecationWarning, stacklevel=2)
-    return isinstance(s, str)
-
-
-def isbytestr(s: Any) -> bool:
-    warnings.warn("Function 'isbytestr' is deprecated.", DeprecationWarning, stacklevel=2)
-    return isinstance(s, bytes)
 
 
 def sex2int(sex: Union[int, str, None]) -> Optional[int]:
