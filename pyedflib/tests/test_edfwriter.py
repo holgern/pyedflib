@@ -28,6 +28,15 @@ class TestEdfWriter(unittest.TestCase):
         cls.edf_data_file = os.path.join(data_dir, 'tmp_test_file.edf')
         cls.data_dir = data_dir
 
+        cls.ch_info_edf = {'label': 'test_label', 'dimension': 'mV',
+                           'sample_frequency': 100,  'physical_max': 1.0,
+                           'physical_min': -1.0, 'digital_max': 32767,
+                           'digital_min': -32768,  'prefilter': 'pre1',
+                           'transducer': 'trans1'}
+
+        cls.ch_info_bdf =  cls.ch_info_edf | {'digital_max': 8388607,
+                                              'digital_min': -8388608}
+
     @classmethod
     def tearDownClass(cls):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
@@ -136,17 +145,13 @@ class TestEdfWriter(unittest.TestCase):
         f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
                                 file_type=pyedflib.FILETYPE_EDFPLUS)
 
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 32767, 'digital_min': -32768,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
         startdate = datetime(2017, 1, 2, 13, 14, 15, 250)
         header = {'technician': 'tec1', 'recording_additional': 'recAdd1', 'patientname': 'pat1',
                   'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
                   'admincode':'admin1','sex':1,'startdate':startdate,'birthdate':date(1951, 8, 2)}
         f.setHeader(header)
         f.setStartdatetime(startdate)
-        f.setSignalHeader(0, channel_info)
+        f.setSignalHeader(0, self.ch_info_edf)
         data = np.ones(100) * 0.1
         assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
         assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
@@ -159,13 +164,9 @@ class TestEdfWriter(unittest.TestCase):
 
 
     def test_subsecond_annotation(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
                                file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info)
+        f.setSignalHeader(0, self.ch_info_bdf)
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
@@ -196,18 +197,10 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_equal(ann_text[3][0:12], "annotation4_")
 
     def test_EdfWriter_BDFplus(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                              'physical_max': 1.0, 'physical_min': -1.0,
-                            'digital_max': 8388607, 'digital_min': -8388608,
-                            'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
                                 file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info1)
-        f.setSignalHeader(1,channel_info2)
+        f.setSignalHeader(0, self.ch_info_bdf)
+        f.setSignalHeader(1, self.ch_info_bdf)
         f.setTechnician('tec1')
         f.setRecordingAdditional('recAdd1')
         f.setPatientName('pat1')
@@ -265,18 +258,10 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
     def test_EdfWriter_BDFplus2(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                              'physical_max': 1.0, 'physical_min': -1.0,
-                            'digital_max': 8388607, 'digital_min': -8388608,
-                            'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
                                 file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info1)
-        f.setSignalHeader(1,channel_info2)
+        f.setSignalHeader(0, self.ch_info_bdf)
+        f.setSignalHeader(1, self.ch_info_bdf)
         f.setTechnician('tec1')
         f.setRecordingAdditional('recAdd1')
         f.setPatientName('empty')
@@ -325,18 +310,10 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
     def test_EdfWriter_BDF(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                            'physical_max': 1.0, 'physical_min': -1.0,
-                            'digital_max': 8388607, 'digital_min': -8388608,
-                            'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdf_data_file, 2,
                                 file_type=pyedflib.FILETYPE_BDF)
-        f.setSignalHeader(0,channel_info1)
-        f.setSignalHeader(1,channel_info2)
+        f.setSignalHeader(0, self.ch_info_bdf)
+        f.setSignalHeader(1, self.ch_info_bdf)
 
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
@@ -356,10 +333,7 @@ class TestEdfWriter(unittest.TestCase):
         del f
 
     def test_EdfWriter_EDFplus(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 32767, 'digital_min': -32768,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
+
         f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
                                 file_type=pyedflib.FILETYPE_EDFPLUS)
 
@@ -367,7 +341,7 @@ class TestEdfWriter(unittest.TestCase):
                   'patient_additional': 'patAdd1', 'patientcode': 'code1', 'equipment': 'eq1',
                   'admincode':'admin1','sex':1,'startdate':datetime(2017, 1, 1, 1, 1, 1),'birthdate':date(1951, 8, 2)}
         f.setHeader(header)
-        f.setSignalHeader(0,channel_info)
+        f.setSignalHeader(0, self.ch_info_edf)
         data = np.ones(100) * 0.1
         assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
         assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
@@ -395,18 +369,10 @@ class TestEdfWriter(unittest.TestCase):
 
 
     def test_EdfWriter_EDF(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 32767, 'digital_min': -32768,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                              'physical_max': 1.0, 'physical_min': -1.0,
-                            'digital_max': 32767, 'digital_min': -32768,
-                            'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.edf_data_file, 2,
                                 file_type=pyedflib.FILETYPE_EDF)
-        f.setSignalHeader(0,channel_info1)
-        f.setSignalHeader(1,channel_info2)
+        f.setSignalHeader(0, self.ch_info_edf)
+        f.setSignalHeader(1, self.ch_info_edf)
         data = np.ones(100) * 0.1
         assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
         assert f.writePhysicalSamples(data)==0, 'error while writing physical sample'
@@ -426,18 +392,10 @@ class TestEdfWriter(unittest.TestCase):
 
 
     def test_SampleWriting(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':8388607,'digital_min':-8388608,
-                          'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':8388607,'digital_min':-8388608,
-                          'prefilter':'pre2','transducer':'trans2'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
                               file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info1)
-        f.setSignalHeader(1,channel_info2)
+        f.setSignalHeader(0, self.ch_info_bdf)
+        f.setSignalHeader(1, self.ch_info_bdf)
 
         data1 = np.ones(500) * 0.1
         data2 = np.ones(500) * 0.2
@@ -456,17 +414,10 @@ class TestEdfWriter(unittest.TestCase):
         self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
 
     def test_EdfWriter_EDF_contextmanager(self):
-        channel_info1 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 32767, 'digital_min': -32768,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
-        channel_info2 = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                              'physical_max': 1.0, 'physical_min': -1.0,
-                            'digital_max': 32767, 'digital_min': -32768,
-                            'prefilter': 'pre1', 'transducer': 'trans1'}
+
         with pyedflib.EdfWriter(self.edf_data_file, 2, file_type=pyedflib.FILETYPE_EDF) as f:
-            f.setSignalHeader(0,channel_info1)
-            f.setSignalHeader(1,channel_info2)
+            f.setSignalHeader(0, self.ch_info_edf)
+            f.setSignalHeader(1, self.ch_info_edf)
             data = np.ones(100) * 0.1
             f.writePhysicalSamples(data)
             f.writePhysicalSamples(data)
@@ -480,19 +431,10 @@ class TestEdfWriter(unittest.TestCase):
             self.assertEqual(f.filetype, pyedflib.FILETYPE_EDF)
 
     def test_SampleWritingContextManager(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':8388607,'digital_min':-8388608,
-                          'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':8388607,'digital_min':-8388608,
-                          'prefilter':'pre2','transducer':'trans2'}
-
         with pyedflib.EdfWriter(self.bdfplus_data_file, 2, file_type=pyedflib.FILETYPE_BDFPLUS) as f:
 
-            f.setSignalHeader(0,channel_info1)
-            f.setSignalHeader(1,channel_info2)
+            f.setSignalHeader(0, self.ch_info_bdf)
+            f.setSignalHeader(1, self.ch_info_bdf)
             data1 = np.ones(500) * 0.1
             data2 = np.ones(500) * 0.2
             data_list = [data1, data2]
@@ -514,18 +456,10 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data2, data2_read)
 
     def test_SampleWriting2(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':8388607,'digital_min':-8388608,
-                          'prefilter':'pre1','transducer':'trans1'}
-        channel_info2 = {'label':'test_label2', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':8388607,'digital_min':-8388608,
-                          'prefilter':'pre2','transducer':'trans2'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 2,
                               file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info1)
-        f.setSignalHeader(1,channel_info2)
+        f.setSignalHeader(0, self.ch_info_bdf)
+        f.setSignalHeader(1, self.ch_info_bdf)
 
         data1 = np.ones(500) * 0.1
         data2 = np.ones(500) * 0.2
@@ -596,13 +530,10 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data2, data2_read)
 
     def test_TestRoundingEDF(self):
-        channel_info1 = {'label':'test_label1', 'dimension':'mV', 'sample_frequency':100,
-                          'physical_max':1.0,'physical_min':-1.0,
-                          'digital_max':32767,'digital_min':-32768,
-                          'prefilter':'pre1','transducer':'trans1'}
+
         f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
                               file_type=pyedflib.FILETYPE_EDFPLUS)
-        f.setSignalHeader(0,channel_info1)
+        f.setSignalHeader(0, self.ch_info_edf)
 
         time = np.linspace(0,5,500)
         data1 = np.sin(2*np.pi*1*time)
@@ -619,7 +550,7 @@ class TestEdfWriter(unittest.TestCase):
 
         f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
                                     file_type=pyedflib.FILETYPE_EDFPLUS)
-        f.setSignalHeader(0,channel_info1)
+        f.setSignalHeader(0, self.ch_info_edf)
 
         data_list = []
         data_list.append(data1_read)
@@ -636,13 +567,9 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(data1_read, data2_read, decimal=4)
 
     def test_AnnotationWriting(self):
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'pre1', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
                                file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info)
+        f.setSignalHeader(0, self.ch_info_bdf)
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
@@ -673,13 +600,9 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_AnnotationWriting_latin(self):
         """test that non-ASCII chars are simply omitted"""
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'test', 'transducer': 'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
                                 file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info)
+        f.setSignalHeader(0, self.ch_info_bdf)
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
@@ -697,27 +620,19 @@ class TestEdfWriter(unittest.TestCase):
         del f
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
-        np.testing.assert_equal(ann_text[0][:1], "Z")
-        np.testing.assert_equal(ann_text[0][3:], "hne")
+        np.testing.assert_equal(ann_text[0], "Zähne")
         np.testing.assert_almost_equal(ann_time[1], 0.25)
         np.testing.assert_almost_equal(ann_duration[1], -1)
-        np.testing.assert_equal(ann_text[1][:2], "Fu")
+        np.testing.assert_equal(ann_text[1], "Fuß")
         np.testing.assert_almost_equal(ann_time[2], 1.25)
         np.testing.assert_almost_equal(ann_duration[2], 0)
         np.testing.assert_equal(ann_text[2], "abc")
 
 
-
-
-
     def test_BytesChars(self):
-        channel_info = {'label': b'test_label', 'dimension': b'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': b'      ', 'transducer': b'trans1'}
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
                                 file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info)
+        f.setSignalHeader(0, self.ch_info_bdf)
         data = np.ones(100) * 0.1
         f.writePhysicalSamples(data)
         f.writePhysicalSamples(data)
@@ -798,7 +713,8 @@ class TestEdfWriter(unittest.TestCase):
             np.testing.assert_equal(f.getSampleFrequency(0), 100)
             self.assertEqual(f.getSex(), expected,
                              f'set {sex}, but f.getSex()!={expected}')
-            self.assertEqual(f.getGender(), expected,
+            with self.assertWarns(DeprecationWarning):
+                self.assertEqual(f.getGender(), expected,
                              f'set {sex}, but f.getGender()!={expected}')
             del f
 
@@ -819,7 +735,8 @@ class TestEdfWriter(unittest.TestCase):
             np.testing.assert_equal(f.getSampleFrequency(0), 100)
             self.assertEqual(f.getSex(), expected,
                              f'set {sex}, but f.getSex()!={expected}')
-            self.assertEqual(f.getGender(), expected,
+            with self.assertWarns(DeprecationWarning):
+                self.assertEqual(f.getGender(), expected,
                              f'set {sex}, but f.getGender()!={expected}')
             del f
 
@@ -944,16 +861,6 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_EdfWriter_more_than_80_chars(self):
 
-        channel_info1 = {'label': 'label',
-                         'dimension': 'dim',
-                         'sample_frequency': 100,
-                         'physical_max': 1,
-                         'physical_min': -1.0,
-                         'digital_max': 32767,
-                         'digital_min': -32768,
-                         'prefilter': 'pre',
-                         'transducer': 'trans'}
-
         header = {'birthdate': '',
                   'startdate': datetime(2021, 6, 26, 13, 16, 1),
                   'sex': '',
@@ -969,7 +876,7 @@ class TestEdfWriter(unittest.TestCase):
         with self.assertWarns(UserWarning):
             with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDFPLUS) as f:
                 f.setHeader(header)
-                f.setSignalHeader(0, channel_info1)
+                f.setSignalHeader(0,  self.ch_info_edf)
                 data = np.ones(100) * 0.1
                 f.writePhysicalSamples(data)
 
@@ -988,7 +895,7 @@ class TestEdfWriter(unittest.TestCase):
         with self.assertWarns(UserWarning):
             with pyedflib.EdfWriter(self.edf_data_file, 1, file_type=pyedflib.FILETYPE_EDFPLUS) as f:
                 f.setHeader(header)
-                f.setSignalHeader(0, channel_info1)
+                f.setSignalHeader(0, self.ch_info_edf)
                 data = np.ones(100) * 0.1
                 f.writePhysicalSamples(data)
 
@@ -1237,27 +1144,19 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_write_annotations_utf8(self):
         """properly test for UTF8 writing of characters, not just umlauts"""
-        channel_info = {'label': 'test_label', 'dimension': 'mV', 'sample_frequency': 100,
-                        'physical_max': 1.0, 'physical_min': -1.0,
-                        'digital_max': 8388607, 'digital_min': -8388608,
-                        'prefilter': 'test', 'transducer': 'trans1'}
+
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
-                                file_type=pyedflib.FILETYPE_BDFPLUS)
-        f.setSignalHeader(0,channel_info)
-        data = np.ones(100) * 0.1
-        f.writePhysicalSamples(data)
-        f.writePhysicalSamples(data)
-        f.writePhysicalSamples(data)
-        f.writePhysicalSamples(data)
+                               file_type=pyedflib.FILETYPE_BDFPLUS)
+        f.setSignalHeader(0, self.ch_info_bdf)
+        f.writePhysicalSamples(np.ones(100))
         utf8_string = '中文测试八个字'
         f.writeAnnotation(1.23, 0.2, utf8_string)
         del f
 
         f = pyedflib.EdfReader(self.bdfplus_data_file)
-        self.assertEqual(f.filetype, pyedflib.FILETYPE_BDFPLUS)
-
         ann_time, ann_duration, ann_text = f.readAnnotations()
         del f
+
         np.testing.assert_almost_equal(ann_time[0], 1.23)
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
         np.testing.assert_equal(ann_text[0], utf8_string)

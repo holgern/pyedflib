@@ -6585,10 +6585,10 @@ int edfwrite_annotation_utf8(int handle, long long onset, long long duration, co
       break;
     }
 
-    if(list_annot->annotation[i] < 32)
-    {
-      list_annot->annotation[i] = '.';
-    }
+    //if(list_annot->annotation[i] < 32)
+    //{
+    //  list_annot->annotation[i] = '.';
+    //}
   }
 
   hdrlist[handle]->annots_in_file++;
