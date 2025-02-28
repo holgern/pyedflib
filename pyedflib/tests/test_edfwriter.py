@@ -34,8 +34,9 @@ class TestEdfWriter(unittest.TestCase):
                            'digital_min': -32768,  'prefilter': 'pre1',
                            'transducer': 'trans1'}
 
-        cls.ch_info_bdf =  cls.ch_info_edf | {'digital_max': 8388607,
-                                              'digital_min': -8388608}
+        cls.ch_info_bdf =  cls.ch_info_edf.copy()
+        cls.ch_info_bdf.update({'digital_max': 8388607,
+                                'digital_min': -8388608})
 
     @classmethod
     def tearDownClass(cls):
