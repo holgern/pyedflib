@@ -145,25 +145,12 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]
                                                                       str(ch['physical_max'])[:8]))
 
 
-def u(x: bytes) -> str:
-    return x.decode("utf_8", "strict")
-
-
 def du(x: Union[str, bytes]) -> bytes:
+    """encode string to unicode"""
     if isinstance(x, bytes):
         return x
     else:
         return x.encode("utf_8")
-
-
-def isstr(s: Any) -> bool:
-    warnings.warn("Function 'isstr' is deprecated.", DeprecationWarning, stacklevel=2)
-    return isinstance(s, str)
-
-
-def isbytestr(s: Any) -> bool:
-    warnings.warn("Function 'isbytestr' is deprecated.", DeprecationWarning, stacklevel=2)
-    return isinstance(s, bytes)
 
 
 def sex2int(sex: Union[int, str, None]) -> Optional[int]:
@@ -1001,7 +988,9 @@ class EdfWriter:
                 if success<0:
                     raise OSError(f'Unknown error while calling writeSamples: {success}')
 
-    def writeAnnotation(self, onset_in_seconds: Union[int, float], duration_in_seconds: Union[int, float], description: str, str_format: str = 'utf_8') -> int:
+    def writeAnnotation(self, onset_in_seconds: Union[int, float],
+                        duration_in_seconds: Union[int, float],
+                        description: str, str_format: str = 'utf_8') -> int:
         """
         Writes an annotation/event to the file
         """
@@ -1013,16 +1002,26 @@ class EdfWriter:
 
         if str_format == 'utf_8':
             if duration_in_seconds >= 0:
-                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), du(description))
+                return write_annotation_utf8(self.handle,
+                                             np.round(onset_in_seconds*10000).astype(np.int64),
+                                             np.round(duration_in_seconds*10000).astype(int),
+                                             du(description))
             else:
-                return write_annotation_utf8(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, du(description))
+                return write_annotation_utf8(self.handle,
+                                             np.round(onset_in_seconds*10000).astype(np.int64),
+                                             -1, du(description))
         else:
             if duration_in_seconds >= 0:
                 # FIX: description must be bytes. string will fail in u function
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), np.round(duration_in_seconds*10000).astype(int), u(description).encode('latin1'))  # type: ignore
+                return write_annotation_latin1(self.handle,
+                                               np.round(onset_in_seconds*10000).astype(np.int64),
+                                               np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
             else:
                 # FIX: description must be bytes. string will fail in u function
-                return write_annotation_latin1(self.handle, np.round(onset_in_seconds*10000).astype(np.int64), -1, u(description).encode('latin1'))  # type: ignore
+                return write_annotation_latin1(self.handle,
+                                               np.round(onset_in_seconds*10000).astype(np.int64),
+                                               -1,
+                                               description.encode('latin1'))  # type: ignore
 
     def close(self) -> None:
         """
