@@ -106,6 +106,17 @@ Additionally functionality as anonymizing, dropping or renaming channels can be 
     # rename channels within a file
     highlevel.rename_channels('file.edf', mapping={'C3-M1':'C3'})
 
+Citation
+--------
+
+If you use our software as part of a scientific publication, please cite us. Releases can be cited via Zenodo.
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.14957195.svg
+   :target: https://doi.org/10.5281/zenodo.3492211
+
+::
+
+   Holger Nahrstaedt, Simon Kern, Dimitri Papadopoulos Orfanos, Raphael Vallat, Clemens Brunner, Luca Cerina, Stefan Appelhoff, David T.H. Kao, Craig Franklin, Florian Hofer, bitterisland07, myd7349, Marijn van Vliet, Jukka Zitting, Guillaume Cathelain, David Ojeda, Chadwick Boulay, Blake, Ben Beasley, … Jacob Svensson. (2025). holgern/pyedflib: v0.1.40 (v0.1.40). Zenodo. https://doi.org/10.5281/zenodo.14957195
 
 License
 -------
@@ -113,10 +124,6 @@ License
 pyEDFlib is a free Open Source software released under the BSD 2-clause license.
 
 
-Releases can be cited via Zenodo.
-
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.5678481.svg
-   :target: https://doi.org/10.5281/zenodo.5678481
 
 .. _Cython: https://cython.org/
 .. _Anaconda: https://www.anaconda.com/
