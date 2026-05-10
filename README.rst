@@ -121,7 +121,7 @@ If you use our software as part of a scientific publication, please cite us. Rel
 License
 -------
 
-pyEDFlib is a free Open Source software released under the BSD 2-clause license.
+pyEDFlib is a free Open Source software released under the BSD 3-clause license.
 
 
 
