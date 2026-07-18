@@ -1,5 +1,9 @@
 name: Coverage report using Codecov
-on: [push, pull_request]
+# Disabled from running automatically: Codecov rejects uploads for this repo
+# without a CODECOV_TOKEN ("Token required because branch is protected"),
+# regardless of push vs pull_request trigger. Re-enable the push/pull_request
+# triggers once a CODECOV_TOKEN secret is added and passed to the upload step.
+on: workflow_dispatch
 jobs:
   run:
     runs-on: ${{ matrix.os }}
