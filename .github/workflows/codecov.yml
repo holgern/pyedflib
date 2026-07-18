@@ -27,7 +27,7 @@ jobs:
       with:
         directory: .
         env_vars: OS,PYTHON
-        fail_ci_if_error: false
+        fail_ci_if_error: true
         files: ./coverage.xml
         move_coverage_to_trash: true
         flags: unittests
