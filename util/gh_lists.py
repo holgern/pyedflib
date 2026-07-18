@@ -67,7 +67,7 @@ def main():
 
 def get_milestones(getter, project):
     url = f"https://api.github.com/repos/{project}/milestones"
-    raw_data, info = getter.get(url)
+    raw_data, _info = getter.get(url)
     data = json.loads(raw_data)
 
     milestones = {}

@@ -57,7 +57,7 @@ class TestEdfReader(unittest.TestCase):
             print('cannot open', self.edf_data_file)
             return
 
-        ann_index, ann_duration, ann_text = f.readAnnotations()
+        ann_index, _ann_duration, _ann_text = f.readAnnotations()
         np.testing.assert_almost_equal(ann_index[0], 0)
         np.testing.assert_almost_equal(ann_index[1], 600)
 
@@ -237,7 +237,7 @@ class TestEdfReader(unittest.TestCase):
             print('cannot open', self.edf_data_file)
             return
 
-        ann_index, ann_duration, ann_text = f.readAnnotations()
+        ann_index, _ann_duration, _ann_text = f.readAnnotations()
         np.testing.assert_equal(ann_index.size, 0)
 
         del f
@@ -248,7 +248,7 @@ class TestEdfReader(unittest.TestCase):
             print('cannot open', self.edf_data_file)
             return
 
-        ann_index, ann_duration, ann_text = f.readAnnotations()
+        ann_index, _ann_duration, _ann_text = f.readAnnotations()
         np.testing.assert_almost_equal(ann_index[0], 0)
         np.testing.assert_almost_equal(ann_index[1], 600)
 
@@ -398,7 +398,7 @@ class TestEdfReader(unittest.TestCase):
     def test_read_annotations_utf8(self):
         """properly test for UTF8 reading of existing file"""
         with pyedflib.EdfReader(self.edf_utf8) as f:
-            ann_time, ann_duration, ann_text = f.readAnnotations()
+            _ann_time, _ann_duration, ann_text = f.readAnnotations()
             self.assertEqual(ann_text[2], '中文测试八个字')
 
 

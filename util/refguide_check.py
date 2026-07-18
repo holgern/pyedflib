@@ -556,7 +556,7 @@ def _run_doctests(tests, full_name, verbose, doctest_warnings):
 
         for t in tests:
             t.filename = short_path(t.filename, cwd)
-            fails, successes = runner.run(t, out=out)
+            fails, _successes = runner.run(t, out=out)
             if fails > 0:
                 success = False
     finally:
