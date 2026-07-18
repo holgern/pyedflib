@@ -1125,7 +1125,7 @@ class TestEdfWriter(unittest.TestCase):
             f.close()
             del f
 
-            header, sheader = _debug_parse_header(self.edf_data_file, printout=False)
+            header, _sheader = _debug_parse_header(self.edf_data_file, printout=False)
             self.assertEqual(float(header['record_duration']), record_duration)
 
             with pyedflib.EdfReader(self.edf_data_file) as f:

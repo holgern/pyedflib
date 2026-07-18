@@ -149,7 +149,7 @@ class TestHighLevel(unittest.TestCase):
         self.assertEqual(header['annotations'], expected)
 
         highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
-        signals2, signal_header2s, header2 = highlevel.read_edf(self.edfplus_data_file)
+        _signals2, _signal_header2s, header2 = highlevel.read_edf(self.edfplus_data_file)
         self.assertEqual(header['annotations'], header2['annotations'])
 
 
@@ -208,7 +208,7 @@ class TestHighLevel(unittest.TestCase):
             shead = highlevel.make_signal_header(f'ch{sfreq}', sample_frequency=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
-        signals2, sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
+        signals2, _sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
         for s1, s2 in zip(signals, signals2):
             np.testing.assert_allclose(s1, s2)
 
@@ -263,7 +263,7 @@ class TestHighLevel(unittest.TestCase):
         success = highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         self.assertTrue(success)
         shutil.copy(self.edfplus_data_file, self.test_unicode)
-        signals2, _, _ = highlevel.read_edf(self.test_unicode)
+        _signals2, _, _ = highlevel.read_edf(self.test_unicode)
         self.assertTrue(os.path.isfile(self.test_unicode), 'File does not exist')
 
 
@@ -395,13 +395,13 @@ class TestHighLevel(unittest.TestCase):
 
         dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'], verbose=True)
 
-        signals2, signal_headers, header = highlevel.read_edf(dropped)
+        signals2, signal_headers, _header = highlevel.read_edf(dropped)
 
         np.testing.assert_allclose(signals[1:3,:], signals2, atol=0.01)
 
         highlevel.drop_channels(self.drop_from, self.drop_from[:-4]+'2.edf',
                                 to_drop=['ch0', 'ch1', 'ch2'])
-        signals2, signal_headers, header = highlevel.read_edf(self.drop_from[:-4]+'2.edf')
+        signals2, signal_headers, _header = highlevel.read_edf(self.drop_from[:-4]+'2.edf')
 
         np.testing.assert_allclose(signals[3:,:], signals2, atol=0.01)
 
