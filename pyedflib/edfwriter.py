@@ -285,12 +285,21 @@ class EdfWriter:
     def __del__(self) -> None:
         self.close()
 
-    def __init__(self, file_name: str, n_channels: int, file_type: int = FILETYPE_EDFPLUS) -> None:
+    def __init__(self, file_name: str, n_channels: int, file_type: int = FILETYPE_EDFPLUS,
+                 buffered: bool = False) -> None:
         """Initialises an EDF file at file_name.
         file_type is one of
             edflib.FILETYPE_EDFPLUS
             edflib.FILETYPE_BDFPLUS
         n_channels is the number of channels without the annotation channel
+
+        If buffered is True, writeSamples() accepts blocks of arbitrary size
+        (e.g. small chunks from a real-time acquisition loop): samples are
+        buffered and a data record is only committed to file once a full
+        record is available. The last, incomplete record is zero-padded and
+        written on close(). With the default buffered=False, every call to
+        writeSamples() commits all passed data, padding the last record to
+        full length.
 
         channel_info should be a
         list of dicts, one for each channel in the data. Each dict needs
@@ -320,8 +329,10 @@ class EdfWriter:
         self.record_duration: float = 1  # length of one data record in seconds
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
+        self.buffered = buffered
+        self._buffered_digital: Optional[bool] = None
         self.channels: List[Dict[str, Union[str, int, float, None]]] = []
-        self.sample_buffer: List[List] = []
+        self.sample_buffer: List[np.ndarray] = [np.array([]) for _ in range(n_channels)]
         for i in np.arange(self.n_channels):
             if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
                 self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
@@ -333,8 +344,6 @@ class EdfWriter:
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
                                       'prefilter': '', 'transducer': ''})
-
-                self.sample_buffer.append([])
         self.handle = open_file_writeonly(self.path, self.file_type, self.n_channels)
         if (self.handle < 0):
             raise OSError(write_errors[self.handle])
@@ -918,6 +927,11 @@ class EdfWriter:
         If digital is True, digital signals (as directly from the ADC) will be expected.
         (e.g. int16 from 0 to 2048)
 
+        If the writer was created with buffered=True, data blocks of arbitrary
+        size are accepted: samples are buffered internally and only complete
+        data records are committed to file. The remainder is written (padded
+        with zeros) when close() is called.
+
         All parameters must be already written into the bdf/edf-file.
         """
         if (len(data_list)) == 0:
@@ -934,6 +948,18 @@ class EdfWriter:
 
         if digital and any(not np.issubdtype(a.dtype, np.integer) for a in data_list):
             raise TypeError('Digital = True requires all signals in int')
+
+        if self.buffered:
+            if self._buffered_digital is None:
+                self._buffered_digital = digital
+            elif self._buffered_digital != digital:
+                raise TypeError('Cannot mix digital and physical samples in '
+                                'buffered mode (previous calls used digital='
+                                '{})'.format(self._buffered_digital))
+            # prepend samples left over from previous writeSamples() calls
+            if any(len(buf) > 0 for buf in self.sample_buffer):
+                data_list = [np.concatenate([buf, data]) if len(buf) > 0 else data
+                             for buf, data in zip(self.sample_buffer, data_list)]
 
         # Check that all channels have different physical_minimum and physical_maximum
         for chan in self.channels:
@@ -973,6 +999,12 @@ class EdfWriter:
                 if (np.size(data_list[i]) < ind[i] + smp_per_record[i]):
                     notAtEnd = False
 
+        if self.buffered:
+            # keep the incomplete remainder for the next call; it is written
+            # out (zero-padded) on close()
+            self.sample_buffer = [np.ascontiguousarray(data_list[i][int(ind[i]):])
+                                  for i in range(len(data_list))]
+            return
 
         for i in np.arange(len(data_list)):
             lastSamples = np.zeros(smp_per_record[i], dtype=np.int32 if digital else None)
@@ -1026,9 +1058,36 @@ class EdfWriter:
     def close(self) -> None:
         """
         Closes the file.
+
+        If the writer was created with buffered=True, any samples still held
+        in the buffer are written as a final, zero-padded data record.
         """
+        if self.buffered and self.handle >= 0:
+            self._flush_sample_buffer()
         close_file(self.handle)
         self.handle = -1
+
+    def _flush_sample_buffer(self) -> None:
+        """
+        Writes buffered leftover samples (buffered=True) as one final data
+        record, zero-padded to full record length.
+        """
+        if all(len(buf) == 0 for buf in self.sample_buffer):
+            return
+        digital = bool(self._buffered_digital)
+        for i in range(len(self.sample_buffer)):
+            smp_per_record = self.get_smp_per_record(i)
+            lastSamples = np.zeros(smp_per_record, dtype=np.int32 if digital else None)
+            buf = self.sample_buffer[i][:smp_per_record]
+            lastSamples[:len(buf)] = buf
+            if digital:
+                success = self.writeDigitalSamples(lastSamples)
+            else:
+                success = self.writePhysicalSamples(lastSamples)
+
+            if success < 0:
+                raise OSError(f'Unknown error while calling writeSamples: {success}')
+        self.sample_buffer = [np.array([]) for _ in range(self.n_channels)]
 
     def get_smp_per_record(self, ch_idx: int) -> int:
         """
