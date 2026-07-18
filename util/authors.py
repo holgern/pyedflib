@@ -206,7 +206,7 @@ class Cmd:
     def read(self, command, *a, **kw):
         p = self._call(command, a, {"stdout": subprocess.PIPE},
                       call=False, **kw)
-        out, err = p.communicate()
+        out, _err = p.communicate()
         if p.returncode != 0:
             raise RuntimeError("%s failed" % self.executable)
         return out
