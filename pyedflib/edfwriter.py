@@ -118,13 +118,13 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]
     if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:  # type: ignore
         raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
                          'however, EDF+ can only save 8 chars, critical precision loss is expected, '
-                         'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
+                         'please convert the signals to another dimension (eg uV to mV)'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min']))))
     if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:  # type: ignore
         raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
                          'however, EDF+ can only save 8 chars, critical precision loss is expected, '
-                         'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
+                         'please convert the signals to another dimension (eg uV to mV).'.format(i, label,
                                                                       ch['physical_max'],
                                                                       len(str(ch['physical_max']))))
     # if we truncate the physical min behind the dot, we just lose precision,
