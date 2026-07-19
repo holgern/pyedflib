@@ -47,8 +47,8 @@ from ._extensions._pyedflib import (
     set_starttime_subsecond,
     set_technician,
     set_transducer,
-    write_annotation_latin1,
-    write_annotation_utf8,
+    write_annotation_latin1_hr,
+    write_annotation_utf8_hr,
     write_digital_samples,
     write_digital_short_samples,
     write_errors,
@@ -1002,26 +1002,26 @@ class EdfWriter:
 
         if str_format == 'utf_8':
             if duration_in_seconds >= 0:
-                return write_annotation_utf8(self.handle,
-                                             np.round(onset_in_seconds*10000).astype(np.int64),
-                                             np.round(duration_in_seconds*10000).astype(int),
-                                             du(description))
+                return write_annotation_utf8_hr(self.handle,
+                                                np.round(onset_in_seconds*10000).astype(np.int64),
+                                                np.round(duration_in_seconds*10000).astype(int),
+                                                du(description))
             else:
-                return write_annotation_utf8(self.handle,
-                                             np.round(onset_in_seconds*10000).astype(np.int64),
-                                             -1, du(description))
+                return write_annotation_utf8_hr(self.handle,
+                                                np.round(onset_in_seconds*10000).astype(np.int64),
+                                                -1, du(description))
         else:
             if duration_in_seconds >= 0:
                 # FIX: description must be bytes. string will fail in u function
-                return write_annotation_latin1(self.handle,
-                                               np.round(onset_in_seconds*10000).astype(np.int64),
-                                               np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
+                return write_annotation_latin1_hr(self.handle,
+                                                  np.round(onset_in_seconds*10000).astype(np.int64),
+                                                  np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
             else:
                 # FIX: description must be bytes. string will fail in u function
-                return write_annotation_latin1(self.handle,
-                                               np.round(onset_in_seconds*10000).astype(np.int64),
-                                               -1,
-                                               description.encode('latin1'))  # type: ignore
+                return write_annotation_latin1_hr(self.handle,
+                                                  np.round(onset_in_seconds*10000).astype(np.int64),
+                                                  -1,
+                                                  description.encode('latin1'))  # type: ignore
 
     def close(self) -> None:
         """
