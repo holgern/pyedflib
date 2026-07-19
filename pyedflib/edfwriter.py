@@ -12,7 +12,7 @@ from datetime import date, datetime
 from fractions import Fraction
 from functools import reduce
 from types import TracebackType
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Optional, Union
 
 try:
 	from typing import Self
@@ -75,7 +75,7 @@ def check_is_ascii(string: str) -> None:
                       f' characters and no spaces: "{string}"')
 
 
-def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]]], i: int, file_type: int) -> None:
+def check_signal_header_correct(channels: list[dict[str, Union[str, float, None]]], i: int, file_type: int) -> None:
     """
     helper function  to check if all entries in the channel dictionary are fine.
 
@@ -279,7 +279,7 @@ class WrongInputSize(Exception):
 class EdfWriter:
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
@@ -357,11 +357,11 @@ class EdfWriter:
         self.buffered = buffered
         self.pad_with = pad_with
         self._buffered_digital: Optional[bool] = None
-        self.channels: List[Dict[str, Union[str, int, float, None]]] = []
-        self.sample_buffer: List[np.ndarray] = [np.array([]) for _ in range(n_channels)]
+        self.channels: list[dict[str, Union[str, int, float, None]]] = []
+        self.sample_buffer: list[np.ndarray] = [np.array([]) for _ in range(n_channels)]
         # last sample handed to writeSamples() per channel, used by
         # pad_with='last' when a channel has no leftover samples of its own
-        self._last_sample: List[Union[int, float]] = [0 for _ in range(n_channels)]
+        self._last_sample: list[Union[int, float]] = [0 for _ in range(n_channels)]
         for i in np.arange(self.n_channels):
             if self.file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF):
                 self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
@@ -458,7 +458,7 @@ class EdfWriter:
 
 
 
-    def setHeader(self, fileHeader: Dict[str, Union[str, float, int, None]]) -> None:
+    def setHeader(self, fileHeader: dict[str, Union[str, float, int, None]]) -> None:
         """
         Sets the file header
         """
@@ -474,7 +474,7 @@ class EdfWriter:
         self.birthdate = fileHeader["birthdate"]
         self.update_header()
 
-    def setSignalHeader(self, edfsignal: int, channel_info: Dict[str, Union[str, int, float, None]]) -> None:
+    def setSignalHeader(self, edfsignal: int, channel_info: dict[str, Union[str, int, float, None]]) -> None:
         """
         Sets the parameter for signal edfsignal.
 
@@ -494,7 +494,7 @@ class EdfWriter:
         self.channels[edfsignal].update(channel_info)
         self.update_header()
 
-    def setSignalHeaders(self, signalHeaders: List[Dict[str, Union[str, int, float, None]]]) -> None:
+    def setSignalHeaders(self, signalHeaders: list[dict[str, Union[str, int, float, None]]]) -> None:
         """
         Sets the parameter for all signals
 
@@ -990,7 +990,7 @@ class EdfWriter:
                           f'channel {i} ({low}...{high}) and will be clipped')
         return pad_value
 
-    def writeSamples(self, data_list: Union[List[np.ndarray], np.ndarray], digital: bool = False) -> None:
+    def writeSamples(self, data_list: Union[list[np.ndarray], np.ndarray], digital: bool = False) -> None:
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
         The physical samples will be converted to digital samples using the values
