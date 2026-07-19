@@ -20,13 +20,11 @@ extend-select = [
     "RUF",  # Ruff-specific rules
 ]
 ignore = [
-    "F841",    # Local variable is assigned to but never used
     "ISC002",  # Implicitly concatenated string literals over multiple lines
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",
     "RUF005",  # Consider iterable unpacking instead of concatenation
     "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
-    "RUF100",  # Unused `noqa` directive
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]

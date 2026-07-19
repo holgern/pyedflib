@@ -541,6 +541,15 @@ def write_edf(
     with pyedflib.EdfWriter(edf_file, n_channels=n_channels, file_type=file_type) as f:
         f.setSignalHeaders(signal_headers)
         f.setHeader(header)
+        if len(annotations) > 0:
+            # each datarecord can hold at most one annotation per annotation
+            # signal, excess annotations would be silently discarded (#187),
+            # so set the number of annotation signals to fit all of them.
+            smp_per_record = f.get_smp_per_record(0)
+            n_records = int(np.ceil(len(signals[0]) / smp_per_record))
+            n_annot_signals = int(np.ceil(len(annotations) / max(n_records, 1)))
+            if n_annot_signals > 1:
+                f.set_number_of_annotation_signals(n_annot_signals)
         f.writeSamples(signals, digital=digital)
         for annotation in annotations:
             f.writeAnnotation(*annotation)
@@ -955,7 +964,7 @@ def crop_edf(
     if verbose:
         print(f"Original: {current_start} to {current_stop} ({current_duration})")
         print(f"Truncated: {start} to {stop} ({duration})")
-        print(f"Succesfully written file: {new_file}")
+        print(f"Successfully written file: {new_file}")
 
 
 def rename_channels(

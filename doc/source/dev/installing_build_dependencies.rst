@@ -49,7 +49,7 @@ nicely looking html documentation. Install it with::
 
     pip install Sphinx
 
-numpydoc_ is used to format the API docmentation appropriately.  Install it
+numpydoc_ is used to format the API documentation appropriately.  Install it
 via::
 
     pip install numpydoc
