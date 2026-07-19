@@ -87,6 +87,7 @@ cdef extern from "c/edflib.h":
     int edf_set_startdatetime(int, int, int, int, int, int, int)
     int edf_set_subsecond_starttime(int, int)
     int edf_set_datarecord_duration(int, int)
+    int edf_set_micro_datarecord_duration(int, int)
     int edf_set_number_of_annotation_signals(int, int)
 
     # new functions in 1.10

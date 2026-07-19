@@ -1098,7 +1098,7 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_record_durations(self):
         """use different record durations and look in the raw header if all seems right"""
-        for record_duration in [0.001, 0.01, 0.1, 1, 10, 60]:
+        for record_duration in [0.000001, 0.0001, 0.009999, 0.001, 0.01, 0.1, 1, 10, 60]:
             channel_count = 1
             sample_frequency = 1/record_duration
 
@@ -1133,7 +1133,7 @@ class TestEdfWriter(unittest.TestCase):
                 f.close()
 
 
-        for record_duration in [0.0001,  61]:
+        for record_duration in [0.0000005, 61, 0.0001234567]:
             channel_count = 1
             sample_frequency = 1/record_duration
 

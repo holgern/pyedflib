@@ -588,7 +588,9 @@ class EdfWriter:
     def setDatarecordDuration(self, record_duration: Union[float, int]) -> None:
         """
         Sets the datarecord duration. The default value is 1 second.
-        The datarecord duration must be in the range 0.001 to 60 seconds.
+        The datarecord duration must be in the range 0.000001 to 60 seconds.
+        Durations below 10 milliseconds are stored with a resolution of
+        1 microsecond, so they must be an integer multiple of 0.000001.
         Usually, the datarecord duration is calculated automatically to
         ensure that all sample frequencies are representable, nevertheless,
         you can overwrite the datarecord duration manually. This can, however,
@@ -612,8 +614,10 @@ class EdfWriter:
         """
         warnings.warn('Forcing a specific record_duration might alter calculated sample_frequencies when reading the file')
         self._enforce_record_duration = True
-        if 0.001 > record_duration or record_duration > 60:
-            raise ValueError('record_duration must be between 0.001 and 60 seconds')
+        if 1e-6 > record_duration or record_duration > 60:
+            raise ValueError('record_duration must be between 0.000001 and 60 seconds')
+        if record_duration < 0.01 and abs(record_duration * 1e6 - round(record_duration * 1e6)) > 1e-6:
+            raise ValueError('record_durations below 10 ms must be an integer multiple of 1 microsecond')
         self.record_duration = record_duration
         self.update_header()
 
