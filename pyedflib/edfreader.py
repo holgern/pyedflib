@@ -798,18 +798,11 @@ class EdfReader(CyEdfReader):
             elif n > nsamples[chn]:
                 return np.array([])
             dtype = np.int32 if digital else np.float64
-            # FIX: The following type checking fails because n is assigned to
-            # nsamples[chn] output. Such as nsamples is an array without
-            # hint of the dtype, the static type checker will not be able to
-            # infer the dtype of n. The following code will raise an error
-            # because the dtype of n is not known. It would be required to
-            # upgrade numpy to 1.20.0 to fix this issue, such as this version
-            # introduced support for type hinting of numpy arrays.
-            x = np.zeros(n, dtype=dtype)  # type: ignore
+            x = np.zeros(n, dtype=dtype)
             if digital:
-                self.read_digital_signal(chn, start, n, x)  # type: ignore
+                self.read_digital_signal(chn, start, n, x)
             else:
-                self.readsignal(chn, start, n, x)  # type: ignore
+                self.readsignal(chn, start, n, x)
             return x
         else:
             raise IndexError(
