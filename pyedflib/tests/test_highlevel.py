@@ -152,6 +152,29 @@ class TestHighLevel(unittest.TestCase):
         _signals2, _signal_header2s, header2 = highlevel.read_edf(self.edfplus_data_file)
         self.assertEqual(header['annotations'], header2['annotations'])
 
+    def test_write_more_annotations_than_datarecords(self):
+        # gh-187: more annotations than datarecords were silently dropped.
+        # write_edf should scale the number of annotation signals accordingly
+        sfreq = 256
+        seconds = 60
+        n_annotations = 350
+        signals = np.random.rand(2, sfreq*seconds)
+        signal_headers = highlevel.make_signal_headers(
+            ['ch1', 'ch2'], sample_frequency=sfreq,
+            physical_min=-1, physical_max=1)
+        annotations = [[round(i*seconds/n_annotations, 4), -1, f'marker_{i}']
+                       for i in range(n_annotations)]
+        header = highlevel.make_header()
+        header['annotations'] = annotations
+
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers,
+                            header)
+        _, _, header2 = highlevel.read_edf(self.edfplus_data_file)
+        read_annotations = sorted(header2['annotations'])
+        self.assertEqual(len(read_annotations), n_annotations)
+        np.testing.assert_allclose([a[0] for a in read_annotations],
+                                   sorted(a[0] for a in annotations),
+                                   atol=1e-4)
 
     def test_quick_write(self):
         signals = np.random.randint(-2048, 2048, [3, 256*60])
