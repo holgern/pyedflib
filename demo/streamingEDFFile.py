@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import matplotlib.animation as animation
+from matplotlib import animation
 import matplotlib.pyplot as plt
 import numpy as np
 from stacklineplot import stackplot_t
