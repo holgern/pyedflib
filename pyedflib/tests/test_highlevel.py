@@ -19,11 +19,11 @@ from pyedflib.edfwriter import EdfWriter
 
 def _compare_cropped_edf(path_orig_edf, path_cropped_edf):
     # Load original EDF
-    orig_signals, orig_signal_headers, orig_header = highlevel.read_edf(path_orig_edf)  # noqa: E501
+    orig_signals, orig_signal_headers, orig_header = highlevel.read_edf(path_orig_edf)
     orig_start = orig_header["startdate"]
 
     # Load cropped EDF
-    signals, signal_headers, header = highlevel.read_edf(path_cropped_edf)  # noqa: E501
+    signals, signal_headers, header = highlevel.read_edf(path_cropped_edf)
     start = header["startdate"]
     duration = signals[0].size / signal_headers[0]["sample_frequency"]
     stop = start + timedelta(seconds=duration)
@@ -362,7 +362,7 @@ class TestHighLevel(unittest.TestCase):
         data_dir = os.path.join(os.path.dirname(__file__), 'data')
         edf_file = os.path.join(data_dir, 'test_generator.edf')
         outfile = os.path.join(data_dir, 'tmp_test_generator_cropped.edf')
-        orig_header = highlevel.read_edf_header(edf_file)  # noqa: E501
+        orig_header = highlevel.read_edf_header(edf_file)
         orig_start = orig_header["startdate"]
         new_start = datetime(2011, 4, 4, 12, 58, 0)
         new_stop = datetime(2011, 4, 4, 13, 0, 0)
