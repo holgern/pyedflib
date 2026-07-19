@@ -22,9 +22,10 @@ Includes
 
 import os
 import warnings
+from collections.abc import Iterable
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 
