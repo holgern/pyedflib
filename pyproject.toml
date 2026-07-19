@@ -1,13 +1,13 @@
 [build-system]
 requires = [
     "setuptools",
-	"numpy>=1.9.1",
+    "numpy>=1.9.1",
     "cython"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint]
 extend-select = [
@@ -23,7 +23,14 @@ extend-select = [
     "RUF",  # Ruff-specific rules
 ]
 ignore = [
+    "S110",    # `try`-`except`-`pass` detected, consider logging the exception
+    "BLE001",  # Do not catch blind exception: `Exception`
+    "SIM117",  # Use a single `with` statement with multiple contexts instead of nested `with` statements
     "B028",    # No explicit `stacklevel` keyword argument found
+    "DTZ001",  # `datetime.datetime()` called without a `tzinfo` argument
+    "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
+    "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
+    "FA100",   # Add `from __future__ import annotations` to simplify `typing`
     "ISC002",  # Implicitly concatenated string literals over multiple lines
     "PYI041",  #  Use `float` instead of `int | float`
     "PERF203", # `try`-`except` within a loop incurs performance overhead
@@ -33,3 +40,4 @@ ignore = [
 
 [tool.ruff.lint.extend-per-file-ignores]
 "**/__init__.py" = ["F401", "F403"]
+"setup.py" = ["SIM115", "SIM117"]
