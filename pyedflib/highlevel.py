@@ -955,7 +955,7 @@ def crop_edf(
     if verbose:
         print(f"Original: {current_start} to {current_stop} ({current_duration})")
         print(f"Truncated: {start} to {stop} ({duration})")
-        print(f"Succesfully written file: {new_file}")
+        print(f"Successfully written file: {new_file}")
 
 
 def rename_channels(
