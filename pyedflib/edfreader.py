@@ -8,7 +8,7 @@
 import warnings
 from datetime import datetime
 from types import TracebackType
-from typing import List, Tuple, Dict, Union, Optional, Type
+from typing import Union, Optional
 
 import numpy as np
 
@@ -115,7 +115,7 @@ class EdfReader(CyEdfReader):
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType],
     ) -> None:
@@ -132,7 +132,7 @@ class EdfReader(CyEdfReader):
             [self.samples_in_file(chn) for chn in np.arange(self.signals_in_file)]
         )
 
-    def readAnnotations(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def readAnnotations(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Annotations from a edf-file
 
@@ -140,7 +140,7 @@ class EdfReader(CyEdfReader):
         ----------
         None
         """
-        annot: Union[np.ndarray, List[List]] = self.read_annotation()
+        annot: Union[np.ndarray, list[list]] = self.read_annotation()
         annot = np.array(annot)
         if annot.shape[0] == 0:
             return np.array([]), np.array([]), np.array([])
@@ -179,7 +179,7 @@ class EdfReader(CyEdfReader):
         else:
             raise TypeError('unknown string type: {type(s)=}')
 
-    def getHeader(self) -> Dict[str, Union[str, datetime]]:
+    def getHeader(self) -> dict[str, Union[str, datetime]]:
         """
         Returns the file header as dict
 
@@ -203,7 +203,7 @@ class EdfReader(CyEdfReader):
 
     def getSignalHeader(
         self, chn: int
-    ) -> Dict[str, Union[str, float, int, np.ndarray]]:
+    ) -> dict[str, Union[str, float, int, np.ndarray]]:
         """
         Returns the  header of one signal as  dicts
 
@@ -223,7 +223,7 @@ class EdfReader(CyEdfReader):
             "transducer": self.getTransducer(chn),
         }
 
-    def getSignalHeaders(self) -> List[Dict[str, Union[str, float, int, np.ndarray]]]:
+    def getSignalHeaders(self) -> list[dict[str, Union[str, float, int, np.ndarray]]]:
         """
         Returns the  header of all signals as array of dicts
 
@@ -512,7 +512,7 @@ class EdfReader(CyEdfReader):
                 f"Trying to access channel {chn}, but only {self.signals_in_file} channels found"
             )
 
-    def getSignalLabels(self) -> List[str]:
+    def getSignalLabels(self) -> list[str]:
         """
         Returns all labels (name) ("FP1", "SaO2", etc.).
 

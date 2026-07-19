@@ -24,7 +24,7 @@ import os
 import warnings
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union, Iterable, List, Tuple
+from typing import Optional, Any, Union, Iterable
 
 import numpy as np
 
@@ -282,7 +282,7 @@ def make_signal_header(
 
 
 def make_signal_headers(
-    list_of_labels: List[str],
+    list_of_labels: list[str],
     dimension: str = 'uV',
     sample_frequency: Optional[Union[int, float]] = 256,
     physical_min: float = -200.0,
@@ -291,7 +291,7 @@ def make_signal_headers(
     digital_max: Union[float, int] = 32767,
     transducer: str = '',
     prefiler: str = ''
-) -> List[dict]:
+) -> list[dict]:
     """
     A function that creates signal headers for a given list of channel labels.
     This can only be used if each channel has the same sampling frequency
@@ -336,11 +336,11 @@ def make_signal_headers(
 
 def read_edf(
     edf_file: str,
-    ch_nrs: Optional[List[int]] = None,
-    ch_names: Optional[List[str]] = None,
+    ch_nrs: Optional[list[int]] = None,
+    ch_names: Optional[list[str]] = None,
     digital: bool = False,
     verbose: bool = False
-) -> Tuple[Union[np.ndarray, List[np.ndarray]], List[dict], dict]:
+) -> tuple[Union[np.ndarray, list[np.ndarray]], list[dict], dict]:
     """
     Convenience function for reading EDF+/BDF data with pyedflib.
 
@@ -433,8 +433,8 @@ def read_edf(
 
 def write_edf(
     edf_file: str,
-    signals: Union[np.ndarray, List[np.ndarray]],
-    signal_headers: List[dict],
+    signals: Union[np.ndarray, list[np.ndarray]],
+    signal_headers: list[dict],
     header: Optional[dict] = None,
     digital: bool = False,
     file_type: int = -1
@@ -702,8 +702,8 @@ def compare_edf(
 def drop_channels(
     edf_source: str,
     edf_target: Optional[str] = None,
-    to_keep: Optional[Union[List[str], List[int]]] = None,
-    to_drop: Optional[Union[List[str], List[int]]] = None,
+    to_keep: Optional[Union[list[str], list[int]]] = None,
+    to_drop: Optional[Union[list[str], list[int]]] = None,
     verbose: bool = False,
 ) -> str:
     """
@@ -792,8 +792,8 @@ def drop_channels(
 def anonymize_edf(
     edf_file: str,
     new_file: Optional[str] = None,
-    to_remove: List[str] = ['patientname', 'birthdate'],
-    new_values: List[str] = ['xxx', ''],
+    to_remove: list[str] = ['patientname', 'birthdate'],
+    new_values: list[str] = ['xxx', ''],
     verify: bool = False,
     verbose: bool = False,
 ) -> bool:
@@ -1020,7 +1020,7 @@ def rename_channels(
 
 def change_polarity(
     edf_file: str,
-    channels: List[Union[str, int]],
+    channels: list[Union[str, int]],
     new_file: Optional[str] = None,
     verify: bool = True,
     verbose: bool = False,
