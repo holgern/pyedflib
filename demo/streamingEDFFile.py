@@ -24,8 +24,7 @@ if __name__ == '__main__':
     sigbufs = [np.zeros(f.getNSamples()[i]) for i in np.arange(n)]
     for i in np.arange(n):
         sigbufs[i] = f.readSignal(i)
-        if n_min < len(sigbufs[i]):
-            n_min = len(sigbufs[i])
+        n_min = max(n_min, len(sigbufs[i]))
 
     duration = f.getFileDuration()
     f._close()
