@@ -21,8 +21,6 @@ extend-select = [
 ]
 ignore = [
     "F841",    # Local variable is assigned to but never used
-    "UP031",   # Use format specifiers instead of percent format
-    "UP032",   # Use f-string instead of `format` call
     "ISC002",  # Implicitly concatenated string literals over multiple lines
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",

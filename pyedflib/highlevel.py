@@ -389,8 +389,8 @@ def read_edf(
             ch_nrs = []
             for ch in ch_names:
                 if ch.upper() not in available_chs:
-                    warnings.warn('{} is not in source file (contains {})'\
-                                  .format(ch, available_chs))
+                    warnings.warn(f'{ch} is not in source file (contains {available_chs})'\
+                                  )
                     print('will be ignored.')
                 else:
                     ch_nrs.append(available_chs.index(ch.upper()))
@@ -510,11 +510,11 @@ def write_edf(
         label = shead['label']
         if digital: # exception as it will lead to clipping
             assert dmin<=sig.min(), \
-            'digital_min is {}, but signal_min is {}' \
-            'for channel {}'.format(dmin, sig.min(), label)
+            f'digital_min is {dmin}, but signal_min is {sig.min()}' \
+            f'for channel {label}'
             assert dmax>=sig.max(), \
-            'digital_min is {}, but signal_min is {}' \
-            'for channel {}'.format(dmax, sig.max(), label)
+            f'digital_min is {dmax}, but signal_min is {sig.max()}' \
+            f'for channel {label}'
             assert pmin != pmax, \
             f'physical_min {pmin} should be different from physical_max {pmax}'
         else: # only warning if difference is larger than the rounding error (which is quite large as edf scales data between phys_min and phys_max using -dig_min and +dig_max)
@@ -524,15 +524,15 @@ def write_edf(
                 f'for channel {label}', category=UserWarning)
             else: # difference is > edf_accuracy
                 assert pmin<=sig.min(), \
-                'phys_min is {}, but signal_min is {} ' \
-                'for channel {}'.format(pmin, sig.min(), label)
+                f'phys_min is {pmin}, but signal_min is {sig.min()} ' \
+                f'for channel {label}'
             if abs(sig.max() - pmax) < edf_accuracy:
                 warnings.warn(f'phys_max is {pmax}, but signal_max is {sig.max()} '
                 f'for channel {label}', category=UserWarning)
             else:
                 assert pmax>=sig.max(), \
-                'phys_max is {}, but signal_max is {} ' \
-                'for channel {}'.format(pmax, sig.max(), label)
+                f'phys_max is {pmax}, but signal_max is {sig.max()} ' \
+                f'for channel {label}'
 
 
     # get annotations, in format [[timepoint, duration, description], [...]]
@@ -745,7 +745,7 @@ def drop_channels(
     assert edf_source!=edf_target, 'For safet, target must not be source file.'
 
     if edf_target is None:
-        edf_target = os.path.splitext(edf_source)[0] + '_dropped.edf'
+        edf_target = f"{os.path.splitext(edf_source)[0]}_dropped.edf"
     if os.path.exists(edf_target):
         warnings.warn('Target file will be overwritten')
 
@@ -826,7 +826,7 @@ def anonymize_edf(
 
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
-        new_file = file + '_anonymized' + ext
+        new_file = f"{file}_anonymized{ext}"
 
     signals, signal_headers, header = read_edf(edf_file, digital=True,
                                                verbose=verbose)
@@ -940,7 +940,7 @@ def crop_edf(
     header["startdate"] = start
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
-        new_file = file + "_cropped" + ext
+        new_file = f"{file}_cropped{ext}"
     write_edf(new_file, signals, signals_headers, header, digital=True)
 
     # Safety check: are we able to load the new EDF file?
@@ -990,7 +990,7 @@ def rename_channels(
     channels = header['channels']
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
-        new_file = file + '_renamed' + ext
+        new_file = f"{file}_renamed{ext}"
 
     signal_headers = []
     signals = []
@@ -1043,7 +1043,7 @@ def change_polarity(
     """
 
     if new_file is None:
-        new_file = os.path.splitext(edf_file)[0] + '.edf'
+        new_file = f"{os.path.splitext(edf_file)[0]}.edf"
 
     if isinstance(channels, str):
         channels=[channels]

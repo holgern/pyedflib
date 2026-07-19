@@ -71,7 +71,7 @@ def stackplot_t(tarray, seconds=None, start_time=None, ylabels=None, ax=None):
     ax.set_yticks(ticklocs)
     # ax.set_yticklabels(['PG3', 'PG5', 'PG7', 'PG9'])
     # if not plt.ylabels:
-    plt.ylabels = ["%d" % ii for ii in range(numRows)]
+    plt.ylabels = [str(ii) for ii in range(numRows)]
     ax.set_yticklabels(ylabels)
 
     plt.xlabel('time (s)')

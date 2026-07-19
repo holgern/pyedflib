@@ -66,7 +66,7 @@ def check_is_ascii(string: str) -> None:
     """
     if not all(ord(x)>32 and ord(x)<127 for x in string):
         warnings.warn('Invalid char: header entries should contain only ASCII'
-                      ' characters and no spaces: "{}"'.format(string))
+                      f' characters and no spaces: "{string}"')
 
 
 def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]]], i: int, file_type: int) -> None:
@@ -923,8 +923,8 @@ class EdfWriter:
         if (len(data_list)) == 0:
             raise WrongInputSize('Data list is empty')
         if (len(data_list) != len(self.channels)):
-            raise WrongInputSize('Number of channels ({}) \
-             unequal to length of data ({})'.format(len(self.channels), len(data_list)))
+            raise WrongInputSize(f'Number of channels ({len(self.channels)}) \
+             unequal to length of data ({len(data_list)})')
 
         # Check for F-contiguous arrays
         if not all(s.flags.c_contiguous for s in data_list):

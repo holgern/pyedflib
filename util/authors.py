@@ -55,7 +55,7 @@ def main():
             line = line[m.end():]
             name = NAME_MAP.get(name, name)
             if disp and name not in names:
-                stdout_b.write(("    - Author: %s\n" % name).encode())
+                stdout_b.write((f"    - Author: {name}\n").encode())
             names.update((name,))
 
         # Look for "thanks to" messages in the commit log
@@ -64,7 +64,7 @@ def main():
             name = m.group(2)
             if name != 'this':
                 if disp:
-                    stdout_b.write("    - Log   : %s\n" % line.strip().encode())
+                    stdout_b.write(f"    - Log   : {line.strip().encode()}\n")
                 name = NAME_MAP.get(name, name)
                 names.update((name,))
 
@@ -104,7 +104,7 @@ def main():
         # Print some empty lines to separate
         stdout_b.write(b"\n\n")
         for author in n_authors:
-            stdout_b.write(("- %s\n" % author).encode())
+            stdout_b.write((f"- {author}\n").encode())
         # return for early exit so we only print new authors
         return
 
@@ -131,12 +131,12 @@ Authors
         else:
             stdout_b.write((f"* {author_clean} ({count}) +\n").encode())
 
-    stdout_b.write(("""
-A total of %(count)d people contributed to this release.
+    stdout_b.write((f"""
+A total of {len(authors)} people contributed to this release.
 People with a "+" by their names contributed a patch for the first time.
 This list of names is automatically generated, and may not be fully complete.
 
-""" % {"count": len(authors)}).encode())
+""").encode())
 
     stdout_b.write(b"\nNOTE: Check this list manually! It is automatically generated "
                     b"and some names\n      may be missing.\n")
@@ -153,7 +153,7 @@ def load_name_map(filename):
 
             m = re.match(r'^(.*?)\s*<(.*?)>(.*?)\s*<(.*?)>\s*$', line)
             if not m:
-                print("Invalid line in .mailmap: '{!r}'".format(line), file=sys.stderr)
+                print(f"Invalid line in .mailmap: '{line!r}'", file=sys.stderr)
                 sys.exit(1)
 
             new_name = m.group(1).strip()
@@ -195,7 +195,7 @@ class Cmd:
     def __call__(self, command, *a, **kw):
         ret = self._call(command, a, {}, call=True, **kw)
         if ret != 0:
-            raise RuntimeError("%s failed" % self.executable)
+            raise RuntimeError(f"{self.executable} failed")
 
     def pipe(self, command, *a, **kw):
         stdin = kw.pop('stdin', None)
@@ -208,7 +208,7 @@ class Cmd:
                       call=False, **kw)
         out, _err = p.communicate()
         if p.returncode != 0:
-            raise RuntimeError("%s failed" % self.executable)
+            raise RuntimeError(f"{self.executable} failed")
         return out
 
     def readlines(self, command, *a, **kw):
