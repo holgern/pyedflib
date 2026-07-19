@@ -1,10 +1,78 @@
 [build-system]
+# build-backend points to _custom_build.py in the project root
+# (backend-path = ["."]). _custom_build.py wraps setuptools.build_meta
+# and injects the C static library (c_edf) and the Cython extension
+#(_pyedflib) at build time.
 requires = [
-    "setuptools",
-	"numpy>=1.9.1",
-    "cython"
+    "setuptools>=61",
+    "numpy>=1.9.1",
+    "cython>=0.29",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "_custom_build"
+backend-path = ["."]
+
+# ---------------------------------------------------------------------------
+# Project metadata  (PEP 621)
+# ---------------------------------------------------------------------------
+
+[project]
+name = "pyEDFlib"
+version = "0.1.33"
+description = "library to read/write EDF+/BDF+ files"
+readme = "README.rst"
+license = { text = "BSD" }
+authors = [
+    { name = "Holger Nahrstaedt", email = "nahrstaedt@gmail.com" },
+]
+maintainers = [
+    { name = "Holger Nahrstaedt", email = "nahrstaedt@gmail.com" },
+]
+keywords = ["EDFlib", "European data format", "EDF", "BDF", "EDF+", "BDF+"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: C",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.9.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/holgern/pyedflib"
+
+# ---------------------------------------------------------------------------
+# Setuptools-specific configuration
+# ---------------------------------------------------------------------------
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["pyedflib", "pyedflib.*"]
+
+[tool.setuptools.package-data]
+"pyedflib.data" = ["*.edf", "*.bdf"]
+"pyedflib.tests.data" = ["*.edf", "*.bdf"]
+"pyedflib._extensions" = ["*.pyx", "*.pxd", "*.pxi", "*.pyi"]
+
+# ---------------------------------------------------------------------------
+# Tool configuration (preserved from setup.cfg / existing pyproject.toml)
+# ---------------------------------------------------------------------------
 
 [tool.ruff]
 target-version = "py38"
