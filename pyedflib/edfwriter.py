@@ -1018,7 +1018,7 @@ class EdfWriter:
             elif self._buffered_digital != digital:
                 raise TypeError('Cannot mix digital and physical samples in '
                                 'buffered mode (previous calls used digital='
-                                '{})'.format(self._buffered_digital))
+                                f'{self._buffered_digital})')
             # prepend samples left over from previous writeSamples() calls
             if any(len(buf) > 0 for buf in self.sample_buffer):
                 data_list = [np.concatenate([buf, data]) if len(buf) > 0 else data
