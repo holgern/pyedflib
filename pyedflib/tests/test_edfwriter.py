@@ -1416,6 +1416,85 @@ class TestEdfWriter(unittest.TestCase):
         filename = os.path.join(self.data_dir, 'tmp_buffered_pad_invalid.edf')
         with self.assertRaises(ValueError):
             pyedflib.EdfWriter(filename, 1, buffered=True, pad_with='bogus')
+        # a rejected argument must not leave a half-created file behind
+        self.assertFalse(os.path.exists(filename))
+
+    def test_pad_with_applies_without_buffering(self):
+        """pad_with also controls padding on the regular (unbuffered) path."""
+        fs = 100
+        x = np.full(int(2.5 * fs), 3.0)
+        filename = os.path.join(self.data_dir, 'tmp_pad_unbuffered.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, pad_with='last')
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        f.writeSamples([x])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        back = f.readSignal(0)
+        f.close()
+
+        np.testing.assert_allclose(back, 3.0, atol=1e-3)  # no step back to 0
+
+    def test_pad_with_last_uses_already_written_sample(self):
+        """A channel whose buffer is empty pads with its last written sample.
+
+        With differing sample frequencies one channel can end exactly on a
+        record boundary while another still has leftover samples. The padding
+        for the former must not fall back to zero.
+        """
+        filename = os.path.join(self.data_dir, 'tmp_pad_mixed_fs.edf')
+
+        f = pyedflib.EdfWriter(filename, 2, buffered=True, pad_with='last')
+        f.setSignalHeaders([self._buffered_ch_info(100),
+                            self._buffered_ch_info(10)])
+        # ch0 keeps 5 leftover samples, ch1 is consumed exactly
+        f.writeSamples([np.full(105, 3.0), np.full(10, 4.0)])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        ch0, ch1 = f.readSignal(0), f.readSignal(1)
+        f.close()
+
+        np.testing.assert_allclose(ch0, 3.0, atol=1e-3)
+        np.testing.assert_allclose(ch1, 4.0, atol=1e-3)
+
+    def test_pad_with_accepts_numpy_scalars(self):
+        """pad_with=signal[-1] (a numpy scalar) must be accepted."""
+        filename = os.path.join(self.data_dir, 'tmp_pad_numpy_scalar.edf')
+        for value in (np.float64(1.5), np.float32(1.5), np.int32(2)):
+            f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=value)
+            f.close()
+        with self.assertRaises(ValueError):
+            pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=True)
+
+    def test_pad_with_digital_requires_int(self):
+        """A fractional pad value would be silently truncated when digital."""
+        fs = 100
+        filename = os.path.join(self.data_dir, 'tmp_pad_digital_float.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=2.7)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        with self.assertRaises(TypeError):
+            f.writeSamples([np.full(150, 100, dtype=np.int32)], digital=True)
+        f.close()
+
+    def test_pad_with_out_of_range_warns(self):
+        fs = 100
+        filename = os.path.join(self.data_dir, 'tmp_pad_out_of_range.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=1000.0)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        f.writeSamples([np.full(150, 1.0)])
+        with self.assertWarns(UserWarning):
+            f.close()
+
+    def test_close_on_partially_constructed_writer(self):
+        """__del__ must not raise if __init__ failed before opening the file."""
+        filename = os.path.join(self.data_dir, 'tmp_partial.edf')
+        with self.assertRaises(ValueError):
+            pyedflib.EdfWriter(filename, 1, pad_with='bogus')
+        gc.collect()  # triggers __del__ -> close() on the dead object
 
 
 if __name__ == '__main__':
