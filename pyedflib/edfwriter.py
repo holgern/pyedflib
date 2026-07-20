@@ -328,10 +328,10 @@ class EdfWriter:
         if isinstance(pad_with, str):
             if pad_with != 'last':
                 raise ValueError("pad_with must be a number or 'last', "
-                                 "got {!r}".format(pad_with))
+                                 f"got {pad_with!r}")
         elif isinstance(pad_with, bool) or not isinstance(pad_with, numbers.Number):
             raise ValueError("pad_with must be a number or 'last', "
-                             "got {!r}".format(pad_with))
+                             f"got {pad_with!r}")
 
         self.path = file_name
         self.file_type = file_type
@@ -1005,7 +1005,7 @@ class EdfWriter:
         if digital and not isinstance(self.pad_with, str) \
                 and not isinstance(self.pad_with, (int, np.integer)):
             raise TypeError('Digital = True requires an integer pad_with, '
-                            'got {!r}'.format(self.pad_with))
+                            f'got {self.pad_with!r}')
 
         # remember the most recent sample of each channel for pad_with='last'
         for i in range(len(data_list)):
@@ -1080,8 +1080,8 @@ class EdfWriter:
                     lim = ('digital_min', 'digital_max') if digital else ('physical_min', 'physical_max')
                     low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
                     if not low <= pad_value <= high:
-                        warnings.warn('pad_with={} is outside the range of channel {} '
-                                      '({}...{}) and will be clipped'.format(pad_value, i, low, high))
+                        warnings.warn(f'pad_with={pad_value} is outside the range of '
+                                      f'channel {i} ({low}...{high}) and will be clipped')
                 lastSamples = np.full(smp_per_record[i], pad_value,
                                       dtype=np.int32 if digital else np.float64)
                 lastSamples[:lastSampleInd] = data_list[i][-lastSampleInd:]
@@ -1190,8 +1190,8 @@ class EdfWriter:
                 lim = ('digital_min', 'digital_max') if digital else ('physical_min', 'physical_max')
                 low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
                 if not low <= pad_value <= high:
-                    warnings.warn('pad_with={} is outside the range of channel {} '
-                                  '({}...{}) and will be clipped'.format(pad_value, i, low, high))
+                    warnings.warn(f'pad_with={pad_value} is outside the range of '
+                                  f'channel {i} ({low}...{high}) and will be clipped')
             lastSamples = np.full(smp_per_record, pad_value, dtype=dtype)
             lastSamples[:len(buf)] = buf
             if digital:
