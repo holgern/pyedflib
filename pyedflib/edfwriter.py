@@ -334,12 +334,12 @@ class EdfWriter:
         self.channels: List[Dict[str, Union[str, int, float, None]]] = []
         self.sample_buffer: List[np.ndarray] = [np.array([]) for _ in range(n_channels)]
         for i in np.arange(self.n_channels):
-            if self.file_type == FILETYPE_BDFPLUS or self.file_type == FILETYPE_BDF:
+            if self.file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF):
                 self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 8388607,'digital_min': -8388608,
                                       'prefilter': '', 'transducer': ''})
-            elif self.file_type == FILETYPE_EDFPLUS or self.file_type == FILETYPE_EDF:
+            elif self.file_type in (FILETYPE_EDFPLUS, FILETYPE_EDF):
                 self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
                                       'physical_max': 1.0, 'physical_min': -1.0,
                                       'digital_max': 32767, 'digital_min': -32768,
@@ -984,7 +984,7 @@ class EdfWriter:
             elif self._buffered_digital != digital:
                 raise TypeError('Cannot mix digital and physical samples in '
                                 'buffered mode (previous calls used digital='
-                                '{})'.format(self._buffered_digital))
+                                f'{self._buffered_digital})')
             # prepend samples left over from previous writeSamples() calls
             if any(len(buf) > 0 for buf in self.sample_buffer):
                 data_list = [np.concatenate([buf, data]) if len(buf) > 0 else data
@@ -1071,18 +1071,17 @@ class EdfWriter:
                 res = write_annotation_utf8(self.handle,
                                             np.round(onset_in_seconds*10000).astype(np.int64),
                                             -1, du(description))
+        elif duration_in_seconds >= 0:
+            # FIX: description must be bytes. string will fail in u function
+            res = write_annotation_latin1(self.handle,
+                                          np.round(onset_in_seconds*10000).astype(np.int64),
+                                          np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
         else:
-            if duration_in_seconds >= 0:
-                # FIX: description must be bytes. string will fail in u function
-                res = write_annotation_latin1(self.handle,
-                                              np.round(onset_in_seconds*10000).astype(np.int64),
-                                              np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
-            else:
-                # FIX: description must be bytes. string will fail in u function
-                res = write_annotation_latin1(self.handle,
-                                              np.round(onset_in_seconds*10000).astype(np.int64),
-                                              -1,
-                                              description.encode('latin1'))  # type: ignore
+            # FIX: description must be bytes. string will fail in u function
+            res = write_annotation_latin1(self.handle,
+                                          np.round(onset_in_seconds*10000).astype(np.int64),
+                                          -1,
+                                          description.encode('latin1'))  # type: ignore
         if res >= 0:
             self._n_annotations_written += 1
         return res
@@ -1115,7 +1114,7 @@ class EdfWriter:
                           f'({self._n_records_written} datarecords x '
                           f'{self.number_of_annotations} annotation signals), but '
                           f'{self._n_annotations_written} were written. The last '
-                          f'{n_lost} annotation(s) will be lost. ' + advice)
+                          f'{n_lost} annotation(s) will be lost. {advice}')
         close_file(self.handle)
         self.handle = -1
 

@@ -908,11 +908,10 @@ def crop_edf(
     current_start = edf.getStartdatetime()
     if start is None:
         start = current_start
+    elif start_format == "seconds":
+        start = current_start + timedelta(seconds=start)
     else:
-        if start_format == "seconds":
-            start = current_start + timedelta(seconds=start)
-        else:
-            pass
+        pass
     assert current_start <= start, 'start must not be before current start of recording'
     start_diff_from_start = (start - current_start).total_seconds()
 
@@ -921,11 +920,10 @@ def crop_edf(
     current_duration = current_stop - current_start
     if stop is None:
         stop = current_stop
+    elif stop_format == "seconds":
+        stop = current_start + timedelta(seconds=stop)
     else:
-        if stop_format == "seconds":
-            stop = current_start + timedelta(seconds=stop)
-        else:
-            pass
+        pass
     assert stop <= current_stop, 'new stop value must not be after current end of recording'
 
     assert start < current_stop, 'new start value must not be after current end of recording'
@@ -1012,9 +1010,8 @@ def rename_channels(
                 print(f'{ch} to {mapping[ch]}')
             ch = mapping[ch]
             signal_header[0]['label']=ch
-        else:
-            if verbose:
-                print(f'no mapping for {ch}, leave as it is')
+        elif verbose:
+            print(f'no mapping for {ch}, leave as it is')
         signal_headers.append(signal_header[0])
         signals.append(signal.squeeze())
 
