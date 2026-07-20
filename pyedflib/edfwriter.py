@@ -1115,7 +1115,7 @@ class EdfWriter:
                           f'({self._n_records_written} datarecords x '
                           f'{self.number_of_annotations} annotation signals), but '
                           f'{self._n_annotations_written} were written. The last '
-                          f'{n_lost} annotation(s) will be lost. ' + advice)
+                          f'{n_lost} annotation(s) will be lost. {advice}')
         close_file(self.handle)
         self.handle = -1
 
