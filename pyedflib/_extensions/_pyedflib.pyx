@@ -621,18 +621,16 @@ def set_datarecord_duration(handle, duration):
 
     duration in seconds
     """
-    # from the pyedflib documentation:
-    # > To avoid rounding errors, the library stores some timevalues in variables
-    # > of type long long int. In order not to loose the subsecond precision, all
-    # > timevalues have been multiplied by 10000000. This will limit the
-    # > timeresolution to 100 nanoSeconds. To calculate the amount of seconds,
-    # > divide the timevalue by 10000000 or use the macro EDFLIB_TIME_DIMENSION
-    # > which is declared in edflib.h.
-    #
-    # therefore, we divide by 100, and edflib internally multiplies by 100.
-    # we could also change it in the C file, but better to leave that as is.
-    duration *= EDFLIB_TIME_DIMENSION/100
-    return c_edf.edf_set_datarecord_duration(handle, int(duration))
+    # edf_set_datarecord_duration takes the duration in units of 10 microseconds
+    # and only accepts values between 0.001 and 60 seconds.
+    # edf_set_micro_datarecord_duration takes the duration in units of
+    # 1 microsecond and accepts values between 1 and 9999 microseconds.
+    # dispatch to the micro variant below 10 ms: it covers sub-millisecond
+    # durations and has a 10x finer resolution (1 us instead of 10 us).
+    microseconds = round(duration * 1_000_000)
+    if microseconds < 10_000:
+        return c_edf.edf_set_micro_datarecord_duration(handle, microseconds)
+    return c_edf.edf_set_datarecord_duration(handle, round(duration * EDFLIB_TIME_DIMENSION/100))
 
 def set_number_of_annotation_signals(handle, annot_signals):
     """int edf_set_number_of_annotation_signals(int handle, int annot_signals)"""

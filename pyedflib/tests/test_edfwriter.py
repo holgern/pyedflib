@@ -3,6 +3,7 @@
 
 import gc
 import os
+import warnings
 
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
@@ -163,6 +164,73 @@ class TestEdfWriter(unittest.TestCase):
         assert startdate2==startdate, f'write {startdate} != read {startdate2}'
         del f
 
+
+    def test_annotation_overflow_warning(self):
+        # gh-187: annotations exceeding the capacity of
+        # n_datarecords * n_annotation_signals are silently dropped by the
+        # C library, the writer should warn about this on close()
+        def write_file(n_annotations, n_annotation_signals=1):
+            f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                                   file_type=pyedflib.FILETYPE_EDFPLUS)
+            f.setSignalHeader(0, self.ch_info_edf)
+            if n_annotation_signals > 1:
+                f.set_number_of_annotation_signals(n_annotation_signals)
+            for _ in range(5):  # 5 datarecords of 1 second
+                f.writePhysicalSamples(np.ones(100) * 0.1)
+            for i in range(n_annotations):
+                f.writeAnnotation(i * 0.1, -1, f'annot_{i}')
+            f.close()
+
+        # more annotations than datarecords -> warning
+        with self.assertWarns(UserWarning) as cm:
+            write_file(n_annotations=8)
+        self.assertIn('3 annotation(s) will be lost', str(cm.warning))
+
+        # enough annotation signals -> no warning
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            write_file(n_annotations=8, n_annotation_signals=2)
+        self.assertEqual([str(w.message) for w in caught], [])
+
+        # and the file with 2 annotation signals must contain all annotations
+        with pyedflib.EdfReader(self.edfplus_data_file) as f:
+            self.assertEqual(f.annotations_in_file, 8)
+
+    def test_set_number_of_annotation_signals(self):
+        # gh-187: manually increasing the number of annotation signals must
+        # actually increase the annotation capacity of the file
+        n_records = 5           # 5 datarecords of 1 second
+        n_annotation_signals = 10
+        n_annotations = 45      # > 5 records, <= 5 records * 10 signals
+
+        f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                               file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeader(0, self.ch_info_edf)
+        f.set_number_of_annotation_signals(n_annotation_signals)
+        for _ in range(n_records):
+            f.writePhysicalSamples(np.ones(100) * 0.1)
+        for i in range(n_annotations):
+            f.writeAnnotation(round(i * 0.1, 1), 0.5, f'annot_{i}')
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            f.close()
+        self.assertEqual([str(w.message) for w in caught], [])
+
+        # the file header must contain one label per annotation signal
+        with open(self.edfplus_data_file, 'rb') as fh:
+            header = fh.read(256 * (1 + 1 + n_annotation_signals))
+        self.assertEqual(header.count(b'EDF Annotations'), n_annotation_signals)
+
+        # all annotations must be read back with correct onset/duration/text
+        with pyedflib.EdfReader(self.edfplus_data_file) as f:
+            self.assertEqual(f.annotations_in_file, n_annotations)
+            onsets, durations, texts = f.readAnnotations()
+        order = np.argsort(onsets)
+        np.testing.assert_allclose(onsets[order],
+                                   [round(i * 0.1, 1) for i in range(n_annotations)])
+        np.testing.assert_allclose(durations.astype(float)[order], [0.5] * n_annotations)
+        self.assertEqual([texts[i] for i in order],
+                         [f'annot_{i}' for i in range(n_annotations)])
 
     def test_subsecond_annotation(self):
         f = pyedflib.EdfWriter(self.bdfplus_data_file, 1,
@@ -1098,7 +1166,7 @@ class TestEdfWriter(unittest.TestCase):
 
     def test_record_durations(self):
         """use different record durations and look in the raw header if all seems right"""
-        for record_duration in [0.001, 0.01, 0.1, 1, 10, 60]:
+        for record_duration in [0.000001, 0.0001, 0.009999, 0.001, 0.01, 0.1, 1, 10, 60]:
             channel_count = 1
             sample_frequency = 1/record_duration
 
@@ -1133,7 +1201,7 @@ class TestEdfWriter(unittest.TestCase):
                 f.close()
 
 
-        for record_duration in [0.0001,  61]:
+        for record_duration in [0.0000005, 61, 0.0001234567]:
             channel_count = 1
             sample_frequency = 1/record_duration
 

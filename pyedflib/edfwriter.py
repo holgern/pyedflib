@@ -118,13 +118,13 @@ def check_signal_header_correct(channels: List[Dict[str, Union[str, float, None]
     if len(str(ch['physical_min']))>8 and ch['physical_min'] < -99999999:  # type: ignore
         raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
                          'however, EDF+ can only save 8 chars, critical precision loss is expected, '
-                         'please convert the signals to another dimesion (eg uV to mV)'.format(i, label,
+                         'please convert the signals to another dimension (eg uV to mV)'.format(i, label,
                                                                       ch['physical_min'],
                                                                       len(str(ch['physical_min']))))
     if len(str(ch['physical_max']))>8 and ch['physical_max'] > 99999999:  # type: ignore
         raise ValueError('Physical minimum for channel {} ({}) is {}, which has {} chars, '
                          'however, EDF+ can only save 8 chars, critical precision loss is expected, '
-                         'please convert the signals to another dimesion (eg uV to mV).'.format(i, label,
+                         'please convert the signals to another dimension (eg uV to mV).'.format(i, label,
                                                                       ch['physical_max'],
                                                                       len(str(ch['physical_max']))))
     # if we truncate the physical min behind the dot, we just lose precision,
@@ -348,6 +348,13 @@ class EdfWriter:
         if (self.handle < 0):
             raise OSError(write_errors[self.handle])
         self._enforce_record_duration = False
+        # track how many datarecords and annotations have been written:
+        # each datarecord can only store one annotation per annotation signal,
+        # any excess annotations are silently discarded by the C library,
+        # so we warn about it in close() (see issue #187)
+        self._n_records_written = 0
+        self._channel_write_pos = 0
+        self._n_annotations_written = 0
 
     def update_header(self) -> None:
         """
@@ -597,7 +604,9 @@ class EdfWriter:
     def setDatarecordDuration(self, record_duration: Union[float, int]) -> None:
         """
         Sets the datarecord duration. The default value is 1 second.
-        The datarecord duration must be in the range 0.001 to 60 seconds.
+        The datarecord duration must be in the range 0.000001 to 60 seconds.
+        Durations below 10 milliseconds are stored with a resolution of
+        1 microsecond, so they must be an integer multiple of 0.000001.
         Usually, the datarecord duration is calculated automatically to
         ensure that all sample frequencies are representable, nevertheless,
         you can overwrite the datarecord duration manually. This can, however,
@@ -621,8 +630,10 @@ class EdfWriter:
         """
         warnings.warn('Forcing a specific record_duration might alter calculated sample_frequencies when reading the file')
         self._enforce_record_duration = True
-        if 0.001 > record_duration or record_duration > 60:
-            raise ValueError('record_duration must be between 0.001 and 60 seconds')
+        if 1e-6 > record_duration or record_duration > 60:
+            raise ValueError('record_duration must be between 0.000001 and 60 seconds')
+        if record_duration < 0.01 and abs(record_duration * 1e6 - round(record_duration * 1e6)) > 1e-6:
+            raise ValueError('record_durations below 10 ms must be an integer multiple of 1 microsecond')
         self.record_duration = record_duration
         self.update_header()
 
@@ -631,9 +642,11 @@ class EdfWriter:
         Sets the number of annotation signals. The default value is 1
         This function is optional and can be called only after opening a file in writemode
         and before the first sample write action
-        Normally you don't need to change the default value. Only when the number of annotations
-        you want to write is more than the number of seconds of the duration of the recording, you can use
-        this function to increase the storage space for annotations
+        Normally you don't need to change the default value. Each datarecord
+        can store one annotation per annotation signal, i.e. the total number
+        of annotations the file can hold is
+        `number_of_annotations * number_of_datarecords`. Use this function to
+        increase the storage space for annotations.
         Minimum is 1, maximum is 64
 
         Parameters
@@ -641,6 +654,9 @@ class EdfWriter:
         number_of_annotations : integer
             Sets the number of annotation signals
         """
+        if not 1 <= int(number_of_annotations) <= 64:
+            warnings.warn(f'number_of_annotations must be between 1 and 64, '
+                          f'{number_of_annotations} will be clipped to that range.')
         number_of_annotations = max((min((int(number_of_annotations), 64)), 1))
         self.number_of_annotations = number_of_annotations
         self.update_header()
@@ -877,13 +893,13 @@ class EdfWriter:
 
         All parameters must be already written into the bdf/edf-file.
         """
-        return write_physical_samples(self.handle, data)
+        return self._count_record(write_physical_samples(self.handle, data))
 
     def writeDigitalSamples(self, data: np.ndarray) -> int:
-        return write_digital_samples(self.handle, data)
+        return self._count_record(write_digital_samples(self.handle, data))
 
     def writeDigitalShortSamples(self, data: np.ndarray) -> int:
-        return write_digital_short_samples(self.handle, data)
+        return self._count_record(write_digital_short_samples(self.handle, data))
 
     def blockWritePhysicalSamples(self, data: np.ndarray) -> int:
         """
@@ -905,13 +921,26 @@ class EdfWriter:
 
         All parameters must be already written into the bdf/edf-file.
         """
-        return blockwrite_physical_samples(self.handle, data)
+        return self._count_record(blockwrite_physical_samples(self.handle, data), block=True)
 
     def blockWriteDigitalSamples(self, data: np.ndarray) -> int:
-        return blockwrite_digital_samples(self.handle, data)
+        return self._count_record(blockwrite_digital_samples(self.handle, data), block=True)
 
     def blockWriteDigitalShortSamples(self, data: np.ndarray) -> int:
-        return blockwrite_digital_short_samples(self.handle, data)
+        return self._count_record(blockwrite_digital_short_samples(self.handle, data), block=True)
+
+    def _count_record(self, write_result: int, block: bool = False) -> int:
+        """keep track of the number of datarecords written, which determines
+        how many annotations the file can hold (see close())"""
+        if write_result >= 0:
+            if block:
+                self._n_records_written += 1
+            else:
+                self._channel_write_pos += 1
+                if self._channel_write_pos == self.n_channels:
+                    self._channel_write_pos = 0
+                    self._n_records_written += 1
+        return write_result
 
     def writeSamples(self, data_list: Union[List[np.ndarray], np.ndarray], digital: bool = False) -> None:
         """
@@ -1034,26 +1063,29 @@ class EdfWriter:
 
         if str_format == 'utf_8':
             if duration_in_seconds >= 0:
-                return write_annotation_utf8(self.handle,
-                                             np.round(onset_in_seconds*10000).astype(np.int64),
-                                             np.round(duration_in_seconds*10000).astype(int),
-                                             du(description))
+                res = write_annotation_utf8(self.handle,
+                                            np.round(onset_in_seconds*10000).astype(np.int64),
+                                            np.round(duration_in_seconds*10000).astype(int),
+                                            du(description))
             else:
-                return write_annotation_utf8(self.handle,
-                                             np.round(onset_in_seconds*10000).astype(np.int64),
-                                             -1, du(description))
+                res = write_annotation_utf8(self.handle,
+                                            np.round(onset_in_seconds*10000).astype(np.int64),
+                                            -1, du(description))
         else:
             if duration_in_seconds >= 0:
                 # FIX: description must be bytes. string will fail in u function
-                return write_annotation_latin1(self.handle,
-                                               np.round(onset_in_seconds*10000).astype(np.int64),
-                                               np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
+                res = write_annotation_latin1(self.handle,
+                                              np.round(onset_in_seconds*10000).astype(np.int64),
+                                              np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
             else:
                 # FIX: description must be bytes. string will fail in u function
-                return write_annotation_latin1(self.handle,
-                                               np.round(onset_in_seconds*10000).astype(np.int64),
-                                               -1,
-                                               description.encode('latin1'))  # type: ignore
+                res = write_annotation_latin1(self.handle,
+                                              np.round(onset_in_seconds*10000).astype(np.int64),
+                                              -1,
+                                              description.encode('latin1'))  # type: ignore
+        if res >= 0:
+            self._n_annotations_written += 1
+        return res
 
     def close(self) -> None:
         """
@@ -1064,6 +1096,26 @@ class EdfWriter:
         """
         if self.buffered and self.handle >= 0:
             self._flush_sample_buffer()
+
+        # each datarecord can store at most one annotation per annotation
+        # signal. Annotations exceeding this capacity are silently discarded
+        # by the C library when the file is closed, so warn about it here.
+        capacity = self._n_records_written * self.number_of_annotations
+        if self._n_records_written > 0 and self._n_annotations_written > capacity:
+            n_lost = self._n_annotations_written - capacity
+            if self.number_of_annotations < 64:
+                advice = ('Increase the number of annotation signals with '
+                          'set_number_of_annotation_signals() before writing '
+                          'any samples.')
+            else:
+                advice = ('The maximum of 64 annotation signals is already '
+                          'used, use a shorter record_duration to increase '
+                          'the number of datarecords.')
+            warnings.warn(f'File can only store {capacity} annotations '
+                          f'({self._n_records_written} datarecords x '
+                          f'{self.number_of_annotations} annotation signals), but '
+                          f'{self._n_annotations_written} were written. The last '
+                          f'{n_lost} annotation(s) will be lost. ' + advice)
         close_file(self.handle)
         self.handle = -1
 
