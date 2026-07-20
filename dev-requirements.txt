@@ -1,4 +1,3 @@
-nose
 cython
 numpy
 pytest
