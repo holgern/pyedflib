@@ -4,6 +4,7 @@ gh_lists.py MILESTONE
 
 Functions for Github API requests.
 """
+
 import argparse
 import collections
 import json
@@ -13,16 +14,16 @@ import sys
 
 from urllib2 import urlopen
 
-Issue = collections.namedtuple('Issue', ('id', 'title', 'url'))
+Issue = collections.namedtuple("Issue", ("id", "title", "url"))
 
 
 def main():
     p = argparse.ArgumentParser(usage=__doc__.lstrip())
-    p.add_argument('--project', default='holgern/pyedflib')
-    p.add_argument('milestone')
+    p.add_argument("--project", default="holgern/pyedflib")
+    p.add_argument("milestone")
     args = p.parse_args()
 
-    getter = CachedGet('gh_cache.json')
+    getter = CachedGet("gh_cache.json")
     try:
         milestones = get_milestones(getter, args.project)
         if args.milestone not in milestones:
@@ -34,13 +35,13 @@ def main():
     finally:
         getter.save()
 
-    prs = [x for x in issues if '/pull/' in x.url]
+    prs = [x for x in issues if "/pull/" in x.url]
     issues = [x for x in issues if x not in prs]
 
     def print_list(title, items):
         print()
         print(title)
-        print("-"*len(title))
+        print("-" * len(title))
         print()
 
         for issue in items:
@@ -72,7 +73,7 @@ def get_milestones(getter, project):
 
     milestones = {}
     for ms in data:
-        milestones[ms['title']] = ms['number']
+        milestones[ms["title"]] = ms["number"]
     return milestones
 
 
@@ -87,18 +88,16 @@ def get_issues(getter, project, milestone):
     while True:
         raw_data, info = getter.get(url)
         raw_datas.append(raw_data)
-        if 'link' not in info:
+        if "link" not in info:
             break
-        m = re.search(r'<(.*?)>; rel="next"', info['link'])
+        m = re.search(r'<(.*?)>; rel="next"', info["link"])
         if m:
             url = m.group(1)
             continue
         break
 
     issues = [
-        Issue(issue_data['number'],
-              issue_data['title'],
-              issue_data['html_url'])
+        Issue(issue_data["number"], issue_data["title"], issue_data["html_url"])
         for raw_data in raw_datas
         for issue_data in json.loads(raw_data)
     ]
@@ -109,9 +108,11 @@ class CachedGet:
     def __init__(self, filename):
         self.filename = filename
         if os.path.isfile(filename):
-            print(f"[gh_lists] using {filename} as cache (remove it if you want fresh data)",
-                  file=sys.stderr)
-            with open(filename, 'rb') as f:
+            print(
+                f"[gh_lists] using {filename} as cache (remove it if you want fresh data)",
+                file=sys.stderr,
+            )
+            with open(filename, "rb") as f:
                 self.cache = json.load(f)
         else:
             self.cache = {}
@@ -132,7 +133,7 @@ class CachedGet:
 
     def save(self):
         tmp = f"{self.filename}.new"
-        with open(tmp, 'wb') as f:
+        with open(tmp, "wb") as f:
             json.dump(self.cache, f)
         os.rename(tmp, self.filename)
 

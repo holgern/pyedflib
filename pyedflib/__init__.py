@@ -13,4 +13,4 @@ from . import data
 
 from pyedflib.version import version as __version__
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]
