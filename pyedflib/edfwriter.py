@@ -286,7 +286,8 @@ class EdfWriter:
         self.close()
 
     def __init__(self, file_name: str, n_channels: int, file_type: int = FILETYPE_EDFPLUS,
-                 buffered: bool = False) -> None:
+                 buffered: bool = False,
+                 pad_with: Union[int, float, str] = 0) -> None:
         """Initialises an EDF file at file_name.
         file_type is one of
             edflib.FILETYPE_EDFPLUS
@@ -296,10 +297,18 @@ class EdfWriter:
         If buffered is True, writeSamples() accepts blocks of arbitrary size
         (e.g. small chunks from a real-time acquisition loop): samples are
         buffered and a data record is only committed to file once a full
-        record is available. The last, incomplete record is zero-padded and
+        record is available. The last, incomplete record is padded and
         written on close(). With the default buffered=False, every call to
         writeSamples() commits all passed data, padding the last record to
         full length.
+
+        pad_with controls the value used to pad an incomplete last record
+        (buffered mode only): a number (default 0), or the string 'last' to
+        repeat the last sample of each signal, which avoids a step
+        discontinuity at the end of the recording. The value is interpreted
+        in the same domain as the buffered samples, i.e. as a physical value
+        when writeSamples() was called with digital=False, and as a digital
+        value when digital=True.
 
         channel_info should be a
         list of dicts, one for each channel in the data. Each dict needs
@@ -330,6 +339,7 @@ class EdfWriter:
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
         self.buffered = buffered
+        self.pad_with = pad_with
         self._buffered_digital: Optional[bool] = None
         self.channels: List[Dict[str, Union[str, int, float, None]]] = []
         self.sample_buffer: List[np.ndarray] = [np.array([]) for _ in range(n_channels)]
@@ -355,6 +365,10 @@ class EdfWriter:
         self._n_records_written = 0
         self._channel_write_pos = 0
         self._n_annotations_written = 0
+        if not (isinstance(pad_with, (int, float)) and not isinstance(pad_with, bool)) \
+                and pad_with != 'last':
+            raise ValueError("pad_with must be a number or 'last', "
+                             "got {!r}".format(pad_with))
 
     def update_header(self) -> None:
         """
@@ -959,7 +973,7 @@ class EdfWriter:
         If the writer was created with buffered=True, data blocks of arbitrary
         size are accepted: samples are buffered internally and only complete
         data records are committed to file. The remainder is written (padded
-        with zeros) when close() is called.
+        according to `pad_with`) when close() is called.
 
         All parameters must be already written into the bdf/edf-file.
         """
@@ -1122,15 +1136,20 @@ class EdfWriter:
     def _flush_sample_buffer(self) -> None:
         """
         Writes buffered leftover samples (buffered=True) as one final data
-        record, zero-padded to full record length.
+        record, padded to full record length according to `pad_with`.
         """
         if all(len(buf) == 0 for buf in self.sample_buffer):
             return
         digital = bool(self._buffered_digital)
+        dtype = np.int32 if digital else np.float64
         for i in range(len(self.sample_buffer)):
             smp_per_record = self.get_smp_per_record(i)
-            lastSamples = np.zeros(smp_per_record, dtype=np.int32 if digital else None)
             buf = self.sample_buffer[i][:smp_per_record]
+            if self.pad_with == 'last':
+                pad_value = buf[-1] if len(buf) > 0 else 0
+            else:
+                pad_value = self.pad_with
+            lastSamples = np.full(smp_per_record, pad_value, dtype=dtype)
             lastSamples[:len(buf)] = buf
             if digital:
                 success = self.writeDigitalSamples(lastSamples)

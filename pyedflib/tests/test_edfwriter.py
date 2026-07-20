@@ -1354,6 +1354,69 @@ class TestEdfWriter(unittest.TestCase):
         f.close()
         np.testing.assert_allclose(back, x, atol=1e-3)
 
+    def test_buffered_writer_pad_with_last(self):
+        """pad_with='last' repeats the last sample instead of zero-padding."""
+        fs = 100
+        x = np.full(int(2.5 * fs), 3.0)
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_last.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with='last')
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        duration = f.file_duration
+        back = f.readSignal(0)
+        f.close()
+
+        self.assertEqual(duration, 3.0)
+        np.testing.assert_allclose(back, 3.0, atol=1e-3)  # no discontinuity
+
+    def test_buffered_writer_pad_with_number(self):
+        """pad_with accepts a fixed numeric fill value."""
+        fs = 100
+        x = np.ones(int(2.5 * fs))
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_number.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=-2.5)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        back = f.readSignal(0)
+        f.close()
+
+        np.testing.assert_allclose(back[:len(x)], x, atol=1e-3)
+        np.testing.assert_allclose(back[len(x):], -2.5, atol=1e-3)
+
+    def test_buffered_writer_pad_with_digital(self):
+        """pad_with is interpreted as a digital value when digital=True."""
+        fs = 100
+        x = np.full(int(2.5 * fs), 100, dtype=np.int32)
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_digital.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=7)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]], digital=True)
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        back = f.readSignal(0, digital=True)
+        f.close()
+
+        np.testing.assert_array_equal(back[:len(x)], x)
+        np.testing.assert_array_equal(back[len(x):], 7)
+
+    def test_buffered_writer_pad_with_invalid(self):
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_invalid.edf')
+        with self.assertRaises(ValueError):
+            pyedflib.EdfWriter(filename, 1, buffered=True, pad_with='bogus')
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)
