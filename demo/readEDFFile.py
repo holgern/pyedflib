@@ -4,7 +4,7 @@ import numpy as np
 
 import pyedflib
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     f = pyedflib.data.test_generator()
     print(f"\nlibrary version: {pyedflib.version.version}")
 
@@ -13,8 +13,12 @@ if __name__ == '__main__':
     # print(f"filetype: {hdr.filetype}\n")
     print(f"edfsignals: {f.signals_in_file}")
     print(f"file duration: {f.file_duration} seconds")
-    print(f"startdate: {f.getStartdatetime().day}-{f.getStartdatetime().month}-{f.getStartdatetime().year}")
-    print(f"starttime: {f.getStartdatetime().hour}:{f.getStartdatetime().minute:02}:{f.getStartdatetime().second:02}")
+    print(
+        f"startdate: {f.getStartdatetime().day}-{f.getStartdatetime().month}-{f.getStartdatetime().year}"
+    )
+    print(
+        f"starttime: {f.getStartdatetime().hour}:{f.getStartdatetime().minute:02}:{f.getStartdatetime().second:02}"
+    )
     # print(f"patient: {f.getP}")
     # print(f"recording: {f.getPatientAdditional()}")
     print(f"patientcode: {f.getPatientCode()}")
@@ -47,14 +51,16 @@ if __name__ == '__main__':
 
     annotations = f.readAnnotations()
     for n in np.arange(f.annotations_in_file):
-        print(f"annotation: onset is {annotations[0][n]:f}    duration is {annotations[1][n]}    description is {annotations[2][n]}")
+        print(
+            f"annotation: onset is {annotations[0][n]:f}    duration is {annotations[1][n]}    description is {annotations[2][n]}"
+        )
 
     buf = f.readSignal(channel)
     n = 200
     print(f"\nread {n} samples\n")
     result = ""
     for i in np.arange(n):
-        result += (f"{buf[i]:.1f}, ")
+        result += f"{buf[i]:.1f}, "
     print(result)
     f._close()
     del f

@@ -40,25 +40,24 @@ def _compare_cropped_edf(path_orig_edf, path_cropped_edf):
 
 
 class TestHighLevel(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
 
-        data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        data_dir = os.path.join(os.path.dirname(__file__), "data")
 
-        cls.edfplus_data_file = os.path.join(data_dir, 'tmp_test_file_plus.edf')
-        cls.test_generator = os.path.join(data_dir, 'test_generator.edf')
+        cls.edfplus_data_file = os.path.join(data_dir, "tmp_test_file_plus.edf")
+        cls.test_generator = os.path.join(data_dir, "test_generator.edf")
         cls.test_accented = os.path.join(data_dir, "tmp_áä'üöß.edf")
         cls.test_unicode = os.path.join(data_dir, "tmp_utf8-中文źąşㆆ운ʷᨄⅡəПр🤖.edf")
         cls.anonymized = os.path.join(data_dir, "tmp_anonymized.edf")
         cls.personalized = os.path.join(data_dir, "tmp_personalized.edf")
-        cls.drop_from = os.path.join(data_dir, 'tmp_drop_from.edf')
-        cls.tmp_testfile = os.path.join(data_dir, 'tmp')
+        cls.drop_from = os.path.join(data_dir, "tmp_drop_from.edf")
+        cls.tmp_testfile = os.path.join(data_dir, "tmp")
 
     @classmethod
     def tearDownClass(cls):
-        data_dir = os.path.join(os.path.dirname(__file__), 'data')
-        tmpfiles = [f for f in os.listdir(data_dir) if f.startswith('tmp')]
+        data_dir = os.path.join(os.path.dirname(__file__), "data")
+        tmpfiles = [f for f in os.listdir(data_dir) if f.startswith("tmp")]
         for file in tmpfiles:
             try:
                 os.remove(os.path.join(data_dir, file))
@@ -76,8 +75,8 @@ class TestHighLevel(unittest.TestCase):
         signals_phys, shead, _ = highlevel.read_edf(self.test_generator)
         signals_dig, _, _ = highlevel.read_edf(self.test_generator, digital=True)
 
-        dmin, dmax = shead[0]['digital_min'],  shead[0]['digital_max']
-        pmin, pmax = shead[0]['physical_min'],  shead[0]['physical_max']
+        dmin, dmax = shead[0]["digital_min"], shead[0]["digital_max"]
+        pmin, pmax = shead[0]["physical_min"], shead[0]["physical_max"]
 
         # convert to physical
         signal_phys2 = highlevel.dig2phys(signals_dig, dmin, dmax, pmin, pmax)
@@ -91,25 +90,37 @@ class TestHighLevel(unittest.TestCase):
     def test_read_write_edf(self):
         startdate = datetime.now()
         t = startdate
-        startdate = datetime(t.year,t.month,t.day,t.hour, t.minute,t.second)
+        startdate = datetime(t.year, t.month, t.day, t.hour, t.minute, t.second)
 
-        header = highlevel.make_header(technician='tech', recording_additional='r_add',
-                                                patientname='name', patient_additional='p_add',
-                                                patientcode='42', equipment='eeg', admincode='120',
-                                                sex='Male', startdate=startdate,birthdate='05.09.1980')
-        annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
+        header = highlevel.make_header(
+            technician="tech",
+            recording_additional="r_add",
+            patientname="name",
+            patient_additional="p_add",
+            patientcode="42",
+            equipment="eeg",
+            admincode="120",
+            sex="Male",
+            startdate=startdate,
+            birthdate="05.09.1980",
+        )
+        annotations = [[0.01, -1, "begin"], [0.5, -1, "middle"], [10, -1, "end"]]
 
-        signal_headers1 = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
+        signal_headers1 = highlevel.make_signal_headers(
+            ["ch" + str(i) for i in range(5)]
+        )
 
-        for file_type in [-1,0,1,2,3]:
+        for file_type in [-1, 0, 1, 2, 3]:
             if file_type in [0, 2]:
-                header['annotations'] = []
+                header["annotations"] = []
             else:
-                header['annotations'] = annotations
+                header["annotations"] = annotations
 
-            file = f'{self.tmp_testfile}_{file_type}_phys.edf'
-            signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
-            success = highlevel.write_edf(file, signals, signal_headers1, header, file_type=file_type)
+            file = f"{self.tmp_testfile}_{file_type}_phys.edf"
+            signals = np.random.rand(5, 256 * 300) * 200  # 5 minutes of eeg
+            success = highlevel.write_edf(
+                file, signals, signal_headers1, header, file_type=file_type
+            )
             self.assertTrue(os.path.isfile(file))
             self.assertGreater(os.path.getsize(file), 0)
             self.assertTrue(success)
@@ -119,14 +130,16 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), 5)
             self.assertEqual(len(signals2), len(signal_headers2))
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1,  shead2)
+                self.assertDictEqual(shead1, shead2)
             np.testing.assert_allclose(signals, signals2, atol=0.01)
             if file_type in [-1, 1, 3]:
                 self.assertDictEqual(header, header2)
 
-            file = f'{self.tmp_testfile}_{file_type}_dig.edf'
-            signals = (signals*100).astype(np.int8)
-            success = highlevel.write_edf(file, signals,  signal_headers1, header, digital=True)
+            file = f"{self.tmp_testfile}_{file_type}_dig.edf"
+            signals = (signals * 100).astype(np.int8)
+            success = highlevel.write_edf(
+                file, signals, signal_headers1, header, digital=True
+            )
             self.assertTrue(os.path.isfile(file))
             self.assertGreater(os.path.getsize(file), 0)
             self.assertTrue(success)
@@ -137,7 +150,7 @@ class TestHighLevel(unittest.TestCase):
             self.assertEqual(len(signals2), len(signal_headers2))
             np.testing.assert_array_equal(signals, signals2)
             for shead1, shead2 in zip(signal_headers1, signal_headers2):
-                self.assertDictEqual(shead1,  shead2)
+                self.assertDictEqual(shead1, shead2)
 
             # EDF/BDF header writing does not correctly work yet
             if file_type in [-1, 1, 3]:
@@ -145,12 +158,14 @@ class TestHighLevel(unittest.TestCase):
 
     def test_read_write_with_annotations(self):
         signals, signal_headers, header = highlevel.read_edf(self.test_generator)
-        expected = [[0.0, -1, 'Recording starts'], [600.0, -1, 'Recording ends']]
-        self.assertEqual(header['annotations'], expected)
+        expected = [[0.0, -1, "Recording starts"], [600.0, -1, "Recording ends"]]
+        self.assertEqual(header["annotations"], expected)
 
         highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
-        _signals2, _signal_header2s, header2 = highlevel.read_edf(self.edfplus_data_file)
-        self.assertEqual(header['annotations'], header2['annotations'])
+        _signals2, _signal_header2s, header2 = highlevel.read_edf(
+            self.edfplus_data_file
+        )
+        self.assertEqual(header["annotations"], header2["annotations"])
 
     def test_write_more_annotations_than_datarecords(self):
         # gh-187: more annotations than datarecords were silently dropped.
@@ -158,30 +173,37 @@ class TestHighLevel(unittest.TestCase):
         sfreq = 256
         seconds = 60
         n_annotations = 350
-        signals = np.random.rand(2, sfreq*seconds)
+        signals = np.random.rand(2, sfreq * seconds)
         signal_headers = highlevel.make_signal_headers(
-            ['ch1', 'ch2'], sample_frequency=sfreq,
-            physical_min=-1, physical_max=1)
-        annotations = [[round(i*seconds/n_annotations, 4), -1, f'marker_{i}']
-                       for i in range(n_annotations)]
+            ["ch1", "ch2"], sample_frequency=sfreq, physical_min=-1, physical_max=1
+        )
+        annotations = [
+            [round(i * seconds / n_annotations, 4), -1, f"marker_{i}"]
+            for i in range(n_annotations)
+        ]
         header = highlevel.make_header()
-        header['annotations'] = annotations
+        header["annotations"] = annotations
 
-        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers,
-                            header)
+        highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
         _, _, header2 = highlevel.read_edf(self.edfplus_data_file)
-        read_annotations = sorted(header2['annotations'])
+        read_annotations = sorted(header2["annotations"])
         self.assertEqual(len(read_annotations), n_annotations)
-        np.testing.assert_allclose([a[0] for a in read_annotations],
-                                   sorted(a[0] for a in annotations),
-                                   atol=1e-4)
+        np.testing.assert_allclose(
+            [a[0] for a in read_annotations],
+            sorted(a[0] for a in annotations),
+            atol=1e-4,
+        )
 
     def test_quick_write(self):
-        signals = np.random.randint(-2048, 2048, [3, 256*60])
-        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True)
-        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        signals = np.random.randint(-2048, 2048, [3, 256 * 60])
+        highlevel.write_edf_quick(
+            self.edfplus_data_file, signals.astype(np.int32), sfreq=256, digital=True
+        )
+        signals2, _, _ = highlevel.read_edf(
+            self.edfplus_data_file, digital=True, verbose=True
+        )
         np.testing.assert_allclose(signals, signals2)
-        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = np.random.rand(3, 256 * 60)  # then rescale to 0-1
         signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.edfplus_data_file)
@@ -189,37 +211,51 @@ class TestHighLevel(unittest.TestCase):
 
     def test_fortran_write(self):
         # Create Fortran contiguous array
-        signals = np.random.randint(-2048,2048,[4, 5000000])
+        signals = np.random.randint(-2048, 2048, [4, 5000000])
         signals = np.asfortranarray(signals)
         # Write
-        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=250, digital=True)
+        highlevel.write_edf_quick(
+            self.edfplus_data_file, signals.astype(np.int32), sfreq=250, digital=True
+        )
         # Read and check
-        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        signals2, _, _ = highlevel.read_edf(
+            self.edfplus_data_file, digital=True, verbose=True
+        )
         np.testing.assert_allclose(signals, signals2)
 
         # Create Fortran contiguous list
-        signals = [np.random.randint(-2048,2048,(5000000,), dtype=np.int32)]*4
+        signals = [np.random.randint(-2048, 2048, (5000000,), dtype=np.int32)] * 4
         # Write
-        highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=250, digital=True)
+        highlevel.write_edf_quick(
+            self.edfplus_data_file, signals, sfreq=250, digital=True
+        )
         # Read and check
-        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        signals2, _, _ = highlevel.read_edf(
+            self.edfplus_data_file, digital=True, verbose=True
+        )
         np.testing.assert_allclose(signals, signals2)
-
 
     def test_read_write_decimal_sample_frequencies(self):
         # first test with digital signals
-        signals = np.random.randint(-2048, 2048, [3, 256*60+8])
-        highlevel.write_edf_quick(self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True)
-        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=True, verbose=True)
+        signals = np.random.randint(-2048, 2048, [3, 256 * 60 + 8])
+        highlevel.write_edf_quick(
+            self.edfplus_data_file, signals.astype(np.int32), sfreq=8.5, digital=True
+        )
+        signals2, _, _ = highlevel.read_edf(
+            self.edfplus_data_file, digital=True, verbose=True
+        )
         np.testing.assert_allclose(signals, signals2)
 
         # now with physical signals
-        signals = np.random.rand(3, 256*60+8) # then rescale to 0-1
+        signals = np.random.rand(3, 256 * 60 + 8)  # then rescale to 0-1
         signals = (signals - signals.min()) / (signals.max() - signals.min())
-        highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=8.5, digital=False)
-        signals2, _, _ = highlevel.read_edf(self.edfplus_data_file, digital=False, verbose=True)
+        highlevel.write_edf_quick(
+            self.edfplus_data_file, signals, sfreq=8.5, digital=False
+        )
+        signals2, _, _ = highlevel.read_edf(
+            self.edfplus_data_file, digital=False, verbose=True
+        )
         np.testing.assert_allclose(signals, signals2, atol=0.0001)
-
 
     def test_read_write_diff_sfreq(self):
 
@@ -227,141 +263,180 @@ class TestHighLevel(unittest.TestCase):
         sfreqs = [1, 64, 128, 200]
         sheaders = []
         for sfreq in sfreqs:
-            signals.append(np.random.randint(-2048, 2048, sfreq*60).astype(np.int32))
-            shead = highlevel.make_signal_header(f'ch{sfreq}', sample_frequency=sfreq)
+            signals.append(np.random.randint(-2048, 2048, sfreq * 60).astype(np.int32))
+            shead = highlevel.make_signal_header(f"ch{sfreq}", sample_frequency=sfreq)
             sheaders.append(shead)
         highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
-        signals2, _sheaders2, _ = highlevel.read_edf(self.edfplus_data_file, digital=True)
+        signals2, _sheaders2, _ = highlevel.read_edf(
+            self.edfplus_data_file, digital=True
+        )
         for s1, s2 in zip(signals, signals2):
             np.testing.assert_allclose(s1, s2)
 
     def test_assertion_dmindmax(self):
 
         # test digital and dmin wrong
-        signals =[np.random.randint(-2048, 2048, 256*60).astype(np.int16)]
-        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
-        sheaders[0]['digital_min'] = -128
-        sheaders[0]['digital_max'] = 128
+        signals = [np.random.randint(-2048, 2048, 256 * 60).astype(np.int16)]
+        sheaders = [highlevel.make_signal_header("ch1", sample_frequency=256)]
+        sheaders[0]["digital_min"] = -128
+        sheaders[0]["digital_max"] = 128
         with self.assertRaises(AssertionError):
             highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=True)
 
         # test physical min and max wrong
-        signals = [np.random.randint(-2048, 2048, 256*60).astype(np.int16)]
-        sheaders = [highlevel.make_signal_header('ch1', sample_frequency=256)]
-        sheaders[0]['physical_min'] = -200
-        sheaders[0]['physical_max'] = 200
+        signals = [np.random.randint(-2048, 2048, 256 * 60).astype(np.int16)]
+        sheaders = [highlevel.make_signal_header("ch1", sample_frequency=256)]
+        sheaders[0]["physical_min"] = -200
+        sheaders[0]["physical_max"] = 200
 
         # a large difference between phys min and values should result in error
         with self.assertRaises(AssertionError):
-            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+            highlevel.write_edf(
+                self.edfplus_data_file, signals, sheaders, digital=False
+            )
 
         # A small roundoff difference between phys min and values should result in warning
         # edf_accuracy is calculated as: max_signals / digital_max or min_signals / digital_min
         #   (whichever is smallest). digital_max = 2^16 / 2
-        edf_accuracy = min([max(signals[0])/sheaders[0]['digital_max'], min(signals[0])/sheaders[0]['digital_min']]).astype(np.float16)
+        edf_accuracy = min(
+            [
+                max(signals[0]) / sheaders[0]["digital_max"],
+                min(signals[0]) / sheaders[0]["digital_min"],
+            ]
+        ).astype(np.float16)
 
-        sheaders[0]['physical_min'] = min(signals[0]) + 0.999 * edf_accuracy
-        sheaders[0]['physical_max'] = max(signals[0]) - 0.999 * edf_accuracy
+        sheaders[0]["physical_min"] = min(signals[0]) + 0.999 * edf_accuracy
+        sheaders[0]["physical_max"] = max(signals[0]) - 0.999 * edf_accuracy
 
-        with self.assertWarnsRegex(expected_warning=UserWarning, expected_regex="phys_min is.*"):
-            highlevel.write_edf(self.edfplus_data_file, signals, sheaders, digital=False)
+        with self.assertWarnsRegex(
+            expected_warning=UserWarning, expected_regex="phys_min is.*"
+        ):
+            highlevel.write_edf(
+                self.edfplus_data_file, signals, sheaders, digital=False
+            )
 
         # It would be nice to doublecheck the written data in the files here.
         # However, the (rather inaccurate) data rescaling of EDF files makes this tricky.
 
-
     def test_read_write_accented(self):
-        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = np.random.rand(3, 256 * 60)  # then rescale to 0-1
         signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf_quick(self.test_accented, signals, sfreq=256)
         signals2, _, _ = highlevel.read_edf(self.test_accented)
 
         np.testing.assert_allclose(signals, signals2, atol=0.00002)
         # if os.name!='nt':
-        self.assertTrue(os.path.isfile(self.test_accented), 'File does not exist')
+        self.assertTrue(os.path.isfile(self.test_accented), "File does not exist")
 
     def test_read_unicode(self):
-        signals = np.random.rand(3, 256*60) # then rescale to 0-1
+        signals = np.random.rand(3, 256 * 60)  # then rescale to 0-1
         signals = (signals - signals.min()) / (signals.max() - signals.min())
         success = highlevel.write_edf_quick(self.edfplus_data_file, signals, sfreq=256)
         self.assertTrue(success)
         shutil.copy(self.edfplus_data_file, self.test_unicode)
         _signals2, _, _ = highlevel.read_edf(self.test_unicode)
-        self.assertTrue(os.path.isfile(self.test_unicode), 'File does not exist')
-
+        self.assertTrue(os.path.isfile(self.test_unicode), "File does not exist")
 
     def test_read_header(self):
 
         header = highlevel.read_edf_header(self.test_generator)
         self.assertEqual(len(header), 15)
-        self.assertEqual(len(header['channels']), 11)
-        self.assertEqual(len(header['SignalHeaders']), 11)
-        self.assertEqual(header['Duration'], 600)
-        self.assertEqual(header['admincode'], 'Dr. X')
-        self.assertEqual(header['birthdate'], '30 jun 1969')
-        self.assertEqual(header['equipment'], 'test generator')
-        self.assertEqual(header['sex'], 'Male')
-        self.assertEqual(header['gender'], 'Male')
-        self.assertEqual(header['patient_additional'], 'patient')
-        self.assertEqual(header['patientcode'], 'abcxyz99')
-        self.assertEqual(header['patientname'], 'Hans Muller')
-        self.assertEqual(header['technician'], 'Mr. Spotty')
-
+        self.assertEqual(len(header["channels"]), 11)
+        self.assertEqual(len(header["SignalHeaders"]), 11)
+        self.assertEqual(header["Duration"], 600)
+        self.assertEqual(header["admincode"], "Dr. X")
+        self.assertEqual(header["birthdate"], "30 jun 1969")
+        self.assertEqual(header["equipment"], "test generator")
+        self.assertEqual(header["sex"], "Male")
+        self.assertEqual(header["gender"], "Male")
+        self.assertEqual(header["patient_additional"], "patient")
+        self.assertEqual(header["patientcode"], "abcxyz99")
+        self.assertEqual(header["patientname"], "Hans Muller")
+        self.assertEqual(header["technician"], "Mr. Spotty")
 
     def test_anonymize(self):
 
-        header = highlevel.make_header(technician='tech', recording_additional='radd',
-                                                patientname='name', patient_additional='padd',
-                                                patientcode='42', equipment='eeg', admincode='420',
-                                                sex='Male', birthdate='05.09.1980')
-        annotations = [[0.01, -1, 'begin'],[0.5, -1, 'middle'],[10, -1, 'end']]
-        header['annotations'] = annotations
-        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
-        signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        header = highlevel.make_header(
+            technician="tech",
+            recording_additional="radd",
+            patientname="name",
+            patient_additional="padd",
+            patientcode="42",
+            equipment="eeg",
+            admincode="420",
+            sex="Male",
+            birthdate="05.09.1980",
+        )
+        annotations = [[0.01, -1, "begin"], [0.5, -1, "middle"], [10, -1, "end"]]
+        header["annotations"] = annotations
+        signal_headers = highlevel.make_signal_headers(
+            ["ch" + str(i) for i in range(3)]
+        )
+        signals = np.random.rand(3, 256 * 300) * 200  # 5 minutes of eeg
         signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf(self.personalized, signals, signal_headers, header)
 
-
-
-        highlevel.anonymize_edf(self.personalized, new_file=self.anonymized,
-                                        to_remove=['patientname', 'birthdate',
-                                                   'admincode', 'patientcode',
-                                                   'technician'],
-                                        new_values=['x', '', 'xx', 'xxx',
-                                                    'xxxx'], verify=True, verbose=True)
+        highlevel.anonymize_edf(
+            self.personalized,
+            new_file=self.anonymized,
+            to_remove=[
+                "patientname",
+                "birthdate",
+                "admincode",
+                "patientcode",
+                "technician",
+            ],
+            new_values=["x", "", "xx", "xxx", "xxxx"],
+            verify=True,
+            verbose=True,
+        )
         new_header = highlevel.read_edf_header(self.anonymized)
-        self.assertEqual(new_header['birthdate'], '')
-        self.assertEqual(new_header['patientname'], 'x')
-        self.assertEqual(new_header['admincode'], 'xx')
-        self.assertEqual(new_header['patientcode'], 'xxx')
-        self.assertEqual(new_header['technician'], 'xxxx')
+        self.assertEqual(new_header["birthdate"], "")
+        self.assertEqual(new_header["patientname"], "x")
+        self.assertEqual(new_header["admincode"], "xx")
+        self.assertEqual(new_header["patientcode"], "xxx")
+        self.assertEqual(new_header["technician"], "xxxx")
 
-
-        highlevel.anonymize_edf(self.personalized, to_remove=['patientname', 'birthdate',
-                                                   'admincode', 'patientcode',
-                                                   'technician'],
-                                        new_values=['x', '', 'xx', 'xxx',
-                                                    'xxxx'], verify=True)
-        new_header = highlevel.read_edf_header(self.personalized[:-4]+'_anonymized.edf')
-        self.assertEqual(new_header['birthdate'], '')
-        self.assertEqual(new_header['patientname'], 'x')
-        self.assertEqual(new_header['admincode'], 'xx')
-        self.assertEqual(new_header['patientcode'], 'xxx')
-        self.assertEqual(new_header['technician'], 'xxxx')
+        highlevel.anonymize_edf(
+            self.personalized,
+            to_remove=[
+                "patientname",
+                "birthdate",
+                "admincode",
+                "patientcode",
+                "technician",
+            ],
+            new_values=["x", "", "xx", "xxx", "xxxx"],
+            verify=True,
+        )
+        new_header = highlevel.read_edf_header(
+            self.personalized[:-4] + "_anonymized.edf"
+        )
+        self.assertEqual(new_header["birthdate"], "")
+        self.assertEqual(new_header["patientname"], "x")
+        self.assertEqual(new_header["admincode"], "xx")
+        self.assertEqual(new_header["patientcode"], "xxx")
+        self.assertEqual(new_header["technician"], "xxxx")
 
         with self.assertRaises(AssertionError):
-            highlevel.anonymize_edf(self.personalized,
-                                    new_file=self.anonymized,
-                                    to_remove=['patientname', 'birthdate',
-                                               'admincode', 'patientcode',
-                                               'technician'],
-                                    new_values=['x', '', 'xx', 'xxx'],
-                                    verify=True)
+            highlevel.anonymize_edf(
+                self.personalized,
+                new_file=self.anonymized,
+                to_remove=[
+                    "patientname",
+                    "birthdate",
+                    "admincode",
+                    "patientcode",
+                    "technician",
+                ],
+                new_values=["x", "", "xx", "xxx"],
+                verify=True,
+            )
 
     def test_crop_edf(self):
-        data_dir = os.path.join(os.path.dirname(__file__), 'data')
-        edf_file = os.path.join(data_dir, 'test_generator.edf')
-        outfile = os.path.join(data_dir, 'tmp_test_generator_cropped.edf')
+        data_dir = os.path.join(os.path.dirname(__file__), "data")
+        edf_file = os.path.join(data_dir, "test_generator.edf")
+        outfile = os.path.join(data_dir, "tmp_test_generator_cropped.edf")
         orig_header = highlevel.read_edf_header(edf_file)
         orig_start = orig_header["startdate"]
         new_start = datetime(2011, 4, 4, 12, 58, 0)
@@ -369,16 +444,12 @@ class TestHighLevel(unittest.TestCase):
 
         # Test 1: no cropping
         # The output file should be the same as input.
-        highlevel.crop_edf(
-            edf_file, new_file=outfile, start=None, stop=None)
+        highlevel.crop_edf(edf_file, new_file=outfile, start=None, stop=None)
         assert highlevel.compare_edf(edf_file, outfile)
 
         # Test 2: crop using datetimes (default)
         # .. both start and stop
-        highlevel.crop_edf(
-            edf_file, new_file=outfile, start=new_start,
-            stop=new_stop
-        )
+        highlevel.crop_edf(edf_file, new_file=outfile, start=new_start, stop=new_stop)
         # Test that the signal values are correctly cropped
         _compare_cropped_edf(edf_file, outfile)
         # .. only start
@@ -393,74 +464,100 @@ class TestHighLevel(unittest.TestCase):
         new_stop_sec = (new_stop - orig_start).seconds
         # .. both start and stop
         highlevel.crop_edf(
-            edf_file, new_file=outfile, start=new_start_sec,
-            stop=new_stop_sec, start_format="seconds", stop_format="seconds"
+            edf_file,
+            new_file=outfile,
+            start=new_start_sec,
+            stop=new_stop_sec,
+            start_format="seconds",
+            stop_format="seconds",
         )
         _compare_cropped_edf(edf_file, outfile)
         # .. only start
         highlevel.crop_edf(
-            edf_file, new_file=outfile,
-            start=new_start_sec, start_format="seconds"
+            edf_file, new_file=outfile, start=new_start_sec, start_format="seconds"
         )
         _compare_cropped_edf(edf_file, outfile)
         # .. only stop
         highlevel.crop_edf(
-            edf_file, new_file=outfile, stop=new_stop_sec,
-            stop_format="seconds"
+            edf_file, new_file=outfile, stop=new_stop_sec, stop_format="seconds"
         )
         _compare_cropped_edf(edf_file, outfile)
 
     def test_drop_channel(self):
-        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(5)])
-        signals = np.random.rand(5, 256*300)*200 #5 minutes of eeg
+        signal_headers = highlevel.make_signal_headers(
+            ["ch" + str(i) for i in range(5)]
+        )
+        signals = np.random.rand(5, 256 * 300) * 200  # 5 minutes of eeg
         signals = (signals - signals.min()) / (signals.max() - signals.min())
         highlevel.write_edf(self.drop_from, signals, signal_headers)
 
-        dropped = highlevel.drop_channels(self.drop_from, to_keep=['ch1', 'ch2'], verbose=True)
+        dropped = highlevel.drop_channels(
+            self.drop_from, to_keep=["ch1", "ch2"], verbose=True
+        )
 
         signals2, signal_headers, _header = highlevel.read_edf(dropped)
 
-        np.testing.assert_allclose(signals[1:3,:], signals2, atol=0.01)
+        np.testing.assert_allclose(signals[1:3, :], signals2, atol=0.01)
 
-        highlevel.drop_channels(self.drop_from, self.drop_from[:-4]+'2.edf',
-                                to_drop=['ch0', 'ch1', 'ch2'])
-        signals2, signal_headers, _header = highlevel.read_edf(self.drop_from[:-4]+'2.edf')
+        highlevel.drop_channels(
+            self.drop_from, self.drop_from[:-4] + "2.edf", to_drop=["ch0", "ch1", "ch2"]
+        )
+        signals2, signal_headers, _header = highlevel.read_edf(
+            self.drop_from[:-4] + "2.edf"
+        )
 
-        np.testing.assert_allclose(signals[3:,:], signals2, atol=0.01)
+        np.testing.assert_allclose(signals[3:, :], signals2, atol=0.01)
 
         with self.assertRaises(AssertionError):
-            highlevel.drop_channels(self.drop_from, to_keep=['ch1'], to_drop=['ch3'])
-
+            highlevel.drop_channels(self.drop_from, to_keep=["ch1"], to_drop=["ch3"])
 
     def test_annotation_bytestring(self):
-        header = highlevel.make_header(technician='tech', recording_additional='radd',
-                                                patientname='name', patient_additional='padd',
-                                                patientcode='42', equipment='eeg', admincode='420',
-                                                sex='Male', birthdate='05.09.1980')
-        annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
-        header['annotations'] = annotations
-        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
-        signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        header = highlevel.make_header(
+            technician="tech",
+            recording_additional="radd",
+            patientname="name",
+            patient_additional="padd",
+            patientcode="42",
+            equipment="eeg",
+            admincode="420",
+            sex="Male",
+            birthdate="05.09.1980",
+        )
+        annotations = [[0.01, b"-1", "begin"], [0.5, b"-1", "middle"], [10, -1, "end"]]
+        header["annotations"] = annotations
+        signal_headers = highlevel.make_signal_headers(
+            ["ch" + str(i) for i in range(3)]
+        )
+        signals = np.random.rand(3, 256 * 300) * 200  # 5 minutes of eeg
         highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
-        _,_,header2 = highlevel.read_edf(self.edfplus_data_file)
+        _, _, header2 = highlevel.read_edf(self.edfplus_data_file)
         highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
-        _,_,header3 = highlevel.read_edf(self.edfplus_data_file)
-        self.assertEqual(header2['annotations'], header3['annotations'])
+        _, _, header3 = highlevel.read_edf(self.edfplus_data_file)
+        self.assertEqual(header2["annotations"], header3["annotations"])
 
     def test_deprecated_sample_rate(self):
-        header = highlevel.make_header(technician='tech', recording_additional='radd',
-                                                patientname='name', patient_additional='padd',
-                                                patientcode='42', equipment='eeg', admincode='420',
-                                                sex='Male', birthdate='05.09.1980')
-        annotations = [[0.01, b'-1', 'begin'],[0.5, b'-1', 'middle'],[10, -1, 'end']]
-        header['annotations'] = annotations
-        signal_headers = highlevel.make_signal_headers(['ch'+str(i) for i in range(3)])
-        signal_headers[0]['sample_rate'] = 256
-        signals = np.random.rand(3, 256*300)*200 #5 minutes of eeg
+        header = highlevel.make_header(
+            technician="tech",
+            recording_additional="radd",
+            patientname="name",
+            patient_additional="padd",
+            patientcode="42",
+            equipment="eeg",
+            admincode="420",
+            sex="Male",
+            birthdate="05.09.1980",
+        )
+        annotations = [[0.01, b"-1", "begin"], [0.5, b"-1", "middle"], [10, -1, "end"]]
+        header["annotations"] = annotations
+        signal_headers = highlevel.make_signal_headers(
+            ["ch" + str(i) for i in range(3)]
+        )
+        signal_headers[0]["sample_rate"] = 256
+        signals = np.random.rand(3, 256 * 300) * 200  # 5 minutes of eeg
         with self.assertRaises(FutureWarning):
             highlevel.write_edf(self.edfplus_data_file, signals, signal_headers, header)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # run_module_suite(argv=sys.argv)
     unittest.main()

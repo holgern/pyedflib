@@ -32,4 +32,4 @@ def test_generator():
 
 
 def get_generator_filename():
-    return os.path.join(os.path.dirname(__file__), 'test_generator.edf')
+    return os.path.join(os.path.dirname(__file__), "test_generator.edf")

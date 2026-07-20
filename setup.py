@@ -12,12 +12,15 @@ from setuptools.command.develop import develop
 
 try:
     from Cython.Build import cythonize
+
     USE_CYTHON = True
 except ImportError:
     USE_CYTHON = False
-    if not os.path.exists(os.path.join('pyedflib', '_extensions', '_pyedflib.c')):
-        msg = ("Cython must be installed when working with a development "
-               "version of PyEDFlib")
+    if not os.path.exists(os.path.join("pyedflib", "_extensions", "_pyedflib.c")):
+        msg = (
+            "Cython must be installed when working with a development "
+            "version of PyEDFlib"
+        )
         raise RuntimeError(msg)
 
 
@@ -25,16 +28,16 @@ MAJOR = 0
 MINOR = 1
 MICRO = 42
 ISRELEASED = True
-VERSION = f'{MAJOR}.{MINOR}.{MICRO}'
+VERSION = f"{MAJOR}.{MINOR}.{MICRO}"
 
 # Version of Numpy required for setup
-REQUIRED_NUMPY = 'numpy>=1.9.1'
+REQUIRED_NUMPY = "numpy>=1.9.1"
 
 
 # from MDAnalysis setup.py (https://www.mdanalysis.org/)
 class NumpyExtension(Extension):
-    """Derived class to cleanly handle setup-time (numpy) dependencies.
-    """
+    """Derived class to cleanly handle setup-time (numpy) dependencies."""
+
     # The only setup-time numpy dependency comes when setting up its
     #  include dir.
     # The actual numpy import and call can be delayed until after pip
@@ -60,6 +63,7 @@ class NumpyExtension(Extension):
     def include_dirs(self, val):
         self._np_include_dir_args = val
 
+
 # from MDAnalysis setup.py (https://www.mdanalysis.org/)
 def get_numpy_include():
     try:
@@ -68,20 +72,24 @@ def get_numpy_include():
         # setuptools forgets to unset numpy's setup flag and we get a crippled
         # version of it unless we do it ourselves.
         import builtins
+
         builtins.__NUMPY_SETUP__ = False
         import numpy as np
     except ImportError:
         try:
             # Try to install numpy
             from setuptools import dist
+
             dist.Distribution().fetch_build_eggs([REQUIRED_NUMPY])
             import numpy as np
         except Exception as e:
             print(e)
             print('*** package "numpy" not found ***')
-            print('pyEDFlib requires a version of NumPy, even for setup.')
-            print('Please get it from https://numpy.org/ or install it through '
-                  'your package manager.')
+            print("pyEDFlib requires a version of NumPy, even for setup.")
+            print(
+                "Please get it from https://numpy.org/ or install it through "
+                "your package manager."
+            )
             sys.exit(-1)
     try:
         numpy_include = np.get_include()
@@ -89,26 +97,26 @@ def get_numpy_include():
         numpy_include = np.get_numpy_include()
     return numpy_include
 
+
 # Return the git revision as a string
 def git_version():
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
         env = {}
-        for k in ['SYSTEMROOT', 'PATH']:
+        for k in ["SYSTEMROOT", "PATH"]:
             v = os.environ.get(k)
             if v is not None:
                 env[k] = v
         # LANGUAGE is used on win32
-        env['LANGUAGE'] = 'C'
-        env['LANG'] = 'C'
-        env['LC_ALL'] = 'C'
-        out = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                               env=env).communicate()[0]
+        env["LANGUAGE"] = "C"
+        env["LANG"] = "C"
+        env["LC_ALL"] = "C"
+        out = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
         return out
 
     try:
-        out = _minimal_ext_cmd(['git', 'rev-parse', 'HEAD'])
-        GIT_REVISION = out.strip().decode('ascii')
+        out = _minimal_ext_cmd(["git", "rev-parse", "HEAD"])
+        GIT_REVISION = out.strip().decode("ascii")
     except OSError:
         GIT_REVISION = "Unknown"
 
@@ -120,14 +128,15 @@ def get_version_info():
     # write_version_py(), otherwise the import of pyedflib.version messes
     # up the build under Python 3.
     FULLVERSION = VERSION
-    if os.path.exists('.git'):
+    if os.path.exists(".git"):
         GIT_REVISION = git_version()
-    elif os.path.exists('pyedflib/version.py'):
+    elif os.path.exists("pyedflib/version.py"):
         # must be a source distribution, use existing version file
         # load it as a separate module to not load pyedflib/__init__.py
         import types
         from importlib.machinery import SourceFileLoader
-        loader = SourceFileLoader('pyedflib.version', 'pyedflib/version.py')
+
+        loader = SourceFileLoader("pyedflib.version", "pyedflib/version.py")
         version = types.ModuleType(loader.name)
         loader.exec_module(version)
         GIT_REVISION = version.git_revision
@@ -140,7 +149,7 @@ def get_version_info():
     return FULLVERSION, GIT_REVISION
 
 
-def write_version_py(filename='pyedflib/version.py'):
+def write_version_py(filename="pyedflib/version.py"):
     cnt = """
 # THIS FILE IS GENERATED FROM pyedflib SETUP.PY
 short_version = '%(version)s'
@@ -154,17 +163,22 @@ if not release:
 """
     FULLVERSION, GIT_REVISION = get_version_info()
 
-    with open(filename, 'w') as a:
-        a.write(cnt % {'version': VERSION,
-                       'full_version': FULLVERSION,
-                       'git_revision': GIT_REVISION,
-                       'isrelease': str(ISRELEASED)})
+    with open(filename, "w") as a:
+        a.write(
+            cnt
+            % {
+                "version": VERSION,
+                "full_version": FULLVERSION,
+                "git_revision": GIT_REVISION,
+                "isrelease": str(ISRELEASED),
+            }
+        )
 
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
 # update it when the contents of directories change.
-if os.path.exists('MANIFEST'):
-    os.remove('MANIFEST')
+if os.path.exists("MANIFEST"):
+    os.remove("MANIFEST")
 
 
 if sys.platform == "darwin":
@@ -181,13 +195,14 @@ if os.name == "nt":
             for line in fin:
                 line = line.replace(
                     b'#include "edflib.h"',
-                    b'#include "edflib.h"\r\n#include "fopen_utf8.h"')
+                    b'#include "edflib.h"\r\n#include "fopen_utf8.h"',
+                )
                 line = line.replace(
-                    b'file = fopeno(path, "rb");',
-                    b'file = fopen_utf8(path, "rb");')
+                    b'file = fopeno(path, "rb");', b'file = fopen_utf8(path, "rb");'
+                )
                 line = line.replace(
-                    b'file = fopeno(path, "wb");',
-                    b'file = fopen_utf8(path, "wb");')
+                    b'file = fopeno(path, "wb");', b'file = fopen_utf8(path, "wb");'
+                )
 
                 fout.write(line)
 
@@ -200,34 +215,46 @@ else:
 sources = list(map(make_ext_path, sources))
 headers = list(map(make_ext_path, headers))
 
-cython_modules = ['_pyedflib']
-cython_sources = [('{0}.pyx' if USE_CYTHON else '{0}.c').format(module)
-                  for module in cython_modules]
+cython_modules = ["_pyedflib"]
+cython_sources = [
+    ("{0}.pyx" if USE_CYTHON else "{0}.c").format(module) for module in cython_modules
+]
 
-c_macros = [("PY_EXTENSION", None), ("_LARGEFILE64_SOURCE", None), ("_LARGEFILE_SOURCE", None)]
+c_macros = [
+    ("PY_EXTENSION", None),
+    ("_LARGEFILE64_SOURCE", None),
+    ("_LARGEFILE_SOURCE", None),
+]
 
 cython_macros = []
 cythonize_opts = {}
 if os.environ.get("CYTHON_TRACE"):
-    cythonize_opts['linetrace'] = True
+    cythonize_opts["linetrace"] = True
     cython_macros.append(("CYTHON_TRACE_NOGIL", 1))
 
 # By default C object files are rebuilt for every extension
 # C files must be built once only for coverage to work
-c_lib = ('c_edf',{'sources': sources,
-                 'depends': headers,
-                 'include_dirs': [make_ext_path("c"), sysconfig.get_path('include')],
-                 'macros': c_macros,})
+c_lib = (
+    "c_edf",
+    {
+        "sources": sources,
+        "depends": headers,
+        "include_dirs": [make_ext_path("c"), sysconfig.get_path("include")],
+        "macros": c_macros,
+    },
+)
 
 ext_modules = [
-    NumpyExtension(f'pyedflib._extensions.{module}',
-              sources=[make_ext_path(source)],
-              # Doesn't automatically rebuild if library changes
-              depends=c_lib[1]['sources'] + c_lib[1]['depends'],
-              include_dirs=[make_ext_path("c"), get_numpy_include()],
-              define_macros=c_macros + cython_macros,
-              libraries=[c_lib[0]])
-    for module, source, in zip(cython_modules, cython_sources)
+    NumpyExtension(
+        f"pyedflib._extensions.{module}",
+        sources=[make_ext_path(source)],
+        # Doesn't automatically rebuild if library changes
+        depends=c_lib[1]["sources"] + c_lib[1]["depends"],
+        include_dirs=[make_ext_path("c"), get_numpy_include()],
+        define_macros=c_macros + cython_macros,
+        libraries=[c_lib[0]],
+    )
+    for module, source in zip(cython_modules, cython_sources)
 ]
 
 
@@ -240,20 +267,22 @@ class develop_build_clib(develop):
     Note: if you want to build in-place with ``python setup.py build_ext``,
     that will only work if you first do ``python setup.py build_clib``.
     """
+
     def install_for_development(self):
-        self.run_command('egg_info')
+        self.run_command("egg_info")
 
         # Build extensions in-place (the next 7 lines are the monkeypatch)
         import glob
-        hitlist = glob.glob(os.path.join('build', '*', 'c_edf.*'))
+
+        hitlist = glob.glob(os.path.join("build", "*", "c_edf.*"))
         if hitlist:
             # Remove existing clib - running build_clib twice in a row fails
             os.remove(hitlist[0])
-        self.reinitialize_command('build_clib', inplace=1)
-        self.run_command('build_clib')
+        self.reinitialize_command("build_clib", inplace=1)
+        self.run_command("build_clib")
 
-        self.reinitialize_command('build_ext', inplace=1)
-        self.run_command('build_ext')
+        self.reinitialize_command("build_ext", inplace=1)
+        self.run_command("build_ext")
 
         try:
             self.install_site_py()  # ensure that target dir is site-safe
@@ -266,6 +295,7 @@ class develop_build_clib(develop):
 
         # create an .egg-link in the installation dir, pointing to our egg
         from setuptools import log
+
         log.info("Creating %s (link to %s)", self.egg_link, self.egg_base)
         if not self.dry_run:
             with open(self.egg_link, "w") as f:
@@ -275,23 +305,22 @@ class develop_build_clib(develop):
         self.process_distribution(None, self.dist, not self.no_deps)
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     # Rewrite the version file every time
     write_version_py()
     if USE_CYTHON:
-            ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
+        ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
 
     setup(
         name="pyEDFlib",
         maintainer="Holger Nahrstaedt",
         maintainer_email="nahrstaedt@gmail.com",
-        author='Holger Nahrstaedt',
-        author_email='nahrstaedt@gmail.com',
+        author="Holger Nahrstaedt",
+        author_email="nahrstaedt@gmail.com",
         url="https://github.com/holgern/pyedflib",
         license="BSD",
         description="library to read/write EDF+/BDF+ files",
-        long_description=open('README.rst').read(),
+        long_description=open("README.rst").read(),
         keywords=["EDFlib", "European data format", "EDF", "BDF", "EDF+", "BDF+"],
         classifiers=[
             "Development Status :: 5 - Production/Stable",
@@ -311,14 +340,23 @@ if __name__ == '__main__':
             "Programming Language :: Python :: 3.12",
             "Programming Language :: Python :: 3.13",
             "Programming Language :: Python :: 3.14",
-            "Topic :: Software Development :: Libraries :: Python Modules"
+            "Topic :: Software Development :: Libraries :: Python Modules",
         ],
         platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
         version=get_version_info()[0],
-        packages=['pyedflib','pyedflib._extensions','pyedflib.data', 'pyedflib.tests', 'pyedflib.tests.data'],
-        package_data={'pyedflib.data': ['*.edf', '*.bdf'], 'pyedflib.tests.data': ['*.edf', '*.bdf'], },
+        packages=[
+            "pyedflib",
+            "pyedflib._extensions",
+            "pyedflib.data",
+            "pyedflib.tests",
+            "pyedflib.tests.data",
+        ],
+        package_data={
+            "pyedflib.data": ["*.edf", "*.bdf"],
+            "pyedflib.tests.data": ["*.edf", "*.bdf"],
+        },
         ext_modules=ext_modules,
         libraries=[c_lib],
-        cmdclass={'develop': develop_build_clib},
+        cmdclass={"develop": develop_build_clib},
         install_requires=[REQUIRED_NUMPY],
     )
