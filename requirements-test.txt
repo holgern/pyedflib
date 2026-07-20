@@ -1,6 +1,3 @@
-pip
-setuptools
-wheel
 nose
 coverage
 cython
