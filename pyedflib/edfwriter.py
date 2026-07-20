@@ -1071,18 +1071,17 @@ class EdfWriter:
                 res = write_annotation_utf8(self.handle,
                                             np.round(onset_in_seconds*10000).astype(np.int64),
                                             -1, du(description))
+        elif duration_in_seconds >= 0:
+            # FIX: description must be bytes. string will fail in u function
+            res = write_annotation_latin1(self.handle,
+                                          np.round(onset_in_seconds*10000).astype(np.int64),
+                                          np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
         else:
-            if duration_in_seconds >= 0:
-                # FIX: description must be bytes. string will fail in u function
-                res = write_annotation_latin1(self.handle,
-                                              np.round(onset_in_seconds*10000).astype(np.int64),
-                                              np.round(duration_in_seconds*10000).astype(int), description.encode('latin1'))  # type: ignore
-            else:
-                # FIX: description must be bytes. string will fail in u function
-                res = write_annotation_latin1(self.handle,
-                                              np.round(onset_in_seconds*10000).astype(np.int64),
-                                              -1,
-                                              description.encode('latin1'))  # type: ignore
+            # FIX: description must be bytes. string will fail in u function
+            res = write_annotation_latin1(self.handle,
+                                          np.round(onset_in_seconds*10000).astype(np.int64),
+                                          -1,
+                                          description.encode('latin1'))  # type: ignore
         if res >= 0:
             self._n_annotations_written += 1
         return res
