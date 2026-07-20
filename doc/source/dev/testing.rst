@@ -12,14 +12,13 @@ does not break the build.
 Running tests locally
 ---------------------
 
-Tests are implemented with `nose`_, so use one of:
+Tests are implemented with `pytest`, so use one of:
 
-    $ nosetests pyedflib
+    $ pytest
 
     >>> pyedflib.test()  # doctest: +SKIP
     
 Note doctests require `Matplotlib`_ in addition to the usual dependencies.
 
 
-.. _nose: https://nose.readthedocs.io/
 .. _Matplotlib: https://matplotlib.org/

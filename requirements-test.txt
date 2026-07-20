@@ -1,11 +1,7 @@
-pip
-setuptools
-wheel
-nose
 coverage
 cython
 numpy
 pytest
-ruff
 dateparser
 tqdm
+ruff

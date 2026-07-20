@@ -1,6 +1,4 @@
 cython
 numpy
 pytest
-dateparser
-tqdm
-tox
+numpydoc
