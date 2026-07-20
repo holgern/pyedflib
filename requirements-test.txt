@@ -2,6 +2,6 @@ coverage
 cython
 numpy
 pytest
-ruff
 dateparser
 tqdm
+ruff
