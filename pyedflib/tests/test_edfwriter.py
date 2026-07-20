@@ -1230,7 +1230,129 @@ class TestEdfWriter(unittest.TestCase):
         np.testing.assert_almost_equal(ann_duration[0], 0.2)
         np.testing.assert_equal(ann_text[0], utf8_string)
 
+    def _buffered_ch_info(self, fs):
+        return dict(self.ch_info_edf, sample_frequency=fs,
+                    physical_min=-5, physical_max=5)
 
+    def test_buffered_writer_prevents_inflation(self):
+        fs = 1000
+        x = np.random.default_rng(0).standard_normal(10 * fs) * 0.1
+        filename = os.path.join(self.data_dir, 'tmp_buffered.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 100):     # 100-sample streaming blocks
+            f.writeSamples([x[s:s + 100]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        duration = f.file_duration
+        back = f.readSignal(0)
+        f.close()
+
+        self.assertAlmostEqual(duration, 10.0)  # no inflation
+        rms_ratio = np.sqrt(np.mean(back ** 2)) / np.sqrt(np.mean(x ** 2))
+        self.assertLess(abs(rms_ratio - 1.0), 0.02)  # amplitude preserved
+
+    def test_naive_subrecord_blocks_inflate_file(self):
+        """Documents the behaviour that buffered=True avoids."""
+        fs = 1000
+        x = np.random.default_rng(0).standard_normal(10 * fs) * 0.1
+        filename = os.path.join(self.data_dir, 'tmp_naive.edf')
+
+        f = pyedflib.EdfWriter(filename, 1)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 100):
+            f.writeSamples([np.ascontiguousarray(x[s:s + 100])])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        duration = f.file_duration
+        f.close()
+
+        self.assertEqual(duration, 100.0)   # 10x inflation without buffering
+
+    def test_buffered_writer_multichannel(self):
+        fs = 1000
+        rng = np.random.default_rng(1)
+        x = [rng.standard_normal(10 * fs) * 0.1 for _ in range(2)]
+        filename = os.path.join(self.data_dir, 'tmp_buffered_mc.edf')
+
+        f = pyedflib.EdfWriter(filename, 2, buffered=True)
+        f.setSignalHeaders([self._buffered_ch_info(fs) for _ in range(2)])
+        for s in range(0, len(x[0]), 100):
+            f.writeSamples([x[0][s:s + 100], x[1][s:s + 100]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        self.assertAlmostEqual(f.file_duration, 10.0)
+        f.close()
+
+    def test_buffered_writer_pads_final_record(self):
+        """An incomplete final record is committed zero-padded on close()."""
+        fs = 100
+        x = np.ones(int(2.5 * fs))
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        duration = f.file_duration
+        back = f.readSignal(0)
+        f.close()
+
+        self.assertEqual(duration, 3.0)     # 2.5s of data -> 3 records
+        np.testing.assert_allclose(back[:len(x)], x, atol=1e-3)
+        np.testing.assert_allclose(back[len(x):], 0, atol=1e-3)
+
+    def test_buffered_writer_digital(self):
+        fs = 100
+        x = (np.arange(5 * fs) % 2000).astype(np.int32)
+        filename = os.path.join(self.data_dir, 'tmp_buffered_digital.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]], digital=True)
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        self.assertAlmostEqual(f.file_duration, 5.0)
+        back = f.readSignal(0, digital=True)
+        f.close()
+        np.testing.assert_array_equal(back, x)
+
+    def test_buffered_writer_rejects_mixed_digital(self):
+        fs = 100
+        filename = os.path.join(self.data_dir, 'tmp_buffered_mixed.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        f.writeSamples([np.zeros(30, dtype=np.int32)], digital=True)
+        with self.assertRaises(TypeError):
+            f.writeSamples([np.zeros(30)], digital=False)
+        f.close()
+
+    def test_buffered_writer_full_records_unaffected(self):
+        """Passing whole records at once behaves identically to buffered=False."""
+        fs = 100
+        x = np.random.default_rng(2).standard_normal(5 * fs) * 0.1
+        filename = os.path.join(self.data_dir, 'tmp_buffered_full.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        f.writeSamples([x])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        self.assertAlmostEqual(f.file_duration, 5.0)
+        back = f.readSignal(0)
+        f.close()
+        np.testing.assert_allclose(back, x, atol=1e-3)
 
 
 if __name__ == '__main__':
