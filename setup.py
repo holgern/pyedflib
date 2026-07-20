@@ -25,7 +25,7 @@ MAJOR = 0
 MINOR = 1
 MICRO = 42
 ISRELEASED = True
-VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
+VERSION = f'{MAJOR}.{MINOR}.{MICRO}'
 
 # Version of Numpy required for setup
 REQUIRED_NUMPY = 'numpy>=1.9.1'
@@ -135,7 +135,7 @@ def get_version_info():
         GIT_REVISION = "Unknown"
 
     if not ISRELEASED:
-        FULLVERSION += '.dev0+' + GIT_REVISION[:7]
+        FULLVERSION += f".dev0+{GIT_REVISION[:7]}"
 
     return FULLVERSION, GIT_REVISION
 
@@ -269,7 +269,7 @@ class develop_build_clib(develop):
         log.info("Creating %s (link to %s)", self.egg_link, self.egg_base)
         if not self.dry_run:
             with open(self.egg_link, "w") as f:
-                f.write(self.egg_path + "\n" + self.setup_path)
+                f.write(f"{self.egg_path}\n{self.setup_path}")
         # postprocess the installed distro, fixing up .pth, installing scripts,
         # and handling requirements
         self.process_distribution(None, self.dist, not self.no_deps)
