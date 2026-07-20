@@ -6,44 +6,44 @@ import pyedflib
 
 if __name__ == '__main__':
     f = pyedflib.data.test_generator()
-    print("\nlibrary version: %s" % pyedflib.version.version)
+    print(f"\nlibrary version: {pyedflib.version.version}")
 
     print("\ngeneral header:\n")
 
-    # print("filetype: %i\n"%hdr.filetype);
-    print("edfsignals: %i" % f.signals_in_file)
-    print("file duration: %i seconds" % f.file_duration)
-    print("startdate: %i-%i-%i" % (f.getStartdatetime().day,f.getStartdatetime().month,f.getStartdatetime().year))
-    print("starttime: %i:%02i:%02i" % (f.getStartdatetime().hour,f.getStartdatetime().minute,f.getStartdatetime().second))
-    # print("patient: %s" % f.getP);
-    # print("recording: %s" % f.getPatientAdditional())
-    print("patientcode: %s" % f.getPatientCode())
-    print("gender: %s" % f.getGender())
-    print("birthdate: %s" % f.getBirthdate())
-    print("patient_name: %s" % f.getPatientName())
-    print("patient_additional: %s" % f.getPatientAdditional())
-    print("admincode: %s" % f.getAdmincode())
-    print("technician: %s" % f.getTechnician())
-    print("equipment: %s" % f.getEquipment())
-    print("recording_additional: %s" % f.getRecordingAdditional())
-    print("datarecord duration: %f seconds" % f.getFileDuration())
-    print("number of datarecords in the file: %i" % f.datarecords_in_file)
-    print("number of annotations in the file: %i" % f.annotations_in_file)
+    # print(f"filetype: {hdr.filetype}\n")
+    print(f"edfsignals: {f.signals_in_file}")
+    print(f"file duration: {f.file_duration} seconds")
+    print(f"startdate: {f.getStartdatetime().day}-{f.getStartdatetime().month}-{f.getStartdatetime().year}")
+    print(f"starttime: {f.getStartdatetime().hour}:{f.getStartdatetime().minute:02}:{f.getStartdatetime().second:02}")
+    # print(f"patient: {f.getP}")
+    # print(f"recording: {f.getPatientAdditional()}")
+    print(f"patientcode: {f.getPatientCode()}")
+    print(f"gender: {f.getGender()}")
+    print(f"birthdate: {f.getBirthdate()}")
+    print(f"patient_name: {f.getPatientName()}")
+    print(f"patient_additional: {f.getPatientAdditional()}")
+    print(f"admincode: {f.getAdmincode()}")
+    print(f"technician: {f.getTechnician()}")
+    print(f"equipment: {f.getEquipment()}")
+    print(f"recording_additional: {f.getRecordingAdditional()}")
+    print(f"datarecord duration: {f.getFileDuration():f} seconds")
+    print(f"number of datarecords in the file: {f.datarecords_in_file}")
+    print(f"number of annotations in the file: {f.annotations_in_file}")
 
     channel = 3
-    print("\nsignal parameters for the %d.channel:\n\n" % channel)
+    print(f"\nsignal parameters for the {channel}.channel:\n\n")
 
-    print("label: %s" % f.getLabel(channel))
-    print("samples in file: %i" % f.getNSamples()[channel])
-    # print("samples in datarecord: %i" % f.get
-    print("physical maximum: %f" % f.getPhysicalMaximum(channel))
-    print("physical minimum: %f" % f.getPhysicalMinimum(channel))
-    print("digital maximum: %i" % f.getDigitalMaximum(channel))
-    print("digital minimum: %i" % f.getDigitalMinimum(channel))
-    print("physical dimension: %s" % f.getPhysicalDimension(channel))
-    print("prefilter: %s" % f.getPrefilter(channel))
-    print("transducer: %s" % f.getTransducer(channel))
-    print("samplefrequency: %f" % f.getSampleFrequency(channel))
+    print(f"label: {f.getLabel(channel)}")
+    print(f"samples in file: {f.getNSamples()[channel]}")
+    # print(f"samples in datarecord: {f.get}")
+    print(f"physical maximum: {f.getPhysicalMaximum(channel):f}")
+    print(f"physical minimum: {f.getPhysicalMinimum(channel):f}")
+    print(f"digital maximum: {f.getDigitalMaximum(channel)}")
+    print(f"digital minimum: {f.getDigitalMinimum(channel)}")
+    print(f"physical dimension: {f.getPhysicalDimension(channel)}")
+    print(f"prefilter: {f.getPrefilter(channel)}")
+    print(f"transducer: {f.getTransducer(channel)}")
+    print(f"samplefrequency: {f.getSampleFrequency(channel):f}")
 
     annotations = f.readAnnotations()
     for n in np.arange(f.annotations_in_file):
@@ -51,10 +51,10 @@ if __name__ == '__main__':
 
     buf = f.readSignal(channel)
     n = 200
-    print("\nread %i samples\n" % n)
+    print(f"\nread {n} samples\n")
     result = ""
     for i in np.arange(n):
-        result += ("%.1f, " % buf[i])
+        result += (f"{buf[i]:.1f}, ")
     print(result)
     f._close()
     del f

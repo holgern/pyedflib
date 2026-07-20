@@ -171,7 +171,7 @@ def compare(all_dict, others, names, module_name):
     for name in names:
         if name not in all_dict:
             for pat in REFGUIDE_ALL_SKIPLIST:
-                if re.match(pat, module_name + '.' + name):
+                if re.match(pat, f"{module_name}.{name}"):
                     if name not in others:
                         missing.add(name)
                     break
@@ -199,8 +199,8 @@ def check_items(all_dict, names, deprecated, others, module_name, dots=True):
 
     output = ""
 
-    output += "Non-deprecated objects in __all__: %i\n" % num_all
-    output += "Objects in refguide: %i\n\n" % num_ref
+    output += f"Non-deprecated objects in __all__: {num_all}\n"
+    output += f"Objects in refguide: {num_ref}\n\n"
 
     only_all, only_ref, missing = compare(all_dict, others, names, module_name)
     dep_in_ref = set(only_ref).intersection(deprecated)
@@ -209,7 +209,7 @@ def check_items(all_dict, names, deprecated, others, module_name, dots=True):
     if len(dep_in_ref) > 0:
         output += "Deprecated objects in refguide::\n\n"
         for name in sorted(deprecated):
-            output += "    " + name + "\n"
+            output += f"    {name}\n"
 
     if len(only_all) == len(only_ref) == len(missing) == 0:
         if dots:
@@ -217,19 +217,19 @@ def check_items(all_dict, names, deprecated, others, module_name, dots=True):
         return [(None, True, output)]
     else:
         if len(only_all) > 0:
-            output += "ERROR: objects in %s.__all__ but not in refguide::\n\n" % module_name
+            output += f"ERROR: objects in {module_name}.__all__ but not in refguide::\n\n"
             for name in sorted(only_all):
-                output += "    " + name + "\n"
+                output += f"    {name}\n"
 
         if len(only_ref) > 0:
-            output += "ERROR: objects in refguide but not in %s.__all__::\n\n" % module_name
+            output += f"ERROR: objects in refguide but not in {module_name}.__all__::\n\n"
             for name in sorted(only_ref):
-                output += "    " + name + "\n"
+                output += f"    {name}\n"
 
         if len(missing) > 0:
             output += "ERROR: missing objects::\n\n"
             for name in sorted(missing):
-                output += "    " + name + "\n"
+                output += f"    {name}\n"
 
         if dots:
             output_dot('F')
@@ -295,7 +295,7 @@ def validate_rst_syntax(text, name, dots=True):
     if not success:
         output += "    " + "-"*72 + "\n"
         for lineno, line in enumerate(text.splitlines()):
-            output += "    %-4d    %s\n" % (lineno+1, line)
+            output += f"    {lineno+1:-4}    {line}\n"
         output += "    " + "-"*72 + "\n\n"
 
     if dots:
@@ -325,7 +325,7 @@ def check_rest(module, names, dots=True):
                                         module.__name__, dots=dots)]
 
     for name in names:
-        full_name = module.__name__ + '.' + name
+        full_name = f"{module.__name}.{name}"
         obj = getattr(module, name, None)
 
         if obj is None:
@@ -348,8 +348,8 @@ def check_rest(module, names, dots=True):
 
         m = re.search(r"([\x00-\x09\x0b-\x1f])", text)
         if m:
-            msg = ("Docstring contains a non-printable character %r! "
-                   "Maybe forgot r\"\"\"?" % (m.group(1),))
+            msg = (f"Docstring contains a non-printable character {m.group(1)!r}! "
+                   "Maybe forgot r\"\"\"?")
             results.append((full_name, False, msg))
             continue
 
@@ -359,7 +359,7 @@ def check_rest(module, names, dots=True):
             src_file = None
 
         if src_file:
-            file_full_name = src_file + ':' + full_name
+            file_full_name = f"{src_file}:{full_name}"
         else:
             file_full_name = full_name
 
@@ -582,7 +582,7 @@ def check_doctests(module, verbose, ns=None,
     results = []
 
     for name in get_all_dict(module)[0]:
-        full_name = module.__name__ + '.' + name
+        full_name = f"{module.__name}.{name}"
 
         if full_name in DOCTEST_SKIPLIST:
             continue
@@ -747,7 +747,7 @@ def main(argv):
                 module_names.append(name)
 
     for submodule_name in module_names:
-        module_name = BASE_MODULE + '.' + submodule_name
+        module_name = f"{BASE_MODULE}.{submodule_name}"
         __import__(module_name)
         module = sys.modules[module_name]
 
@@ -761,7 +761,7 @@ def main(argv):
     success = True
     results = []
 
-    print("Running checks for %d modules:" % (len(modules),))
+    print(f"Running checks for {len(modules)} modules:")
 
     if args.doctests or not args.skip_examples:
         init_matplotlib()
@@ -770,7 +770,7 @@ def main(argv):
         if dots:
             if module is not modules[0]:
                 sys.stderr.write(' ')
-            sys.stderr.write(module.__name__ + ' ')
+            sys.stderr.write(f"{module.__name__} ")
             sys.stderr.flush()
 
         all_dict, deprecated, others = get_all_dict(module)
@@ -796,11 +796,10 @@ def main(argv):
     if not args.skip_examples:
         examples_path = os.path.join(
             os.getcwd(), 'doc', 'source', 'regression', '*.rst')
-        print('\nChecking examples files at %s:' % examples_path)
+        print(f'\nChecking examples files at {examples_path}:')
         for filename in sorted(glob.glob(examples_path)):
             if dots:
-                sys.stderr.write('\n')
-                sys.stderr.write(os.path.split(filename)[1] + ' ')
+                sys.stderr.write(f"\n{os.path.split(filename)[1]} ")
                 sys.stderr.flush()
 
             examples_results = check_doctests_testfile(
