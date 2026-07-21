@@ -1,49 +1,42 @@
-Guidelines for new releases for pyedflib
+Guidelines for new releases for pyEDFlib
 ========================================
-vX.X.X refers to the release number
 
-Tag the release and trigger building of wheels in appvoyer
-----------------------------------------------------------
-Change ISRELEASED in setup.py to True and commit.
+``vX.Y.Z`` refers to the release number.
 
-Appveyor will now build wheels for windows.
+Releases are built and published automatically by the ``Build wheel`` GitHub
+Actions workflow (``.github/workflows/wheels.yml``). It runs on every pushed
+tag matching ``vX.Y.Z``, builds the source distribution and the platform
+wheels (Linux, macOS and Windows, CPython 3.8-3.14, including aarch64) and
+uploads them to PyPI using the ``PYPI_API_TOKEN`` repository secret.
 
-Tag the release with
+Bump the version
+----------------
 
-```git tag -s vX.X.X```
+Set the version in ``setup.py`` by editing ``MAJOR``, ``MINOR`` and ``MICRO``,
+and set ``ISRELEASED = True``. Commit the change.
 
-and push the tag to master.
+Add release notes
+-----------------
 
-Clean up source
----------------
-Remove untraced files with git clean
+Add a ``doc/release/X.Y.Z-notes.rst`` file describing the changes, together
+with a matching ``doc/source/release.X.Y.Z.rst`` stub that includes it, and
+link the new entry from ``doc/source/releasenotes.rst``.
 
-First check which files will be deleted:
+Tag and push
+------------
 
-```git clean -xfdn```
+Create a signed tag and push it to GitHub::
 
-Then run without -n:
+    git tag -s vX.Y.Z -m "pyEDFlib X.Y.Z"
+    git push origin vX.Y.Z
 
-```git clean -xfd```
-
-Create the source distribution files with:
-
-```python setup.py sdist --formats=gztar,zip```
-
-Upload the release and windows wheels to pypi
----------------------------------------------
-
-Download all wheels from Appveyor and put them into the dist directory
-
-Register all files with
-
-```twine register dist\filename_which_should_uploaded.whl```
-
-and upload with
-
-```twine upload dist\filename_which_should_uploaded.whl```
+Pushing the tag triggers the ``Build wheel`` workflow, which builds the sdist
+and wheels and publishes them to PyPI automatically. Follow the run on the
+GitHub Actions tab and verify the new release appears on
+https://pypi.org/project/pyEDFlib/.
 
 Prepare for continued development
 ---------------------------------
 
-Increment the version number in setup.py and change ISRELEASED to False.
+Increment ``MICRO`` in ``setup.py`` and set ``ISRELEASED = False`` again, then
+commit.
