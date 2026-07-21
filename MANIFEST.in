@@ -3,7 +3,6 @@ include README.rst
 include README-edflib.md
 include LICENSE
 include *.txt
-include setup.cfg
 include pyproject.toml
 include MANIFEST.in
 
@@ -20,7 +19,6 @@ include pytest.ini
 prune build
 prune dist
 prune doc/build
-prune util
 prune */__pycache__
 
 global-exclude *.py[cod] *.egg *.egg-info
