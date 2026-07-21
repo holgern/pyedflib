@@ -24,7 +24,6 @@ ignore = [
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",
     "RUF005",  # Consider iterable unpacking instead of concatenation
-    "RUF012",  # Mutable class attributes should be annotated with `typing.ClassVar`
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
