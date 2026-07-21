@@ -379,6 +379,10 @@ class EdfWriter:
         self._n_records_written = 0
         self._channel_write_pos = 0
         self._n_annotations_written = 0
+        # whether the previous writeSamples() call left a padded, incomplete
+        # data record behind (see the warning in writeSamples, issue #284)
+        self._wrote_partial_record = False
+        self._warned_partial_record = False
 
     def update_header(self) -> None:
         """
@@ -1031,6 +1035,19 @@ class EdfWriter:
             if len(channel) > 0:
                 self._last_sample[i] = channel[-1]
 
+        # one incomplete record is fine, it is simply padded at the end of the
+        # recording. Writing further samples after one, however, means that the
+        # padding ends up in the middle of the signal (see issue #284)
+        if self._wrote_partial_record and not self._warned_partial_record:
+            self._warned_partial_record = True
+            warnings.warn('The previous writeSamples() call did not fill a '
+                          'complete data record and was padded to the full '
+                          'record length. Writing more samples now places that '
+                          'padding in the middle of the signal and inflates the '
+                          'file duration. Create the EdfWriter with '
+                          'buffered=True to buffer incomplete records across '
+                          'calls instead.')
+
         if self.buffered:
             if self._buffered_digital is None:
                 self._buffered_digital = digital
@@ -1088,10 +1105,14 @@ class EdfWriter:
                                   for i in range(len(data_list))]
             return
 
+        wrote_partial_record = False
         for i in np.arange(len(data_list)):
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd, smp_per_record[i])))
             if lastSampleInd > 0:
+                # a full record needs no padding, fewer samples than that do
+                if lastSampleInd < smp_per_record[i]:
+                    wrote_partial_record = True
                 pad_value = self._get_pad_value(i, digital)
                 lastSamples = np.full(smp_per_record[i], pad_value,
                                       dtype=np.int32 if digital else np.float64)
@@ -1103,6 +1124,8 @@ class EdfWriter:
 
                 if success<0:
                     raise OSError(f'Unknown error while calling writeSamples: {success}')
+
+        self._wrote_partial_record = wrote_partial_record
 
     def writeAnnotation(self, onset_in_seconds: Union[int, float],
                         duration_in_seconds: Union[int, float],

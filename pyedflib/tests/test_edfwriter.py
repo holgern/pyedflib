@@ -1262,8 +1262,10 @@ class TestEdfWriter(unittest.TestCase):
 
         f = pyedflib.EdfWriter(filename, 1)
         f.setSignalHeader(0, self._buffered_ch_info(fs))
-        for s in range(0, len(x), 100):
-            f.writeSamples([np.ascontiguousarray(x[s:s + 100])])
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')  # warns about the padding, see below
+            for s in range(0, len(x), 100):
+                f.writeSamples([np.ascontiguousarray(x[s:s + 100])])
         f.close()
 
         f = pyedflib.EdfReader(filename)
@@ -1488,6 +1490,43 @@ class TestEdfWriter(unittest.TestCase):
         f.writeSamples([np.full(150, 1.0)])
         with self.assertWarns(UserWarning):
             f.close()
+
+    def _count_partial_record_warnings(self, chunks, buffered=False, fs=100):
+        filename = os.path.join(self.data_dir, 'tmp_partial_warn.edf')
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter('always')
+            f = pyedflib.EdfWriter(filename, 1, buffered=buffered)
+            f.setSignalHeader(0, self._buffered_ch_info(fs))
+            for c in chunks:
+                f.writeSamples([np.ascontiguousarray(c)])
+            f.close()
+        return len([w for w in caught
+                    if 'complete data record' in str(w.message)])
+
+    def test_partial_record_warning_on_repeated_subrecord_writes(self):
+        """Writing again after a padded record puts padding mid-signal (#284)."""
+        x = np.zeros(1000)
+        self.assertEqual(
+            self._count_partial_record_warnings([x[:250], x[250:500]]), 1)
+        # a streaming loop must not warn once per call
+        self.assertEqual(
+            self._count_partial_record_warnings(
+                [x[i:i + 30] for i in range(0, 1000, 30)]), 1)
+
+    def test_no_partial_record_warning_when_harmless(self):
+        """A single trailing partial record is normal and must stay silent."""
+        x = np.zeros(1000)
+        # one call, incomplete last record -> padded once at the end
+        self.assertEqual(self._count_partial_record_warnings([x[:250]]), 0)
+        self.assertEqual(self._count_partial_record_warnings([x]), 0)
+        # every call fills whole records, so nothing is ever padded
+        self.assertEqual(
+            self._count_partial_record_warnings(
+                [x[i:i + 100] for i in range(0, 1000, 100)]), 0)
+        # buffering is exactly the recommended fix, so it must not warn
+        self.assertEqual(
+            self._count_partial_record_warnings(
+                [x[i:i + 30] for i in range(0, 1000, 30)], buffered=True), 0)
 
     def test_close_on_partially_constructed_writer(self):
         """__del__ must not raise if __init__ failed before opening the file."""
