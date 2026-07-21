@@ -3,7 +3,7 @@
 Testing
 =======
 
-We are currently using AppVeyor and CircleCI for continuous integration.
+We are currently using GitHub Actions for continuous integration.
 
 If you are submitting a patch or pull request please make sure it
 does not break the build.
