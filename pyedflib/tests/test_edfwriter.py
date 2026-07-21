@@ -1354,6 +1354,148 @@ class TestEdfWriter(unittest.TestCase):
         f.close()
         np.testing.assert_allclose(back, x, atol=1e-3)
 
+    def test_buffered_writer_pad_with_last(self):
+        """pad_with='last' repeats the last sample instead of zero-padding."""
+        fs = 100
+        x = np.full(int(2.5 * fs), 3.0)
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_last.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with='last')
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        duration = f.file_duration
+        back = f.readSignal(0)
+        f.close()
+
+        self.assertEqual(duration, 3.0)
+        np.testing.assert_allclose(back, 3.0, atol=1e-3)  # no discontinuity
+
+    def test_buffered_writer_pad_with_number(self):
+        """pad_with accepts a fixed numeric fill value."""
+        fs = 100
+        x = np.ones(int(2.5 * fs))
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_number.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=-2.5)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        back = f.readSignal(0)
+        f.close()
+
+        np.testing.assert_allclose(back[:len(x)], x, atol=1e-3)
+        np.testing.assert_allclose(back[len(x):], -2.5, atol=1e-3)
+
+    def test_buffered_writer_pad_with_digital(self):
+        """pad_with is interpreted as a digital value when digital=True."""
+        fs = 100
+        x = np.full(int(2.5 * fs), 100, dtype=np.int32)
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_digital.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=7)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        for s in range(0, len(x), 30):
+            f.writeSamples([x[s:s + 30]], digital=True)
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        back = f.readSignal(0, digital=True)
+        f.close()
+
+        np.testing.assert_array_equal(back[:len(x)], x)
+        np.testing.assert_array_equal(back[len(x):], 7)
+
+    def test_buffered_writer_pad_with_invalid(self):
+        filename = os.path.join(self.data_dir, 'tmp_buffered_pad_invalid.edf')
+        with self.assertRaises(ValueError):
+            pyedflib.EdfWriter(filename, 1, buffered=True, pad_with='bogus')
+        # a rejected argument must not leave a half-created file behind
+        self.assertFalse(os.path.exists(filename))
+
+    def test_pad_with_applies_without_buffering(self):
+        """pad_with also controls padding on the regular (unbuffered) path."""
+        fs = 100
+        x = np.full(int(2.5 * fs), 3.0)
+        filename = os.path.join(self.data_dir, 'tmp_pad_unbuffered.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, pad_with='last')
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        f.writeSamples([x])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        back = f.readSignal(0)
+        f.close()
+
+        np.testing.assert_allclose(back, 3.0, atol=1e-3)  # no step back to 0
+
+    def test_pad_with_last_uses_already_written_sample(self):
+        """A channel whose buffer is empty pads with its last written sample.
+
+        With differing sample frequencies one channel can end exactly on a
+        record boundary while another still has leftover samples. The padding
+        for the former must not fall back to zero.
+        """
+        filename = os.path.join(self.data_dir, 'tmp_pad_mixed_fs.edf')
+
+        f = pyedflib.EdfWriter(filename, 2, buffered=True, pad_with='last')
+        f.setSignalHeaders([self._buffered_ch_info(100),
+                            self._buffered_ch_info(10)])
+        # ch0 keeps 5 leftover samples, ch1 is consumed exactly
+        f.writeSamples([np.full(105, 3.0), np.full(10, 4.0)])
+        f.close()
+
+        f = pyedflib.EdfReader(filename)
+        ch0, ch1 = f.readSignal(0), f.readSignal(1)
+        f.close()
+
+        np.testing.assert_allclose(ch0, 3.0, atol=1e-3)
+        np.testing.assert_allclose(ch1, 4.0, atol=1e-3)
+
+    def test_pad_with_accepts_numpy_scalars(self):
+        """pad_with=signal[-1] (a numpy scalar) must be accepted."""
+        filename = os.path.join(self.data_dir, 'tmp_pad_numpy_scalar.edf')
+        for value in (np.float64(1.5), np.float32(1.5), np.int32(2)):
+            f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=value)
+            f.close()
+        with self.assertRaises(ValueError):
+            pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=True)
+
+    def test_pad_with_digital_requires_int(self):
+        """A fractional pad value would be silently truncated when digital."""
+        fs = 100
+        filename = os.path.join(self.data_dir, 'tmp_pad_digital_float.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=2.7)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        with self.assertRaises(TypeError):
+            f.writeSamples([np.full(150, 100, dtype=np.int32)], digital=True)
+        f.close()
+
+    def test_pad_with_out_of_range_warns(self):
+        fs = 100
+        filename = os.path.join(self.data_dir, 'tmp_pad_out_of_range.edf')
+
+        f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=1000.0)
+        f.setSignalHeader(0, self._buffered_ch_info(fs))
+        f.writeSamples([np.full(150, 1.0)])
+        with self.assertWarns(UserWarning):
+            f.close()
+
+    def test_close_on_partially_constructed_writer(self):
+        """__del__ must not raise if __init__ failed before opening the file."""
+        filename = os.path.join(self.data_dir, 'tmp_partial.edf')
+        with self.assertRaises(ValueError):
+            pyedflib.EdfWriter(filename, 1, pad_with='bogus')
+        gc.collect()  # triggers __del__ -> close() on the dead object
+
 
 if __name__ == '__main__':
     # run_module_suite(argv=sys.argv)

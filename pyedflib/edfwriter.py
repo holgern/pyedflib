@@ -10,6 +10,7 @@ from datetime import date, datetime
 from types import TracebackType
 from typing import Any, Union, Optional, List, Dict, Type
 import math
+import numbers
 from functools import reduce
 from fractions import Fraction
 
@@ -286,7 +287,8 @@ class EdfWriter:
         self.close()
 
     def __init__(self, file_name: str, n_channels: int, file_type: int = FILETYPE_EDFPLUS,
-                 buffered: bool = False) -> None:
+                 buffered: bool = False,
+                 pad_with: Union[int, float, str] = 0) -> None:
         """Initialises an EDF file at file_name.
         file_type is one of
             edflib.FILETYPE_EDFPLUS
@@ -296,10 +298,18 @@ class EdfWriter:
         If buffered is True, writeSamples() accepts blocks of arbitrary size
         (e.g. small chunks from a real-time acquisition loop): samples are
         buffered and a data record is only committed to file once a full
-        record is available. The last, incomplete record is zero-padded and
+        record is available. The last, incomplete record is padded and
         written on close(). With the default buffered=False, every call to
         writeSamples() commits all passed data, padding the last record to
         full length.
+
+        pad_with controls the value used to pad an incomplete last record:
+        a number (default 0), or the string 'last' to repeat the last sample
+        of each signal, which avoids a step discontinuity at the end of the
+        recording. The value is interpreted in the same domain as the written
+        samples, i.e. as a physical value when writeSamples() was called with
+        digital=False, and as a digital value when digital=True; in the
+        latter case pad_with must be an integer.
 
         channel_info should be a
         list of dicts, one for each channel in the data. Each dict needs
@@ -313,6 +323,16 @@ class EdfWriter:
             'digital_max' : maximum digital value (int, -2**15 <= x < 2**15)
             'digital_min' : minimum digital value (int, -2**15 <= x < 2**15)
         """
+        # validate before opening the file, so that a bad argument does not
+        # leave a stray empty file behind
+        if isinstance(pad_with, str):
+            if pad_with != 'last':
+                raise ValueError("pad_with must be a number or 'last', "
+                                 f"got {pad_with!r}")
+        elif isinstance(pad_with, bool) or not isinstance(pad_with, numbers.Number):
+            raise ValueError("pad_with must be a number or 'last', "
+                             f"got {pad_with!r}")
+
         self.path = file_name
         self.file_type = file_type
         self.patient_name = ''
@@ -330,9 +350,13 @@ class EdfWriter:
         self.number_of_annotations = 1 if file_type in [FILETYPE_EDFPLUS, FILETYPE_BDFPLUS] else 0
         self.n_channels = n_channels
         self.buffered = buffered
+        self.pad_with = pad_with
         self._buffered_digital: Optional[bool] = None
         self.channels: List[Dict[str, Union[str, int, float, None]]] = []
         self.sample_buffer: List[np.ndarray] = [np.array([]) for _ in range(n_channels)]
+        # last sample handed to writeSamples() per channel, used by
+        # pad_with='last' when a channel has no leftover samples of its own
+        self._last_sample: List[Union[int, float]] = [0 for _ in range(n_channels)]
         for i in np.arange(self.n_channels):
             if self.file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF):
                 self.channels.append({'label': f'ch{i}', 'dimension': 'mV', 'sample_frequency': 100,
@@ -942,6 +966,25 @@ class EdfWriter:
                     self._n_records_written += 1
         return write_result
 
+    def _get_pad_value(self, i: int, digital: bool) -> Union[int, float]:
+        """
+        Returns the value used to pad channel ``i`` to a full data record.
+
+        For ``pad_with='last'`` this is the channel's most recently written
+        sample; otherwise it is the configured ``pad_with`` value, which is
+        warned about (and later clipped by edflib) if it falls outside the
+        channel's physical/digital range.
+        """
+        if self.pad_with == 'last':
+            return self._last_sample[i]
+        pad_value = self.pad_with
+        lim = ('digital_min', 'digital_max') if digital else ('physical_min', 'physical_max')
+        low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
+        if not low <= pad_value <= high:
+            warnings.warn(f'pad_with={pad_value} is outside the range of '
+                          f'channel {i} ({low}...{high}) and will be clipped')
+        return pad_value
+
     def writeSamples(self, data_list: Union[List[np.ndarray], np.ndarray], digital: bool = False) -> None:
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
@@ -959,7 +1002,7 @@ class EdfWriter:
         If the writer was created with buffered=True, data blocks of arbitrary
         size are accepted: samples are buffered internally and only complete
         data records are committed to file. The remainder is written (padded
-        with zeros) when close() is called.
+        according to `pad_with`) when close() is called.
 
         All parameters must be already written into the bdf/edf-file.
         """
@@ -977,6 +1020,16 @@ class EdfWriter:
 
         if digital and any(not np.issubdtype(a.dtype, np.integer) for a in data_list):
             raise TypeError('Digital = True requires all signals in int')
+
+        if digital and not isinstance(self.pad_with, str) \
+                and not isinstance(self.pad_with, (int, np.integer)):
+            raise TypeError('Digital = True requires an integer pad_with, '
+                            f'got {self.pad_with!r}')
+
+        # remember the most recent sample of each channel for pad_with='last'
+        for i, channel in enumerate(data_list):
+            if len(channel) > 0:
+                self._last_sample[i] = channel[-1]
 
         if self.buffered:
             if self._buffered_digital is None:
@@ -1030,16 +1083,18 @@ class EdfWriter:
 
         if self.buffered:
             # keep the incomplete remainder for the next call; it is written
-            # out (zero-padded) on close()
+            # out (padded according to pad_with) on close()
             self.sample_buffer = [np.ascontiguousarray(data_list[i][int(ind[i]):])
                                   for i in range(len(data_list))]
             return
 
         for i in np.arange(len(data_list)):
-            lastSamples = np.zeros(smp_per_record[i], dtype=np.int32 if digital else None)
             lastSampleInd = int(np.max(data_list[i].shape) - ind[i])
             lastSampleInd = int(np.min((lastSampleInd, smp_per_record[i])))
             if lastSampleInd > 0:
+                pad_value = self._get_pad_value(i, digital)
+                lastSamples = np.full(smp_per_record[i], pad_value,
+                                      dtype=np.int32 if digital else np.float64)
                 lastSamples[:lastSampleInd] = data_list[i][-lastSampleInd:]
                 if digital:
                     success = self.writeDigitalSamples(lastSamples)
@@ -1091,9 +1146,15 @@ class EdfWriter:
         Closes the file.
 
         If the writer was created with buffered=True, any samples still held
-        in the buffer are written as a final, zero-padded data record.
+        in the buffer are written as a final data record, padded according to
+        the `pad_with` parameter.
         """
-        if self.buffered and self.handle >= 0:
+        # __init__ may have raised before the file was opened, in which case
+        # __del__ still calls close() on a partially constructed object
+        if getattr(self, 'handle', -1) < 0:
+            return
+
+        if self.buffered:
             self._flush_sample_buffer()
 
         # each datarecord can store at most one annotation per annotation
@@ -1121,15 +1182,20 @@ class EdfWriter:
     def _flush_sample_buffer(self) -> None:
         """
         Writes buffered leftover samples (buffered=True) as one final data
-        record, zero-padded to full record length.
+        record, padded to full record length according to `pad_with`.
         """
         if all(len(buf) == 0 for buf in self.sample_buffer):
             return
         digital = bool(self._buffered_digital)
+        dtype = np.int32 if digital else np.float64
         for i in range(len(self.sample_buffer)):
             smp_per_record = self.get_smp_per_record(i)
-            lastSamples = np.zeros(smp_per_record, dtype=np.int32 if digital else None)
             buf = self.sample_buffer[i][:smp_per_record]
+            # for pad_with='last' the last sample of this channel may already
+            # have been written to file, so it is not necessarily still in
+            # sample_buffer; _get_pad_value reads it from self._last_sample
+            pad_value = self._get_pad_value(i, digital)
+            lastSamples = np.full(smp_per_record, pad_value, dtype=dtype)
             lastSamples[:len(buf)] = buf
             if digital:
                 success = self.writeDigitalSamples(lastSamples)
