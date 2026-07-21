@@ -20,3 +20,19 @@ Release Notes
    release.0.1.21
    release.0.1.22
    release.0.1.23
+   release.0.1.24
+   release.0.1.25
+   release.0.1.26
+   release.0.1.27
+   release.0.1.28
+   release.0.1.31
+   release.0.1.32
+   release.0.1.33
+   release.0.1.34
+   release.0.1.35
+   release.0.1.36
+   release.0.1.37
+   release.0.1.38
+   release.0.1.39
+   release.0.1.41
+   release.0.1.42

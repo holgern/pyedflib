@@ -1,0 +1,34 @@
+=============================
+PyEDFlib 0.1.34 Release Notes
+=============================
+
+.. contents::
+
+- Pin Cython < 3 as a hotfix so the extension keeps building
+- Add tests for the deprecated setGender() API and clarify binary sex assignment
+- Documentation and CI housekeeping (bitbucket -> github, sphinx links)
+
+Authors
+=======
+* Simon Kern
+* Dimitri Papadopoulos Orfanos
+* WEN Hao
+* emmanuel-ferdman
+
+Issues closed for v0.1.34
+-------------------------
+
+Pull requests for v0.1.34
+-------------------------
+
+* `#212 <https://github.com/holgern/pyedflib/pull/212>`__
+* `#214 <https://github.com/holgern/pyedflib/pull/214>`__
+* `#217 <https://github.com/holgern/pyedflib/pull/217>`__
+* `#220 <https://github.com/holgern/pyedflib/pull/220>`__
+* `#221 <https://github.com/holgern/pyedflib/pull/221>`__
+* `#222 <https://github.com/holgern/pyedflib/pull/222>`__
+* `#223 <https://github.com/holgern/pyedflib/pull/223>`__
+* `#224 <https://github.com/holgern/pyedflib/pull/224>`__
+* `#227 <https://github.com/holgern/pyedflib/pull/227>`__
+* `#229 <https://github.com/holgern/pyedflib/pull/229>`__
+* `#234 <https://github.com/holgern/pyedflib/pull/234>`__

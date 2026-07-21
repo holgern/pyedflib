@@ -1,0 +1,27 @@
+=============================
+PyEDFlib 0.1.39 Release Notes
+=============================
+
+.. contents::
+
+- Add type hints to the main APIs
+- Deprecate ``sample_rate`` in favor of ``sample_frequency``
+- Convert the ``phys_min``/``phys_max`` assertions into warnings
+- Add more test cases for ``record_duration``
+
+Authors
+=======
+* Simon Kern
+* Joseph
+* Wouter Potters
+
+Issues closed for v0.1.39
+-------------------------
+
+Pull requests for v0.1.39
+-------------------------
+
+* `#264 <https://github.com/holgern/pyedflib/pull/264>`__
+* `#266 <https://github.com/holgern/pyedflib/pull/266>`__
+* `#268 <https://github.com/holgern/pyedflib/pull/268>`__
+* `#272 <https://github.com/holgern/pyedflib/pull/272>`__

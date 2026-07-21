@@ -1,0 +1,19 @@
+=============================
+PyEDFlib 0.1.38 Release Notes
+=============================
+
+.. contents::
+
+- Add support for NumPy 2
+
+Authors
+=======
+* Simon Kern
+
+Issues closed for v0.1.38
+-------------------------
+
+Pull requests for v0.1.38
+-------------------------
+
+* `#260 <https://github.com/holgern/pyedflib/pull/260>`__

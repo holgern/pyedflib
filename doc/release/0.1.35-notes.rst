@@ -1,0 +1,25 @@
+=============================
+PyEDFlib 0.1.35 Release Notes
+=============================
+
+.. contents::
+
+- Add support for Python 3.12
+- Add a highlevel ``crop_edf`` function
+- Add rounding when converting seconds to samples
+
+Authors
+=======
+* Raphael Vallat
+* Simon Kern
+* Clemens Brunner
+
+Issues closed for v0.1.35
+-------------------------
+
+Pull requests for v0.1.35
+-------------------------
+
+* `#196 <https://github.com/holgern/pyedflib/pull/196>`__
+* `#239 <https://github.com/holgern/pyedflib/pull/239>`__
+* `#240 <https://github.com/holgern/pyedflib/pull/240>`__

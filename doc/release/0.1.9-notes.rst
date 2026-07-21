@@ -3,6 +3,7 @@ PyEDFlib 0.1.9 Release Notes
 ============================
 
 .. contents::
+
 - Fix proper reading of EDF/BDF files
 - Bug fixes
 - Improved error messages

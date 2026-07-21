@@ -3,6 +3,7 @@ PyEDFlib 0.1.11 Release Notes
 ==============================
 
 .. contents::
+
 - Bug fixes
 
 Authors
