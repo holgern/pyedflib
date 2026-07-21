@@ -13,21 +13,6 @@ Installing Microsoft Visual C++ Compiler
 Downloading Microsoft Visual C++ Compiler from https://visualstudio.microsoft.com/downloads/.
 
 
-After installing the Compiler and before compiling the extension you have
-to configure some environment variables.
-
-For build execute the ``util/setenv_win.bat`` script in the cmd
-window:
-
-  .. sourcecode:: bat
-
-    rem Configure the environment for builds.
-    rem Convince setup.py to use the SDK tools.
-    set MSSdk=1
-    set DISTUTILS_USE_SDK=1
-
-
-
 Next steps
 ----------
 

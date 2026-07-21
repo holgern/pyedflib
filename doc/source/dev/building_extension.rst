@@ -39,7 +39,6 @@ Install Microsoft Visual C++ Compiler from https://visualstudio.microsoft.com/do
 Activate your Python virtual environment, go to the cloned source directory
 and type the following commands to build and install the package::
 
-	util\setenv_win.bat
     python setup.py build_ext --inplace
     python setup.py install --user
 
