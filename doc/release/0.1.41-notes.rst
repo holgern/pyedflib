@@ -1,0 +1,25 @@
+=============================
+PyEDFlib 0.1.41 Release Notes
+=============================
+
+.. contents::
+
+- Fix writing of UTF-8 characters
+- Fix reading of UTF-8 annotations
+- Remove Python 2.7 leftovers and start applying ruff rules
+
+Authors
+=======
+* Simon Kern
+* Dimitri Papadopoulos Orfanos
+
+Issues closed for v0.1.41
+-------------------------
+
+Pull requests for v0.1.41
+-------------------------
+
+* `#269 <https://github.com/holgern/pyedflib/pull/269>`__
+* `#270 <https://github.com/holgern/pyedflib/pull/270>`__
+* `#276 <https://github.com/holgern/pyedflib/pull/276>`__
+* `#277 <https://github.com/holgern/pyedflib/pull/277>`__

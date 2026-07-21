@@ -47,14 +47,16 @@ Documentation is available online at https://pyedflib.readthedocs.io.
 Installation
 ------------
 
-pyEDFlib can be used with `Python`_ >=3.7. It depends on the `Numpy`_ package.
-To use the newest source code from git, you have to download the source code.
-You need a C compiler and a recent version of `Cython`_. Go then to the source directory and type::
+pyEDFlib can be used with `Python`_ >=3.8. It depends on the `Numpy`_ package.
+To use the newest source code from git, download the source code and, from the
+source directory, install it with::
 
-    python setup.py build
-    python setup.py install
+    pip install .
 
-There are binary wheels which can be installed by (use pip3 when available)::
+This requires a C compiler and a recent version of `Cython`_, which ``pip``
+installs automatically as build dependencies.
+
+There are binary wheels which can be installed by::
 
     pip install pyEDFlib
 

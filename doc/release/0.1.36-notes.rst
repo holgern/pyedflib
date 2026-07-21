@@ -1,0 +1,20 @@
+=============================
+PyEDFlib 0.1.36 Release Notes
+=============================
+
+.. contents::
+
+- Build x86_64 and arm64 macOS wheels
+- Drop the x86 wheel build for Python 3.12
+
+Authors
+=======
+* Simon Kern
+
+Issues closed for v0.1.36
+-------------------------
+
+Pull requests for v0.1.36
+-------------------------
+
+* `#245 <https://github.com/holgern/pyedflib/pull/245>`__

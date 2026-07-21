@@ -1,0 +1,33 @@
+=============================
+PyEDFlib 0.1.33 Release Notes
+=============================
+
+.. contents::
+
+- Drop remaining Python 2 leftovers and require Python >= 3.7
+- Add Python 3.11 to the test matrix
+- Modernize the codebase (f-strings, simple super() calls)
+
+Authors
+=======
+* Dimitri Papadopoulos Orfanos
+* Simon Kern
+* Alistair Johnson
+* hofaflo
+
+Issues closed for v0.1.33
+-------------------------
+
+Pull requests for v0.1.33
+-------------------------
+
+* `#200 <https://github.com/holgern/pyedflib/pull/200>`__
+* `#203 <https://github.com/holgern/pyedflib/pull/203>`__
+* `#204 <https://github.com/holgern/pyedflib/pull/204>`__
+* `#205 <https://github.com/holgern/pyedflib/pull/205>`__
+* `#206 <https://github.com/holgern/pyedflib/pull/206>`__
+* `#208 <https://github.com/holgern/pyedflib/pull/208>`__
+* `#210 <https://github.com/holgern/pyedflib/pull/210>`__
+* `#211 <https://github.com/holgern/pyedflib/pull/211>`__
+* `#213 <https://github.com/holgern/pyedflib/pull/213>`__
+* `#216 <https://github.com/holgern/pyedflib/pull/216>`__

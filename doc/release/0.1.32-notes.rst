@@ -1,0 +1,18 @@
+=============================
+PyEDFlib 0.1.32 Release Notes
+=============================
+
+.. contents::
+
+- Fix the wheel-building GitHub Actions workflow
+
+Authors
+=======
+* Holger Nahrstaedt
+
+Issues closed for v0.1.32
+-------------------------
+
+Pull requests for v0.1.32
+-------------------------
+

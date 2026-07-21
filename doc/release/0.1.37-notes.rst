@@ -1,0 +1,28 @@
+=============================
+PyEDFlib 0.1.37 Release Notes
+=============================
+
+.. contents::
+
+- Add support for Cython 3 (fix relative cimport, revert the Cython < 3 pin)
+- Support opening UTF-8 encoded paths on Windows
+- Support writing UTF-8 in write-only mode
+
+Authors
+=======
+* Simon Kern
+* Benjamin A. Beasley
+* Dimitri Papadopoulos Orfanos
+* myd7349
+
+Issues closed for v0.1.37
+-------------------------
+
+Pull requests for v0.1.37
+-------------------------
+
+* `#209 <https://github.com/holgern/pyedflib/pull/209>`__
+* `#237 <https://github.com/holgern/pyedflib/pull/237>`__
+* `#246 <https://github.com/holgern/pyedflib/pull/246>`__
+* `#248 <https://github.com/holgern/pyedflib/pull/248>`__
+* `#252 <https://github.com/holgern/pyedflib/pull/252>`__
