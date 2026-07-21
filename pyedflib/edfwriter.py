@@ -970,6 +970,25 @@ class EdfWriter:
                     self._n_records_written += 1
         return write_result
 
+    def _get_pad_value(self, i: int, digital: bool) -> Union[int, float]:
+        """
+        Returns the value used to pad channel ``i`` to a full data record.
+
+        For ``pad_with='last'`` this is the channel's most recently written
+        sample; otherwise it is the configured ``pad_with`` value, which is
+        warned about (and later clipped by edflib) if it falls outside the
+        channel's physical/digital range.
+        """
+        if self.pad_with == 'last':
+            return self._last_sample[i]
+        pad_value = self.pad_with
+        lim = ('digital_min', 'digital_max') if digital else ('physical_min', 'physical_max')
+        low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
+        if not low <= pad_value <= high:
+            warnings.warn(f'pad_with={pad_value} is outside the range of '
+                          f'channel {i} ({low}...{high}) and will be clipped')
+        return pad_value
+
     def writeSamples(self, data_list: Union[List[np.ndarray], np.ndarray], digital: bool = False) -> None:
         """
         Writes physical samples (uV, mA, Ohm) from data belonging to all signals
@@ -1012,9 +1031,9 @@ class EdfWriter:
                             f'got {self.pad_with!r}')
 
         # remember the most recent sample of each channel for pad_with='last'
-        for i in range(len(data_list)):
-            if len(data_list[i]) > 0:
-                self._last_sample[i] = data_list[i][-1]
+        for i, channel in enumerate(data_list):
+            if len(channel) > 0:
+                self._last_sample[i] = channel[-1]
 
         # one incomplete record is fine, it is simply padded at the end of the
         # recording. Writing further samples after one, however, means that the
@@ -1094,15 +1113,7 @@ class EdfWriter:
                 # a full record needs no padding, fewer samples than that do
                 if lastSampleInd < smp_per_record[i]:
                     wrote_partial_record = True
-                if self.pad_with == 'last':
-                    pad_value = self._last_sample[i]
-                else:
-                    pad_value = self.pad_with
-                    lim = ('digital_min', 'digital_max') if digital else ('physical_min', 'physical_max')
-                    low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
-                    if not low <= pad_value <= high:
-                        warnings.warn(f'pad_with={pad_value} is outside the range of '
-                                      f'channel {i} ({low}...{high}) and will be clipped')
+                pad_value = self._get_pad_value(i, digital)
                 lastSamples = np.full(smp_per_record[i], pad_value,
                                       dtype=np.int32 if digital else np.float64)
                 lastSamples[:lastSampleInd] = data_list[i][-lastSampleInd:]
@@ -1204,17 +1215,10 @@ class EdfWriter:
         for i in range(len(self.sample_buffer)):
             smp_per_record = self.get_smp_per_record(i)
             buf = self.sample_buffer[i][:smp_per_record]
-            if self.pad_with == 'last':
-                # the last sample of this channel may already have been written
-                # to file, so it is not necessarily still in sample_buffer
-                pad_value = self._last_sample[i]
-            else:
-                pad_value = self.pad_with
-                lim = ('digital_min', 'digital_max') if digital else ('physical_min', 'physical_max')
-                low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
-                if not low <= pad_value <= high:
-                    warnings.warn(f'pad_with={pad_value} is outside the range of '
-                                  f'channel {i} ({low}...{high}) and will be clipped')
+            # for pad_with='last' the last sample of this channel may already
+            # have been written to file, so it is not necessarily still in
+            # sample_buffer; _get_pad_value reads it from self._last_sample
+            pad_value = self._get_pad_value(i, digital)
             lastSamples = np.full(smp_per_record, pad_value, dtype=dtype)
             lastSamples[:len(buf)] = buf
             if digital:
