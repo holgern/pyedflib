@@ -1008,9 +1008,9 @@ class EdfWriter:
                             f'got {self.pad_with!r}')
 
         # remember the most recent sample of each channel for pad_with='last'
-        for i in range(len(data_list)):
-            if len(data_list[i]) > 0:
-                self._last_sample[i] = data_list[i][-1]
+        for i, channel in enumerate(data_list):
+            if len(channel) > 0:
+                self._last_sample[i] = channel[-1]
 
         if self.buffered:
             if self._buffered_digital is None:
