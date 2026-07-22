@@ -27,6 +27,7 @@ Tasks handled here (previously in setup.py):
 
 from __future__ import annotations
 
+import re
 import os
 import subprocess
 import sys
@@ -36,14 +37,22 @@ from functools import partial
 import setuptools.dist
 
 # ---------------------------------------------------------------------------
-# Version constants — single source of truth
+# Version constants — read from pyproject.toml (single source of truth)
 # ---------------------------------------------------------------------------
 
-MAJOR = 0
-MINOR = 1
-MICRO = 33
+def _get_version_from_pyproject() -> str:
+    """Read version from pyproject.toml."""
+    with open("pyproject.toml") as f:
+        content = f.read()
+    # Find version in [project] section: version = "0.1.33"
+    match = re.search(r'^\[project\]\s*$.*?^version\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE | re.DOTALL)
+    if match:
+        return match.group(1)
+    raise RuntimeError("Could not find version in pyproject.toml")
+
+
+VERSION = _get_version_from_pyproject()
 ISRELEASED = True
-VERSION = f"{MAJOR}.{MINOR}.{MICRO}"
 
 
 # ---------------------------------------------------------------------------
