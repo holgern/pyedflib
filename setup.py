@@ -13,12 +13,12 @@ from setuptools.command.develop import develop
 try:
     from Cython.Build import cythonize
     USE_CYTHON = True
-except ImportError:
+except ImportError as e:
     USE_CYTHON = False
     if not os.path.exists(os.path.join('pyedflib', '_extensions', '_pyedflib.c')):
         msg = ("Cython must be installed when working with a development "
                "version of PyEDFlib")
-        raise RuntimeError(msg)
+        raise RuntimeError(msg) from e
 
 
 MAJOR = 0
