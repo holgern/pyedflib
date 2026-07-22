@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from matplotlib import animation
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import animation
 from stacklineplot import stackplot_t
 
 import pyedflib

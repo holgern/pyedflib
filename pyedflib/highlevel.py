@@ -24,7 +24,7 @@ import os
 import warnings
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Optional, Any, Union, Iterable, List, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 

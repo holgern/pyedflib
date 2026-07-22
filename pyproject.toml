@@ -16,6 +16,7 @@ extend-select = [
     "ISC",  # flake8-implicit-str-concat
     "PIE",  # flake8-pie
     "FLY",  # flynt
+    "I",    # isort
     "PERF", # Perflint
     "RUF",  # Ruff-specific rules
 ]
