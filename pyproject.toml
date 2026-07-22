@@ -11,12 +11,13 @@ target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = [
-    "UP",   # pyupgrade
     "C4",   # flake8-comprehensions
     "ISC",  # flake8-implicit-str-concat
     "PIE",  # flake8-pie
     "FLY",  # flynt
+    "I",    # isort
     "PERF", # Perflint
+    "UP",   # pyupgrade
     "RUF",  # Ruff-specific rules
 ]
 ignore = [

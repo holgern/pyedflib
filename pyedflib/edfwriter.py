@@ -5,14 +5,14 @@
 #                         <https://github.com/holgern/pyedflib>
 # See LICENSE for license details.
 
-import warnings
-from datetime import date, datetime
-from types import TracebackType
-from typing import Any, Union, Optional, List, Dict, Type
 import math
 import numbers
-from functools import reduce
+import warnings
+from datetime import date, datetime
 from fractions import Fraction
+from functools import reduce
+from types import TracebackType
+from typing import Any, Dict, List, Optional, Type, Union
 
 import numpy as np
 

@@ -8,7 +8,7 @@
 import warnings
 from datetime import datetime
 from types import TracebackType
-from typing import List, Tuple, Dict, Union, Optional, Type
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 
