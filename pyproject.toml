@@ -12,7 +12,6 @@ target-version = "py38"
 [tool.ruff.lint]
 extend-select = [
     "B",    # flake8-bugbear
-    "UP",   # pyupgrade
     "C4",   # flake8-comprehensions
     "ISC",  # flake8-implicit-str-concat
     "PIE",  # flake8-pie
