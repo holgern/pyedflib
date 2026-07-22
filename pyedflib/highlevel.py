@@ -792,8 +792,8 @@ def drop_channels(
 def anonymize_edf(
     edf_file: str,
     new_file: Optional[str] = None,
-    to_remove: List[str] = ['patientname', 'birthdate'],
-    new_values: List[str] = ['xxx', ''],
+    to_remove: List[str] = ('patientname', 'birthdate'),
+    new_values: List[str] = ('xxx', ''),
     verify: bool = False,
     verbose: bool = False,
 ) -> bool:
