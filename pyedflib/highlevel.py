@@ -76,11 +76,11 @@ def _parse_date(string: str) -> datetime:
     try:
         import dateparser
         return dateparser.parse(string)
-    except Exception:
+    except Exception as e:
         print('dateparser is not installed. to convert strings to dates'
               ' install via `pip install dateparser`.')
         raise ValueError('birthdate must be datetime object or of format'
-                         ' `%d-%m-%Y`, eg. `24-01-2020`')
+                         ' `%d-%m-%Y`, eg. `24-01-2020`') from e
 
 def dig2phys(signal: Union[np.ndarray, int], dmin: int, dmax: int, pmin: float, pmax: float) -> Union[np.ndarray, float]:
     """
@@ -792,8 +792,8 @@ def drop_channels(
 def anonymize_edf(
     edf_file: str,
     new_file: Optional[str] = None,
-    to_remove: List[str] = ['patientname', 'birthdate'],
-    new_values: List[str] = ['xxx', ''],
+    to_remove: List[str] = ('patientname', 'birthdate'),
+    new_values: List[str] = ('xxx', ''),
     verify: bool = False,
     verbose: bool = False,
 ) -> bool:

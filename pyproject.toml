@@ -11,6 +11,8 @@ target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = [
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
     "C4",   # flake8-comprehensions
     "ISC",  # flake8-implicit-str-concat
     "PIE",  # flake8-pie
@@ -21,6 +23,7 @@ extend-select = [
     "RUF",  # Ruff-specific rules
 ]
 ignore = [
+    "B028",    # No explicit `stacklevel` keyword argument found
     "ISC002",  # Implicitly concatenated string literals over multiple lines
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",
