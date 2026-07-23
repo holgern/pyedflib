@@ -10,6 +10,11 @@ from datetime import datetime
 from types import TracebackType
 from typing import Dict, List, Optional, Tuple, Type, Union
 
+try:
+	from typing import Self
+except ImportError:
+	from typing_extensions import Self
+
 import numpy as np
 
 from ._extensions._pyedflib import CyEdfReader
@@ -107,7 +112,7 @@ class EdfReader(CyEdfReader):
     This provides a simple interface to read EDF, EDF+, BDF and BDF+ files.
     """
 
-    def __enter__(self) -> "EdfReader":
+    def __enter__(self) -> Self:
         return self
 
     def __del__(self) -> None:
