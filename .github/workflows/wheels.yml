@@ -35,6 +35,25 @@ jobs:
     - name: Check metadata
       run: twine check dist/*
 
+  test_sdist_to_wheel:
+    name: Test building wheel from SDist
+    needs: make_sdist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/download-artifact@v6
+      with:
+        name: artifact
+        path: dist
+    - name: Setup Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.10'
+    - name: Install deps
+      run: python -m pip install build
+    - name: Build wheel from SDist
+      run: python -m pip install dist/*.tar.gz --no-deps -v
+
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -95,7 +114,7 @@ jobs:
 
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [build_wheels, build_aarch64_wheels, make_sdist]
+    needs: [build_wheels, build_aarch64_wheels, make_sdist, test_sdist_to_wheel]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v6
