@@ -15,6 +15,7 @@ extend-select = [
     "C4",   # flake8-comprehensions
     "ISC",  # flake8-implicit-str-concat
     "PIE",  # flake8-pie
+    "PYI",  # flake8-pyi
     "FLY",  # flynt
     "I",    # isort
     "PERF", # Perflint
@@ -24,6 +25,7 @@ extend-select = [
 ignore = [
     "B028",    # No explicit `stacklevel` keyword argument found
     "ISC002",  # Implicitly concatenated string literals over multiple lines
+    "PYI041",  #  Use `float` instead of `int | float`
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",
     "RUF005",  # Consider iterable unpacking instead of concatenation

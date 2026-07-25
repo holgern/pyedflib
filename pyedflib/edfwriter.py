@@ -14,6 +14,11 @@ from functools import reduce
 from types import TracebackType
 from typing import Any, Dict, List, Optional, Type, Union
 
+try:
+	from typing import Self
+except ImportError:
+	from typing_extensions import Self
+
 import numpy as np
 
 from ._extensions._pyedflib import (
@@ -280,7 +285,7 @@ class EdfWriter:
     ) -> None:
         self.close()
 
-    def __enter__(self) -> 'EdfWriter':
+    def __enter__(self) -> Self:
         return self
 
     def __del__(self) -> None:

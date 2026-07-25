@@ -4,3 +4,4 @@ pytest
 dateparser
 tqdm
 tox
+typing_extensions ; python_version < "3.11"
