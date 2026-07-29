@@ -335,8 +335,8 @@ class EdfWriter:
                 raise ValueError("pad_with must be a number or 'last', "
                                  f"got {pad_with!r}")
         elif isinstance(pad_with, bool) or not isinstance(pad_with, numbers.Number):
-            raise ValueError("pad_with must be a number or 'last', "
-                             f"got {pad_with!r}")
+            raise TypeError("pad_with must be a number or 'last', "
+                            f"got {pad_with!r}")
 
         self.path = file_name
         self.file_type = file_type

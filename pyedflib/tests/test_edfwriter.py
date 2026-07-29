@@ -1468,7 +1468,7 @@ class TestEdfWriter(unittest.TestCase):
         for value in (np.float64(1.5), np.float32(1.5), np.int32(2)):
             f = pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=value)
             f.close()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             pyedflib.EdfWriter(filename, 1, buffered=True, pad_with=True)
 
     def test_pad_with_digital_requires_int(self):
