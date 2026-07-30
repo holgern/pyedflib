@@ -447,6 +447,82 @@ class TestHighLevel(unittest.TestCase):
         _,_,header3 = highlevel.read_edf(self.edfplus_data_file)
         self.assertEqual(header2['annotations'], header3['annotations'])
 
+    def test_change_polarity(self):
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        edf_file = os.path.join(data_dir, 'tmp_polarity.edf')
+        outfile = os.path.join(data_dir, 'tmp_polarity_out.edf')
+
+        signal_headers = highlevel.make_signal_headers(
+            ['ch0', 'ch1', 'ch2'], sample_frequency=100,
+            physical_min=-200, physical_max=200)
+        signals = np.random.rand(3, 100 * 10) * 100
+        highlevel.write_edf(edf_file, signals, signal_headers)
+        orig, orig_sheads, _ = highlevel.read_edf(edf_file)
+
+        def inverted_channels(file):
+            """indices whose physical values were negated, to within the
+            resolution the values are stored with"""
+            new, _, _ = highlevel.read_edf(file)
+            step = ((orig_sheads[0]['physical_max'] - orig_sheads[0]['physical_min'])
+                    / (orig_sheads[0]['digital_max'] - orig_sheads[0]['digital_min']))
+            return {i for i in range(len(new))
+                    if np.allclose(new[i], -orig[i], atol=step / 2, rtol=0)}
+
+        # select by label (case-insensitive), by index and by negative index
+        for channels, expected in [(['ch1'], {1}), (['CH1'], {1}), ([1], {1}),
+                                   ([-2], {1}), (['ch0', 2], {0, 2}),
+                                   ('ch1', {1}), (1, {1})]:
+            assert highlevel.change_polarity(edf_file, channels,
+                                             new_file=outfile)
+            assert inverted_channels(outfile) == expected, channels
+            # the channels that were not selected must be untouched
+            new, _, _ = highlevel.read_edf(outfile, digital=True)
+            orig_dig, _, _ = highlevel.read_edf(edf_file, digital=True)
+            for i in set(range(3)) - expected:
+                np.testing.assert_array_equal(new[i], orig_dig[i])
+
+        # the default target must not overwrite the source file (gh: the old
+        # default resolved to the input path for .edf files)
+        default_file = os.path.join(data_dir, 'tmp_polarity_inverted.edf')
+        highlevel.change_polarity(edf_file, ['ch1'])
+        assert os.path.isfile(default_file)
+        again, _, _ = highlevel.read_edf(edf_file)
+        np.testing.assert_array_equal(again, orig)
+        assert inverted_channels(default_file) == {1}
+
+        # unknown labels and out-of-range indices must not pass silently
+        with self.assertRaises(ValueError):
+            highlevel.change_polarity(edf_file, ['not_a_channel'],
+                                      new_file=outfile)
+        with self.assertRaises(IndexError):
+            highlevel.change_polarity(edf_file, [3], new_file=outfile)
+
+    def test_change_polarity_asymmetric_range(self):
+        # a physical range that does not straddle zero (e.g. SpO2 in %)
+        # cannot be inverted by negating the digital values, the physical
+        # range has to be negated as well
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        edf_file = os.path.join(data_dir, 'tmp_polarity_asym.edf')
+        outfile = os.path.join(data_dir, 'tmp_polarity_asym_out.edf')
+
+        signal_headers = highlevel.make_signal_headers(
+            ['spo2'], dimension='%', sample_frequency=100,
+            physical_min=0, physical_max=100)
+        signals = np.random.rand(1, 100 * 10) * 100
+        highlevel.write_edf(edf_file, signals, signal_headers)
+        orig, orig_sheads, _ = highlevel.read_edf(edf_file)
+
+        # verify=True does the physical round-trip check internally
+        assert highlevel.change_polarity(edf_file, ['spo2'], new_file=outfile,
+                                         verify=True)
+
+        new, new_sheads, _ = highlevel.read_edf(outfile)
+        step = 100 / (orig_sheads[0]['digital_max'] - orig_sheads[0]['digital_min'])
+        np.testing.assert_allclose(new[0], -orig[0], atol=step / 2, rtol=0)
+        # the physical range must have been negated to stay representable
+        self.assertEqual(new_sheads[0]['physical_min'], -100)
+        self.assertEqual(new_sheads[0]['physical_max'], 0)
+
     def test_deprecated_sample_rate(self):
         header = highlevel.make_header(technician='tech', recording_additional='radd',
                                                 patientname='name', patient_additional='padd',
