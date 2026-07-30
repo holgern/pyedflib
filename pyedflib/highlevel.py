@@ -1018,6 +1018,39 @@ def rename_channels(
     return write_edf(new_file, signals, signal_headers, header, digital=True)
 
 
+def _verify_polarity(
+    edf_source: str,
+    edf_target: str,
+    inverted: Iterable[int],
+    verbose: bool = False,
+) -> None:
+    """
+    Check that `edf_target` holds the physical values of `edf_source` with
+    the polarity of the channels in `inverted` flipped, and all other
+    channels unchanged.
+
+    Raises an AssertionError if that is not the case.
+
+    Note that compare_edf() cannot be used for this: it compares absolute
+    values, so it passes whether or not a channel was actually inverted.
+    """
+    orig, orig_sheads, _ = read_edf(edf_source, verbose=verbose)
+    new, _, _ = read_edf(edf_target, verbose=verbose)
+    inverted = set(inverted)
+    for i, (s_old, s_new) in enumerate(zip(orig, new)):
+        expected = -s_old if i in inverted else s_old
+        shead = orig_sheads[i]
+        # the physical values are stored in steps of one digital unit, so
+        # half a step is a generous tolerance that still catches an error
+        # of a whole unit
+        step = abs((shead['physical_max'] - shead['physical_min'])
+                   / (shead['digital_max'] - shead['digital_min']))
+        if not np.allclose(s_new, expected, atol=step / 2, rtol=0):
+            raise AssertionError(
+                f'polarity of channel {i} ({shead["label"]}) was not '
+                f'correctly inverted in {edf_target}')
+
+
 def change_polarity(
     edf_file: str,
     channels: List[Union[str, int]],
@@ -1032,12 +1065,15 @@ def change_polarity(
     ----------
     edf_file : str
         from which file to change polarity.
-    channels : list of int
-        the indices of the channels.
+    channels : list of int or list of str
+        the indices or the labels of the channels to invert. Negative
+        indices count from the end. Labels are matched case-insensitively.
     new_file : str, optional
-        where to save the edf with inverted channels. The default is None.
+        where to save the edf with inverted channels. If None, the input
+        filename appended with '_inverted' is used. The default is None.
     verify : bool, optional
-        whether to verify the two edfs for similarity. The default is True.
+        whether to check that the new file holds the negated physical
+        values of the selected channels. The default is True.
     verbose : str, optional
         print progress or not. The default is True.
 
@@ -1049,22 +1085,49 @@ def change_polarity(
     """
 
     if new_file is None:
-        new_file = f"{os.path.splitext(edf_file)[0]}.edf"
+        file, ext = os.path.splitext(edf_file)
+        new_file = f"{file}_inverted{ext}"
+    assert edf_file != new_file, 'For safety, target must not be source file.'
 
-    if isinstance(channels, str):
-        channels=[channels]
-    channels = [c.lower() for c in channels]
+    if isinstance(channels, (str, int)):
+        channels = [channels]
 
     signals, signal_headers, header = read_edf(edf_file, digital=True,
                                                verbose=verbose)
-    for i,sig in enumerate(signals):
-        label = signal_headers[i]['label'].lower()
-        if label in channels:
-            if verbose:
-                print(f'inverting {label}')
-            signals[i] = -sig
-    write_edf(new_file, signals, signal_headers, header,
-              digital=True, correct=False, verbose=verbose)
+
+    # channels can be given either as labels or as indices
+    labels = [shead['label'].lower() for shead in signal_headers]
+    to_invert = set()
+    for ch in channels:
+        if isinstance(ch, str):
+            if ch.lower() not in labels:
+                raise ValueError(f'channel {ch} is not in {edf_file} '
+                                 f'(contains {labels})')
+            to_invert.add(labels.index(ch.lower()))
+        else:
+            idx = len(labels) + ch if ch < 0 else ch
+            if not 0 <= idx < len(labels):
+                raise IndexError(f'channel index {ch} is out of range, '
+                                 f'{edf_file} has {len(labels)} channels')
+            to_invert.add(idx)
+
+    for i in sorted(to_invert):
+        if verbose:
+            print(f'inverting {signal_headers[i]["label"]}')
+        shead = signal_headers[i]
+        dmin, dmax = int(shead['digital_min']), int(shead['digital_max'])
+        # Inverting the polarity means negating the *physical* values.
+        # Reflecting the digital samples within [dmin, dmax] and negating the
+        # physical range does exactly that, with integer arithmetic and
+        # without rounding, clipping or a change of the digital range.
+        # Negating the digital samples alone (as this function used to do) is
+        # off by dmin+dmax digital units, and cannot represent the result at
+        # all for a physical range that does not straddle zero, e.g. 0...100.
+        signals[i] = dmin + dmax - signals[i]
+        shead['physical_min'], shead['physical_max'] = \
+            -shead['physical_max'], -shead['physical_min']
+
+    write_edf(new_file, signals, signal_headers, header, digital=True)
     if verify:
-        compare_edf(edf_file, new_file)
+        _verify_polarity(edf_file, new_file, to_invert, verbose=verbose)
     return True
