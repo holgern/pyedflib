@@ -177,12 +177,12 @@ class EdfReader(CyEdfReader):
             try:
                 return s.decode("utf_8", "strict")  # Prioritize UTF-8
             except UnicodeDecodeError:
-                warnings.warn("Could not decode string '{s=}', using fallback latin encoding")
+                warnings.warn(f"Could not decode string '{s=}', using fallback latin encoding")
                 return s.decode("latin1", errors="replace")  # Fallback
         elif isinstance(s, str):
             return s
         else:
-            raise TypeError('unknown string type: {type(s)=}')
+            raise TypeError(f'unknown string type: {type(s)=}')
 
     def getHeader(self) -> dict[str, Union[str, datetime]]:
         """
