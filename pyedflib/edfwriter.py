@@ -12,7 +12,7 @@ from datetime import date, datetime
 from fractions import Fraction
 from functools import reduce
 from types import TracebackType
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 try:
 	from typing import Self
@@ -157,6 +157,26 @@ def du(x: Union[str, bytes]) -> bytes:
         return x
     else:
         return x.encode("utf_8")
+
+
+def _set(setter: Callable[..., int], handle: int, *args: Any) -> None:
+    """
+    Call one of the low-level edflib header setters and raise if it failed.
+
+    edflib reports failure by returning a negative value. Discarding that
+    value means a header field is silently not written at all, which is
+    easy to miss: the file is created, it is valid, and it just does not
+    contain what was asked for.
+
+    By far the most common reason is calling a setter after the first data
+    record has been written -- edflib refuses to change the header at that
+    point (`if(hdrlist[handle]->datarecords) return -1;`).
+    """
+    if setter(handle, *args) < 0:
+        raise OSError(
+            f'{setter.__name__}{args!r} was rejected by the EDF library, the '
+            'header field has not been written. Header fields must be set '
+            'before the first data record is written.')
 
 
 def sex2int(sex: Union[int, str, None]) -> Optional[int]:
@@ -388,7 +408,26 @@ class EdfWriter:
     def update_header(self) -> None:
         """
         Updates header to edffile struct
+
+        Raises
+        ------
+        RuntimeError
+            if the file already contains data records. edflib refuses any
+            header change from that point on, so the new values would be
+            silently discarded.
         """
+        # edflib guards every header setter with
+        # `if(hdrlist[handle]->datarecords) return -1;`, i.e. once the first
+        # data record has been written the header is frozen. Discarding those
+        # return values made every later header change a silent no-op, which
+        # is how e.g. an anonymization could appear to succeed while leaving
+        # the patient name in the file.
+        if self._n_records_written > 0:
+            raise RuntimeError(
+                'The header can not be changed after the first data record '
+                'has been written, the new values would be discarded '
+                'silently. Set all header fields before writing samples.')
+
         # some checks that warn users if header fields exceed 80 chars
         patient_ident = len(self.patient_code) + len(self.patient_name) \
                         + len(self.patient_additional) + 3 + 1 + 11 # 3 spaces 1 sex 11 birthdate
@@ -420,41 +459,57 @@ class EdfWriter:
                 f'{sample_freqs=} contains non int/float'
             self.record_duration = _calculate_record_duration(sample_freqs)
 
-        set_technician(self.handle, du(self.technician))
-        set_recording_additional(self.handle, du(self.recording_additional))
-        set_patientname(self.handle, du(self.patient_name))
-        set_patientcode(self.handle, du(self.patient_code))
-        set_patient_additional(self.handle, du(self.patient_additional))
-        set_equipment(self.handle, du(self.equipment))
-        set_admincode(self.handle, du(self.admincode))
-        set_sex(self.handle, sex2int(self.sex))
+        # every setter below reports failure by returning a negative value.
+        # _set() raises on that instead of letting the header field go
+        # silently unwritten, see _set() for details.
+        _set(set_technician, self.handle, du(self.technician))
+        _set(set_recording_additional, self.handle, du(self.recording_additional))
+        _set(set_patientname, self.handle, du(self.patient_name))
+        _set(set_patientcode, self.handle, du(self.patient_code))
+        _set(set_patient_additional, self.handle, du(self.patient_additional))
+        _set(set_equipment, self.handle, du(self.equipment))
+        _set(set_admincode, self.handle, du(self.admincode))
+        _set(set_sex, self.handle, sex2int(self.sex))
 
-        set_datarecord_duration(self.handle, self.record_duration)
-        set_number_of_annotation_signals(self.handle, self.number_of_annotations)
-        set_startdatetime(self.handle, self.recording_start_time.year, self.recording_start_time.month,
-                          self.recording_start_time.day, self.recording_start_time.hour,
-                          self.recording_start_time.minute, self.recording_start_time.second)
+        _set(set_datarecord_duration, self.handle, self.record_duration)
+        # edflib only accepts 1...64 annotation signals. For plain EDF/BDF
+        # number_of_annotations is 0, and edflib already defaults those files
+        # to no annotation signals at all, so the call is neither needed nor
+        # valid there (it silently failed on every non-plus file before).
+        if self.number_of_annotations > 0:
+            _set(set_number_of_annotation_signals, self.handle, self.number_of_annotations)
+        _set(set_startdatetime, self.handle, self.recording_start_time.year, self.recording_start_time.month,
+             self.recording_start_time.day, self.recording_start_time.hour,
+             self.recording_start_time.minute, self.recording_start_time.second)
         # subseconds are noted in units of 100 nanoseconds, so we multiply by 10
         if self.recording_start_time.microsecond>0:
-            set_starttime_subsecond(self.handle, self.recording_start_time.microsecond*10)
+            _set(set_starttime_subsecond, self.handle, self.recording_start_time.microsecond*10)
         if isinstance(self.birthdate, str):
             if self.birthdate != '':
                 birthday = datetime.strptime(self.birthdate, '%d %b %Y').date()
-                set_birthdate(self.handle, birthday.year, birthday.month, birthday.day)
+                _set(set_birthdate, self.handle, birthday.year, birthday.month, birthday.day)
         else:
-            set_birthdate(self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
+            _set(set_birthdate, self.handle, self.birthdate.year, self.birthdate.month, self.birthdate.day)
 
         for i in np.arange(self.n_channels):
             check_signal_header_correct(self.channels, i, self.file_type)
-            set_samples_per_record(self.handle, i, self.get_smp_per_record(i))
-            set_physical_maximum(self.handle, i, self.channels[i]['physical_max'])
-            set_physical_minimum(self.handle, i, self.channels[i]['physical_min'])
-            set_digital_maximum(self.handle, i, self.channels[i]['digital_max'])
-            set_digital_minimum(self.handle, i, self.channels[i]['digital_min'])
-            set_label(self.handle, i, du(self.channels[i]['label']))
-            set_physical_dimension(self.handle, i, du(self.channels[i]['dimension']))
-            set_transducer(self.handle, i, du(self.channels[i]['transducer']))
-            set_prefilter(self.handle, i, du(self.channels[i]['prefilter']))
+            # update_header() also runs while the writer is only partially
+            # configured, e.g. when setDatarecordDuration() is called before
+            # the signal headers, which can make this value transiently 0.
+            # edflib requires >= 1, so skip it: a later update_header() writes
+            # the final value, and edflib validates it when the first record
+            # is written.
+            smp_per_record = self.get_smp_per_record(i)
+            if smp_per_record >= 1:
+                _set(set_samples_per_record, self.handle, i, smp_per_record)
+            _set(set_physical_maximum, self.handle, i, self.channels[i]['physical_max'])
+            _set(set_physical_minimum, self.handle, i, self.channels[i]['physical_min'])
+            _set(set_digital_maximum, self.handle, i, self.channels[i]['digital_max'])
+            _set(set_digital_minimum, self.handle, i, self.channels[i]['digital_min'])
+            _set(set_label, self.handle, i, du(self.channels[i]['label']))
+            _set(set_physical_dimension, self.handle, i, du(self.channels[i]['dimension']))
+            _set(set_transducer, self.handle, i, du(self.channels[i]['transducer']))
+            _set(set_prefilter, self.handle, i, du(self.channels[i]['prefilter']))
 
 
 
