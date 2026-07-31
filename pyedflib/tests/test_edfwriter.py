@@ -18,6 +18,7 @@ from pyedflib.edfwriter import (
     ChannelDoesNotExist,
     EdfWriter,
     _calculate_record_duration,
+    _set,
 )
 
 
@@ -1491,6 +1492,60 @@ class TestEdfWriter(unittest.TestCase):
         f.writeSamples([np.full(150, 1.0)])
         with self.assertWarns(UserWarning):
             f.close()
+
+    def test_set_raises_on_rejected_header_field(self):
+        """_set() must not let a rejected header field pass silently."""
+        def ok(handle, *args):
+            return 0
+
+        def rejected(handle, *args):
+            return -1
+
+        ok.__name__ = 'set_something'
+        rejected.__name__ = 'set_something'
+        _set(ok, 0, 'value')  # must not raise
+        with self.assertRaises(OSError) as cm:
+            _set(rejected, 0, 'value')
+        assert 'set_something' in str(cm.exception)
+
+    def test_header_change_after_write_raises(self):
+        """edflib freezes the header once a data record has been written, so
+        a header change at that point used to be discarded silently."""
+        f = pyedflib.EdfWriter(self.edfplus_data_file, 1,
+                               file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeader(0, self.ch_info_edf)
+        f.setPatientName('realname')
+        f.writeSamples([np.zeros(self.ch_info_edf['sample_frequency'] * 3)])
+        assert f._n_records_written > 0
+
+        with self.assertRaises(RuntimeError):
+            f.setPatientName('anonymous')
+        with self.assertRaises(RuntimeError):
+            f.setStartdatetime(datetime(2020, 1, 24, 4, 5, 6))
+        with self.assertRaises(RuntimeError):
+            f.update_header()
+        f.close()
+
+        # the rejected change really would have been lost
+        with pyedflib.EdfReader(self.edfplus_data_file) as r:
+            self.assertEqual(r.getPatientName(), 'realname')
+
+    def test_plain_edf_needs_no_annotation_signals(self):
+        """edflib only accepts 1...64 annotation signals and defaults plain
+        EDF/BDF to none, so pyedflib must not ask it for 0 (gh: that call
+        failed silently on every non-plus file)."""
+        for file_type, path in [(pyedflib.FILETYPE_EDF, self.edf_data_file),
+                                (pyedflib.FILETYPE_BDF, self.bdf_data_file)]:
+            f = pyedflib.EdfWriter(path, 1, file_type=file_type)
+            ch_info = self.ch_info_edf if file_type == pyedflib.FILETYPE_EDF \
+                else self.ch_info_bdf
+            f.setSignalHeader(0, ch_info)
+            self.assertEqual(f.number_of_annotations, 0)
+            f.update_header()  # must not raise
+            f.writeSamples([np.zeros(ch_info['sample_frequency'] * 3)])
+            f.close()
+            with pyedflib.EdfReader(path) as r:
+                self.assertEqual(r.signals_in_file, 1)
 
     def test_close_on_partially_constructed_writer(self):
         """__del__ must not raise if __init__ failed before opening the file."""
