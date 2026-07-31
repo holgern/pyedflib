@@ -28,6 +28,7 @@ Tasks handled here (previously in setup.py):
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import sysconfig
@@ -36,14 +37,56 @@ from functools import partial
 import setuptools.build_meta as _stbm
 
 # ---------------------------------------------------------------------------
-# Version constants — single source of truth
+# Version reader — retrieve from pyproject.toml (single source of truth)
 # ---------------------------------------------------------------------------
 
-MAJOR = 0
-MINOR = 1
-MICRO = 42
-ISRELEASED = True
-VERSION = f"{MAJOR}.{MINOR}.{MICRO}"
+
+def _read_version_from_pyproject(pyproject_path: str = "pyproject.toml") -> str:
+    """
+    Read version from pyproject.toml [project] section using regex.
+
+    This avoids adding tomli as a build dependency for Python <= 3.11.
+    """
+    if not os.path.exists(pyproject_path):
+        raise FileNotFoundError(f"Could not find {pyproject_path}")
+
+    with open(pyproject_path, encoding="utf-8") as f:
+        content = f.read()
+
+    # Find the [project] section.
+    # Match everything from [project] to the next section (or end of file).
+    project_match = re.search(
+        r"\[project\](.*?)(?=\n\[|\Z)", content, re.DOTALL | re.IGNORECASE
+    )
+
+    if not project_match:
+        raise ValueError(f"Could not find [project] section in {pyproject_path}")
+
+    project_section = project_match.group(1)
+
+    # Find version within [project] section.
+    # Match: version = "0.1.42" or version = '0.1.42'
+    version_match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', project_section)
+
+    if not version_match:
+        raise ValueError(
+            f"Could not find version in [project] section of {pyproject_path}. "
+            'Expected format: version = "X.Y.Z"'
+        )
+
+    return version_match.group(1)
+
+
+# Parse version from pyproject.toml
+try:
+    VERSION = _read_version_from_pyproject()
+except (FileNotFoundError, ValueError) as e:
+    print(f"Warning: {e}", file=sys.stderr)
+    print("Falling back to version 0.0.0.dev0", file=sys.stderr)
+    VERSION = "0.0.0.dev0"
+
+# For development/release tracking
+ISRELEASED = ".dev" not in VERSION.lower()
 
 
 # ---------------------------------------------------------------------------
