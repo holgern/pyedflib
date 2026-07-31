@@ -898,7 +898,7 @@ def crop_edf(
     if stop_format == "datetime":
         assert isinstance(stop, (datetime, type(None)))
     else:
-        assert isinstance(start, (int, float, type(None)))
+        assert isinstance(stop, (int, float, type(None)))
 
     # Open the original EDF file
     edf = pyedflib.EdfReader(edf_file)
