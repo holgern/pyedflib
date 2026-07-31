@@ -1,57 +1,57 @@
 import numpy as np
 
 __all__ = [
-    'FILETYPE_BDF',
-    'FILETYPE_BDFPLUS',
-    'FILETYPE_EDF',
-    'FILETYPE_EDFPLUS',
-    'CyEdfReader',
-    'EdfAnnotation',
-    'blockwrite_digital_samples',
-    'blockwrite_digital_short_samples',
-    'blockwrite_physical_samples',
-    'close_file',
-    'get_annotation',
-    'get_handle',
-    'get_number_of_open_files',
-    'is_file_used',
-    'lib_version',
-    'open_errors',
-    'open_file_writeonly',
-    'read_int_samples',
-    'read_physical_samples',
-    'rewind',
-    'seek',
-    'set_admincode',
-    'set_birthdate',
-    'set_datarecord_duration',
-    'set_digital_maximum',
-    'set_digital_minimum',
-    'set_equipment',
-    'set_gender',
-    'set_label',
-    'set_number_of_annotation_signals',
-    'set_patient_additional',
-    'set_patientcode',
-    'set_patientname',
-    'set_physical_dimension',
-    'set_physical_maximum',
-    'set_physical_minimum',
-    'set_prefilter',
-    'set_recording_additional',
-    'set_samples_per_record',
-    'set_sex',
-    'set_startdatetime',
-    'set_starttime_subsecond',
-    'set_technician',
-    'set_transducer',
-    'tell',
-    'write_annotation_latin1',
-    'write_annotation_utf8',
-    'write_digital_samples',
-    'write_digital_short_samples',
-    'write_errors',
-    'write_physical_samples',
+    "FILETYPE_BDF",
+    "FILETYPE_BDFPLUS",
+    "FILETYPE_EDF",
+    "FILETYPE_EDFPLUS",
+    "CyEdfReader",
+    "EdfAnnotation",
+    "blockwrite_digital_samples",
+    "blockwrite_digital_short_samples",
+    "blockwrite_physical_samples",
+    "close_file",
+    "get_annotation",
+    "get_handle",
+    "get_number_of_open_files",
+    "is_file_used",
+    "lib_version",
+    "open_errors",
+    "open_file_writeonly",
+    "read_int_samples",
+    "read_physical_samples",
+    "rewind",
+    "seek",
+    "set_admincode",
+    "set_birthdate",
+    "set_datarecord_duration",
+    "set_digital_maximum",
+    "set_digital_minimum",
+    "set_equipment",
+    "set_gender",
+    "set_label",
+    "set_number_of_annotation_signals",
+    "set_patient_additional",
+    "set_patientcode",
+    "set_patientname",
+    "set_physical_dimension",
+    "set_physical_maximum",
+    "set_physical_minimum",
+    "set_prefilter",
+    "set_recording_additional",
+    "set_samples_per_record",
+    "set_sex",
+    "set_startdatetime",
+    "set_starttime_subsecond",
+    "set_technician",
+    "set_transducer",
+    "tell",
+    "write_annotation_latin1",
+    "write_annotation_utf8",
+    "write_digital_samples",
+    "write_digital_short_samples",
+    "write_errors",
+    "write_physical_samples",
 ]
 
 open_errors: dict[int, str]
@@ -63,9 +63,7 @@ FILETYPE_BDF: int
 FILETYPE_BDFPLUS: int
 
 def contains_unicode(string: str) -> bool: ...
-
 def get_short_path_name(long_name: str) -> str: ...
-
 def lib_version() -> str: ...
 
 class CyEdfReader:
@@ -76,16 +74,15 @@ class CyEdfReader:
     def open(self, file_name: str, annotations_mode: int = ..., check_file_size: int = ...) -> bool: ...
     def read_annotation(self) -> list[list[str]]: ...
     def _close(self) -> None: ...
-    def read_digital_signal(self, signalnum: int, start: int, n: int, sigbuf: np.ndarray[np.int32_t]) -> None: ...
+    def read_digital_signal(
+        self, signalnum: int, start: int, n: int, sigbuf: np.ndarray[np.int32_t]
+    ) -> None: ...
     def readsignal(self, signalnum: int, start: int, n: int, sigbuf: np.ndarray[np.float64_t]) -> None: ...
     def load_datarecord(self, db: np.ndarray[np.float64_t], n: int = ...) -> None: ...
-
     @property
     def file_name(self) -> str: ...
-
     @file_name.setter
     def file_name(self, value: str) -> None: ...
-
     @property
     def handle(self) -> int: ...
     @property
@@ -138,7 +135,6 @@ class CyEdfReader:
     def equipment(self) -> str: ...
     @property
     def recording_additional(self) -> str: ...
-
     def signal_label(self, channel: int) -> str: ...
     def samples_in_file(self, channel: int) -> int: ...
     def samples_in_datarecord(self, channel: int) -> int: ...
@@ -195,8 +191,15 @@ def set_physical_dimension(handle: int, edfsignal: int, phys_dim: str | bytes) -
 def set_transducer(handle: int, edfsignal: int, transducer: str | bytes) -> int: ...
 def set_prefilter(handle: int, edfsignal: int, prefilter: str | bytes) -> int: ...
 def seek(handle: int, edfsignal: int, offset: int, whence: int) -> int: ...
-def set_startdatetime(handle: int, startdate_year: int, startdate_month: int, startdate_day: int,
-                      starttime_hour: int, starttime_minute: int, starttime_second: int) -> int: ...
+def set_startdatetime(
+    handle: int,
+    startdate_year: int,
+    startdate_month: int,
+    startdate_day: int,
+    starttime_hour: int,
+    starttime_minute: int,
+    starttime_second: int,
+) -> int: ...
 def set_starttime_subsecond(handle: int, subsecond: int) -> int: ...
 def set_datarecord_duration(handle: int, duration: int | float) -> int: ...
 def set_number_of_annotation_signals(handle: int, annot_signals: int) -> int: ...

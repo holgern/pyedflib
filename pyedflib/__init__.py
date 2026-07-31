@@ -11,4 +11,4 @@ from ._extensions._pyedflib import *
 from .edfreader import *
 from .edfwriter import *
 
-__all__ = [s for s in dir() if not s.startswith('_')]
+__all__ = [s for s in dir() if not s.startswith("_")]
