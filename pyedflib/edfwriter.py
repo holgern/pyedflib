@@ -15,9 +15,9 @@ from types import TracebackType
 from typing import Any, Callable, Optional, Union
 
 try:
-	from typing import Self
+    from typing import Self
 except ImportError:
-	from typing_extensions import Self
+    from typing_extensions import Self
 
 import numpy as np
 
