@@ -12,8 +12,10 @@ uploads them to PyPI using the ``PYPI_API_TOKEN`` repository secret.
 Bump the version
 ----------------
 
-Set the version in ``setup.py`` by editing ``MAJOR``, ``MINOR`` and ``MICRO``,
-and set ``ISRELEASED = True``. Commit the change.
+Set the version in ``pyproject.toml`` under the ``[project]`` section by
+editing the ``version`` field. The ``ISRELEASED`` status is determined
+automatically (``True`` if the version does not contain ``.dev``).
+Commit the change.
 
 Add release notes
 -----------------
@@ -38,5 +40,5 @@ https://pypi.org/project/pyEDFlib/.
 Prepare for continued development
 ---------------------------------
 
-Increment ``MICRO`` in ``setup.py`` and set ``ISRELEASED = False`` again, then
-commit.
+Increment the version in ``pyproject.toml`` by appending ``.dev0`` (e.g.,
+``0.1.42.dev0``), then commit.
