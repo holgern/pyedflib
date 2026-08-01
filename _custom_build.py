@@ -35,6 +35,7 @@ import sysconfig
 from functools import partial
 
 import setuptools.build_meta as _stbm
+import setuptools.dist
 
 # ---------------------------------------------------------------------------
 # Version reader — retrieve from pyproject.toml (single source of truth)
@@ -319,27 +320,29 @@ def get_ext_modules():
 # required PEP 517/660 hooks without reimplementing them.
 # ---------------------------------------------------------------------------
 
+# Capture the original finalize_options once at import time to avoid
+# stacking monkey-patches across multiple hook calls.
+_orig_finalize = setuptools.dist.Distribution.finalize_options
+
+
+def _patched_finalize(self, *args, **kwargs):
+    """Patched finalize_options that injects our libraries and extensions."""
+    _orig_finalize(self, *args, **kwargs)
+    # Avoid double-injection on repeated calls
+    if getattr(self, "_pyedflib_injected", False):
+        return
+    self._pyedflib_injected = True
+    self.libraries = list(self.libraries or []) + get_libraries()
+    self.ext_modules = list(self.ext_modules or []) + get_ext_modules()
+
+
+# Apply the monkey-patch once at import time
+setuptools.dist.Distribution.finalize_options = _patched_finalize
+
 
 def _prepare_build():
-    """Run once before any build hook to inject extensions and version file."""
+    """Run once before any build hook to regenerate version file."""
     write_version_py()
-
-    # Monkey-patch setuptools' Distribution so that our libraries and
-    # ext_modules are merged in before the build starts.
-    import setuptools.dist
-
-    _orig_finalize = setuptools.dist.Distribution.finalize_options
-
-    def _patched_finalize(self, *args, **kwargs):
-        _orig_finalize(self, *args, **kwargs)
-        # Avoid double-injection on repeated calls
-        if getattr(self, "_pyedflib_injected", False):
-            return
-        self._pyedflib_injected = True
-        self.libraries = list(self.libraries or []) + get_libraries()
-        self.ext_modules = list(self.ext_modules or []) + get_ext_modules()
-
-    setuptools.dist.Distribution.finalize_options = _patched_finalize
 
 
 # Override each PEP 517 hook to call _prepare_build() first.
