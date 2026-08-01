@@ -93,9 +93,26 @@ jobs:
           name: wheel-${{ matrix.python }}-${{ matrix.platform_id }}
           path: wheelhouse/*.whl
 
+  sdist_install:
+    name: Test install from sdist
+    needs: make_sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          merge-multiple: true
+          path: dist
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install from sdist
+        run: pip install dist/*.tar.gz
+      - name: Verify import
+        run: python -c "import pyedflib; print('pyedflib', pyedflib.__version__)"
+
   upload_pypi:
     name: Upload to PyPI (prod)
-    needs: [build_wheels, build_aarch64_wheels, make_sdist]
+    needs: [build_wheels, build_aarch64_wheels, make_sdist, sdist_install]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v6
