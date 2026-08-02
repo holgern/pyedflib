@@ -12,10 +12,10 @@ uploads them to PyPI using the ``PYPI_API_TOKEN`` repository secret.
 Bump the version
 ----------------
 
-Set the version in ``pyproject.toml`` under the ``[project]`` section by
-editing the ``version`` field. The ``ISRELEASED`` status is determined
-automatically (``True`` if the version does not contain ``.dev``).
-Commit the change.
+No manual version editing is needed. The version is automatically derived
+from git tags by setuptools-scm. Simply create a signed tag for the release
+(see below). Release versions (without ``.dev`` suffix) are created automatically
+from annotated tags.
 
 Add release notes
 -----------------
@@ -40,5 +40,6 @@ https://pypi.org/project/pyEDFlib/.
 Prepare for continued development
 ---------------------------------
 
-Increment the version in ``pyproject.toml`` by appending ``.dev0`` (e.g.,
-``0.1.42.dev0``), then commit.
+No action needed. After creating a release tag, the next commit will
+automatically have a development version (e.g., ``0.1.42.dev1+githash``)
+when built with setuptools-scm.

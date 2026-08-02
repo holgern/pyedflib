@@ -2,8 +2,11 @@
 # build-backend points to _custom_build.py (backend-path = ["."]).
 # The build script wraps setuptools.build_meta and injects the C static
 # library (c_edf) and the Cython extension (_pyedflib) at build time.
+# Version is derived from git tags via setuptools-scm, with fallback to
+# pyproject.toml for sdist builds.
 requires = [
     "setuptools>=61",
+    "setuptools-scm>=8.0",
     "numpy>=1.9.1",
     "cython>=0.29",
 ]
@@ -16,7 +19,9 @@ backend-path = ["."]
 
 [project]
 name = "pyEDFlib"
-version = "0.1.42"
+# Version is derived from git tags by setuptools-scm.
+# For sdists, version is embedded in the distribution metadata.
+dynamic = ["version"]
 description = "library to read/write EDF+/BDF+ files"
 readme = "README.rst"
 license = { text = "BSD" }
@@ -104,6 +109,9 @@ ignore = [
     "RUF003",
     "RUF005",  # Consider iterable unpacking instead of concatenation
 ]
+
+[tool.setuptools_scm]
+write_to = "pyedflib/version.py"
 
 [tool.ruff.lint.extend-per-file-ignores]
 "**/__init__.py" = ["F401", "F403"]

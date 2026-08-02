@@ -17,8 +17,7 @@ pip / build will import *this file* as the backend. We forward all PEP 517
 hooks to setuptools while adding our own extension/library definitions.
 
 Tasks handled here (previously in setup.py):
-  1. Version constants and ``write_version_py()`` (regenerates
-     ``pyedflib/version.py`` at build time).
+  1. Version management via setuptools-scm (writes ``pyedflib/version.py`` at build time).
   2. Windows UTF-8 patch: generates ``edflib_utf8.c`` from ``edflib.c``.
   3. Static C library ``c_edf`` (edflib.c compiled once for coverage).
   4. Cython extension ``pyedflib._extensions._pyedflib`` with lazy
@@ -28,7 +27,6 @@ Tasks handled here (previously in setup.py):
 from __future__ import annotations
 
 import os
-import re
 import subprocess
 import sys
 import sysconfig
@@ -38,56 +36,30 @@ import setuptools.build_meta as _stbm
 import setuptools.dist
 
 # ---------------------------------------------------------------------------
-# Version reader — retrieve from pyproject.toml (single source of truth)
+# Version reader — use setuptools-scm for git-based versioning
 # ---------------------------------------------------------------------------
 
 
-def _read_version_from_pyproject(pyproject_path: str = "pyproject.toml") -> str:
+def _get_version() -> str:
     """
-    Read version from pyproject.toml [project] section using regex.
-
-    This avoids adding tomli as a build dependency for Python <= 3.11.
+    Get version using setuptools-scm.
+    
+    Works from:
+    - Git checkout: version derived from tags (e.g., 0.1.42 or 0.1.42.devN+githash)
+    - Sdist: version read from embedded metadata
+    - Fallback: returns 0.0.0.dev0 if all else fails
     """
-    if not os.path.exists(pyproject_path):
-        raise FileNotFoundError(f"Could not find {pyproject_path}")
-
-    with open(pyproject_path, encoding="utf-8") as f:
-        content = f.read()
-
-    # Find the [project] section.
-    # Match everything from [project] to the next section (or end of file).
-    project_match = re.search(
-        r"\[project\](.*?)(?=\n\[|\Z)", content, re.DOTALL | re.IGNORECASE
-    )
-
-    if not project_match:
-        raise ValueError(f"Could not find [project] section in {pyproject_path}")
-
-    project_section = project_match.group(1)
-
-    # Find version within [project] section.
-    # Match: version = "0.1.42" or version = '0.1.42'
-    version_match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', project_section)
-
-    if not version_match:
-        raise ValueError(
-            f"Could not find version in [project] section of {pyproject_path}. "
-            'Expected format: version = "X.Y.Z"'
-        )
-
-    return version_match.group(1)
+    try:
+        from setuptools_scm import get_version
+        return get_version(root=".", relative_to=__file__)
+    except (ImportError, LookupError):
+        # setuptools-scm not available - should not happen during normal builds
+        # but provide a safe fallback
+        return "0.0.0.dev0"
 
 
-# Parse version from pyproject.toml
-try:
-    VERSION = _read_version_from_pyproject()
-except (FileNotFoundError, ValueError) as e:
-    print(f"Warning: {e}", file=sys.stderr)
-    print("Falling back to version 0.0.0.dev0", file=sys.stderr)
-    VERSION = "0.0.0.dev0"
-
-# For development/release tracking
-ISRELEASED = ".dev" not in VERSION.lower()
+# Get version from setuptools-scm
+VERSION = _get_version()
 
 
 # ---------------------------------------------------------------------------
@@ -108,53 +80,6 @@ def _git_revision() -> str:
         return out.strip().decode("ascii")
     except OSError:
         return "Unknown"
-
-
-def get_version_info() -> tuple[str, str]:
-    """Return (full_version, git_revision)."""
-    full_version = VERSION
-    if os.path.exists(".git"):
-        git_rev = _git_revision()
-    elif os.path.exists("pyedflib/version.py"):
-        import types
-        from importlib.machinery import SourceFileLoader
-
-        loader = SourceFileLoader("pyedflib.version", "pyedflib/version.py")
-        mod = types.ModuleType(loader.name)
-        loader.exec_module(mod)
-        git_rev = mod.git_revision  # type: ignore[attr-defined]
-    else:
-        git_rev = "Unknown"
-
-    if not ISRELEASED:
-        full_version += f".dev0+{git_rev[:7]}"
-
-    return full_version, git_rev
-
-
-def write_version_py(filename: str = "pyedflib/version.py") -> None:
-    """Regenerate ``pyedflib/version.py``."""
-    template = (
-        "# THIS FILE IS GENERATED FROM pyedflib _custom_build.py\n"
-        "short_version = '{version}'\n"
-        "version = '{version}'\n"
-        "full_version = '{full_version}'\n"
-        "git_revision = '{git_revision}'\n"
-        "release = {isrelease}\n"
-        "\n"
-        "if not release:\n"
-        "    version = full_version\n"
-    )
-    full_version, git_rev = get_version_info()
-    with open(filename, "w") as fh:
-        fh.write(
-            template.format(
-                version=VERSION,
-                full_version=full_version,
-                git_revision=git_rev,
-                isrelease=str(ISRELEASED),
-            )
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -341,8 +266,14 @@ setuptools.dist.Distribution.finalize_options = _patched_finalize
 
 
 def _prepare_build():
-    """Run once before any build hook to regenerate version file."""
-    write_version_py()
+    """Run once before any build hook to write version file via setuptools-scm."""
+    try:
+        from setuptools_scm import dump_version
+        dump_version(root=".", version=VERSION, write_to="pyedflib/version.py")
+    except ImportError:
+        # setuptools-scm not available, skip version file generation
+        # (should not happen during normal builds)
+        pass
 
 
 # Override each PEP 517 hook to call _prepare_build() first.
