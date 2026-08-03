@@ -16,6 +16,12 @@ and type the following commands to build and install the package::
 
     pip install .
 
+To install with optional dependency groups::
+
+    pip install --group test .      # Install with test dependencies
+    pip install --group dev .       # Install with development dependencies
+    pip install --group docs .      # Install with documentation dependencies
+
 To verify the installation run the following command::
 
     python -m pytest

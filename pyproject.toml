@@ -51,6 +51,23 @@ dependencies = [
     "numpy>=1.9.1",
 ]
 
+[dependency-groups]
+test = [
+    "coverage",
+    "dateparser",
+    "pytest",
+    "ruff",
+    "tqdm",
+]
+dev = [
+    "tox",
+    "typing_extensions; python_version < '3.11'",
+]
+docs = [
+    "numpydoc",
+    "sphinx",
+]
+
 [project.urls]
 Homepage = "https://github.com/holgern/pyedflib"
 
