@@ -5,7 +5,7 @@ from stacklineplot import stackplot
 
 import pyedflib
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     f = pyedflib.data.test_generator()
     n = f.signals_in_file
     signal_labels = f.getSignalLabels()
@@ -20,6 +20,6 @@ if __name__ == '__main__':
     n_plot = np.min((n_min, 2000))
     sigbufs_plot = np.zeros((n, n_plot))
     for i in np.arange(n):
-        sigbufs_plot[i,:] = sigbufs[i][:n_plot]
+        sigbufs_plot[i, :] = sigbufs[i][:n_plot]
 
     stackplot(sigbufs_plot[:, :n_plot], ylabels=signal_labels)

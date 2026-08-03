@@ -133,9 +133,7 @@ class EdfReader(CyEdfReader):
         self._close()
 
     def getNSamples(self) -> np.ndarray:
-        return np.array(
-            [self.samples_in_file(chn) for chn in np.arange(self.signals_in_file)]
-        )
+        return np.array([self.samples_in_file(chn) for chn in np.arange(self.signals_in_file)])
 
     def readAnnotations(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -182,7 +180,7 @@ class EdfReader(CyEdfReader):
         elif isinstance(s, str):
             return s
         else:
-            raise TypeError(f'unknown string type: {type(s)=}')
+            raise TypeError(f"unknown string type: {type(s)=}")
 
     def getHeader(self) -> dict[str, Union[str, datetime]]:
         """
@@ -206,9 +204,7 @@ class EdfReader(CyEdfReader):
             "gender": self.getSex(),
         }  # backwards compatibility
 
-    def getSignalHeader(
-        self, chn: int
-    ) -> dict[str, Union[str, float, int, np.ndarray]]:
+    def getSignalHeader(self, chn: int) -> dict[str, Union[str, float, int, np.ndarray]]:
         """
         Returns the  header of one signal as  dicts
 
@@ -467,9 +463,7 @@ class EdfReader(CyEdfReader):
         if string:
             return self._convert_string(self.birthdate.rstrip())
         else:
-            return datetime.strptime(
-                self._convert_string(self.birthdate.rstrip()), "%d %b %Y"
-            )
+            return datetime.strptime(self._convert_string(self.birthdate.rstrip()), "%d %b %Y")
 
     def getSampleFrequencies(self) -> np.ndarray:
         """
@@ -488,9 +482,7 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
-        return np.array(
-            [self.samplefrequency(chn) for chn in np.arange(self.signals_in_file)]
-        )
+        return np.array([self.samplefrequency(chn) for chn in np.arange(self.signals_in_file)])
 
     def getSampleFrequency(self, chn: int) -> float:
         """
@@ -535,8 +527,7 @@ class EdfReader(CyEdfReader):
 
         """
         return [
-            self._convert_string(self.signal_label(chn).strip())
-            for chn in np.arange(self.signals_in_file)
+            self._convert_string(self.signal_label(chn).strip()) for chn in np.arange(self.signals_in_file)
         ]
 
     def getLabel(self, chn: int) -> str:
