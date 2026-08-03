@@ -1,5 +1,4 @@
 include README-edflib.md
-include LICENSE
 include *.txt
 
 # All source files

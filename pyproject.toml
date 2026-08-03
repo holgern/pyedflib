@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=61",
+    "setuptools>=77.0.3",
     "numpy>=1.9.1",
     "cython>=0.29",
 ]
@@ -17,14 +17,14 @@ authors = [
 ]
 description = "library to read/write EDF+/BDF+ files"
 readme = "README.rst"
-license = { text = "BSD" }
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: C",
