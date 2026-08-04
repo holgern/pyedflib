@@ -6,7 +6,7 @@ Guidelines for new releases for pyEDFlib
 Releases are built and published automatically by the ``Build wheel`` GitHub
 Actions workflow (``.github/workflows/wheels.yml``). It runs on every pushed
 tag matching ``vX.Y.Z``, builds the source distribution and the platform
-wheels (Linux, macOS and Windows, CPython 3.8-3.14, including aarch64) and
+wheels (Linux, macOS and Windows, CPython 3.9-3.14, including aarch64) and
 uploads them to PyPI using the ``PYPI_API_TOKEN`` repository secret.
 
 Bump the version

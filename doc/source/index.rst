@@ -39,7 +39,7 @@ Requirements
 
 ``PyEDFlib`` requires:
 
-- Python_ >=3.8
+- Python_ >=3.9
 - Numpy_ >= 1.9.1
 
 Download
