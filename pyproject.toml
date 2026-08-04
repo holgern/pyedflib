@@ -11,6 +11,8 @@ build-backend = "setuptools.build_meta"
 name = "pyEDFlib"
 maintainers = [
     { name = "Holger Nahrstaedt", email = "nahrstaedt@gmail.com" },
+    { name = "Simon Kern"},
+    { name = "Dimitri Papadopoulos Orfanos"},
 ]
 authors = [
     { name = "Holger Nahrstaedt", email = "nahrstaedt@gmail.com" },
