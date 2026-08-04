@@ -1,0 +1,20 @@
+exclude: data|pyedflib/_extensions/c/edflib.h|pyedflib/_extensions/c/edflib.c
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+
+ci:
+  autoupdate_schedule: monthly
