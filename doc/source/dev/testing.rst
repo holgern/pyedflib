@@ -17,7 +17,7 @@ Tests are implemented with `pytest`, so use one of:
     $ pytest
 
     >>> pyedflib.test()  # doctest: +SKIP
-    
+
 Note doctests require `Matplotlib`_ in addition to the usual dependencies.
 
 

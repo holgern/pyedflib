@@ -5,7 +5,7 @@ PyEDFlib 0.1.31 Release Notes
 Authors
 =======
 
-* skjerns 
+* skjerns
 
 Issues closed for v0.1.31
 -------------------------

@@ -30,7 +30,7 @@ To build docs::
 
     cd doc
     make html
-	
+
 Installing from source code in Windows
 --------------------------------------
 
@@ -73,4 +73,3 @@ Installing a regular release from PyPi
 A regular release can be installed with pip or easy_install::
 
     pip install pyedflib
-

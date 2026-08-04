@@ -18,7 +18,7 @@ Authors
 Issues closed for v0.1.9
 ------------------------
 - `#16 <github.com/holgern/pyedflib/issues/16>`__:Double rounding when writing to file leads to accumulating errors
-- `#17 <github.com/holgern/pyedflib/issues/17>`__:Error with chb17b_69 in CHB-MIT (Physionet) Database 
+- `#17 <github.com/holgern/pyedflib/issues/17>`__:Error with chb17b_69 in CHB-MIT (Physionet) Database
 
 Pull requests for v0.1.9
 ------------------------

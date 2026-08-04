@@ -31,5 +31,5 @@ Pull requests for v0.1.24
 * #155 Run tests on Python 3.10
 * #158 replace lines in accordance with edflib
 * #160 Add tests for ChannelDoesNotExist Exception
-* #162 Cleanup CIs 
+* #162 Cleanup CIs
 * #163 Remove appveyor, tox & add windows-2016

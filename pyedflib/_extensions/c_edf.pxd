@@ -39,7 +39,7 @@ cdef extern from "c/edflib.h":
         char physdimension[9]
         char prefilter[81]
         char transducer[81]
-        
+
     cdef struct edf_hdr_struct:
         int handle
         int filetype
@@ -67,7 +67,7 @@ cdef extern from "c/edflib.h":
         long long int datarecords_in_file
         long long int annotations_in_file
         edf_param_struct * signalparam
-    
+
     int edfopen_file_readonly(char *, edf_hdr_struct *, int, int)
     int edf_set_birthdate(int, int, int, int)
     int edf_set_digital_minimum(int, int, int)

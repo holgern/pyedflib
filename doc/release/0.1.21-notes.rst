@@ -22,9 +22,9 @@ Issues closed for v0.1.21
 
 Pull requests for v0.1.21
 -------------------------
-* PR #100 - adding unicode read/write tests + workaround windows unicode files 
+* PR #100 - adding unicode read/write tests + workaround windows unicode files
 * PR #103 - Verbose options default to False
 * PR #106 - add warnings for header length
 * PR #107 - Prevent fortran layout
-* PR #109 - Round sample rates up to 3 decimals not to int 
+* PR #109 - Round sample rates up to 3 decimals not to int
 * PR #116 - fixed wrong variable use in rename_channel function

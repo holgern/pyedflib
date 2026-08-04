@@ -31,7 +31,7 @@ Pull requests for v0.1.23
 * #127 Cleanup travis buildscript
 * #125 non-empty data check in edfwriter to prevent unknown OS error
 * #121 Fix sample frequencies for record duration != 1
-* #134 add warnings if dmin/dmax/pmin/pmax is out of bounds 
+* #134 add warnings if dmin/dmax/pmin/pmax is out of bounds
 * #135 split up Errors in FileNotFoundError and OSError
 *  #136 suppress warnings in tests
 * #114 Be less strict about prefilter fields
