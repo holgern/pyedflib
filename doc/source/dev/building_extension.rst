@@ -74,3 +74,15 @@ A regular release can be installed with pip or easy_install::
 
     pip install pyedflib
 
+Version management
+------------------
+
+PyEDFlib uses setuptools-scm for automatic version management. The version is
+derived from git tags:
+
+- Tagged releases (e.g., ``v0.1.43``) produce version ``0.1.43``
+- Development versions include git commit hash and date (e.g., ``0.1.43.dev35+gb22e717.d20260804``)
+- No manual version updates are required in setup.py or any other files
+
+The version can be accessed programmatically via ``pyedflib.__version__``.
+
