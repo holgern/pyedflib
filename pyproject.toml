@@ -55,19 +55,20 @@ dependencies = [
 
 [dependency-groups]
 test = [
-    "coverage",
     "dateparser",
     "pytest",
+    "pytest-cov",
     "ruff",
     "tqdm",
-]
-dev = [
-    "tox",
     "typing_extensions; python_version < '3.11'",
 ]
 docs = [
     "numpydoc",
     "sphinx",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "docs" },
 ]
 
 [project.urls]
