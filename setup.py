@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import subprocess
 import sys
 import sysconfig
 from functools import partial
@@ -20,12 +19,6 @@ except ImportError as e:
         msg = "Cython must be installed when working with a development version of PyEDFlib"
         raise RuntimeError(msg) from e
 
-
-MAJOR = 0
-MINOR = 1
-MICRO = 42
-ISRELEASED = True
-VERSION = f"{MAJOR}.{MINOR}.{MICRO}"
 
 # Version of Numpy required for setup
 REQUIRED_NUMPY = "numpy>=1.9.1"
@@ -92,81 +85,7 @@ def get_numpy_include():
     return numpy_include
 
 
-# Return the git revision as a string
-def git_version():
-    def _minimal_ext_cmd(cmd):
-        # construct minimal environment
-        env = {}
-        for k in ["SYSTEMROOT", "PATH"]:
-            v = os.environ.get(k)
-            if v is not None:
-                env[k] = v
-        # LANGUAGE is used on win32
-        env["LANGUAGE"] = "C"
-        env["LANG"] = "C"
-        env["LC_ALL"] = "C"
-        out = subprocess.Popen(cmd, stdout=subprocess.PIPE, env=env).communicate()[0]
-        return out
 
-    try:
-        out = _minimal_ext_cmd(["git", "rev-parse", "HEAD"])
-        GIT_REVISION = out.strip().decode("ascii")
-    except OSError:
-        GIT_REVISION = "Unknown"
-
-    return GIT_REVISION
-
-
-def get_version_info():
-    # Adding the git rev number needs to be done inside
-    # write_version_py(), otherwise the import of pyedflib.version messes
-    # up the build under Python 3.
-    FULLVERSION = VERSION
-    if os.path.exists(".git"):
-        GIT_REVISION = git_version()
-    elif os.path.exists("pyedflib/version.py"):
-        # must be a source distribution, use existing version file
-        # load it as a separate module to not load pyedflib/__init__.py
-        import types
-        from importlib.machinery import SourceFileLoader
-
-        loader = SourceFileLoader("pyedflib.version", "pyedflib/version.py")
-        version = types.ModuleType(loader.name)
-        loader.exec_module(version)
-        GIT_REVISION = version.git_revision
-    else:
-        GIT_REVISION = "Unknown"
-
-    if not ISRELEASED:
-        FULLVERSION += f".dev0+{GIT_REVISION[:7]}"
-
-    return FULLVERSION, GIT_REVISION
-
-
-def write_version_py(filename="pyedflib/version.py"):
-    cnt = """
-# THIS FILE IS GENERATED FROM pyedflib SETUP.PY
-short_version = '%(version)s'
-version = '%(version)s'
-full_version = '%(full_version)s'
-git_revision = '%(git_revision)s'
-release = %(isrelease)s
-
-if not release:
-    version = full_version
-"""
-    FULLVERSION, GIT_REVISION = get_version_info()
-
-    with open(filename, "w") as a:
-        a.write(
-            cnt
-            % {
-                "version": VERSION,
-                "full_version": FULLVERSION,
-                "git_revision": GIT_REVISION,
-                "isrelease": str(ISRELEASED),
-            }
-        )
 
 
 # BEFORE importing distutils, remove MANIFEST. distutils doesn't properly
@@ -286,13 +205,10 @@ class develop_build_clib(develop):
 
 
 if __name__ == "__main__":
-    # Rewrite the version file every time
-    write_version_py()
     if USE_CYTHON:
         ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
 
     setup(
-        version=get_version_info()[0],
         ext_modules=ext_modules,
         libraries=[c_lib],
         cmdclass={"develop": develop_build_clib},

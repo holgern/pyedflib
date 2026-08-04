@@ -36,7 +36,6 @@ edflib_utf8.c
 edf.[ch]
 cythonize.dat
 pyedflib/__config__.py
-pyedflib/version.py
 build.log
 
 # Generated test files

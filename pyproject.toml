@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=77.0.3",
+    "setuptools-scm>=8.0",
     "numpy>=1.9.1",
     "cython>=0.29",
 ]
@@ -48,11 +49,11 @@ keywords = [
     "EDF+",
     "BDF+",
 ]
-dynamic = ["version"]
 dependencies = [
     "numpy>=1.9.1",
     "typing_extensions; python_version < '3.11'",
 ]
+dynamic = ["version"]
 
 [dependency-groups]
 test = [
