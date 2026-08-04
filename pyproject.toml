@@ -51,6 +51,7 @@ keywords = [
 dynamic = ["version"]
 dependencies = [
     "numpy>=1.9.1",
+    "typing_extensions; python_version < '3.11'",
 ]
 
 [dependency-groups]
@@ -60,7 +61,6 @@ test = [
     "pytest-cov",
     "ruff",
     "tqdm",
-    "typing_extensions; python_version < '3.11'",
 ]
 docs = [
     "numpydoc",
