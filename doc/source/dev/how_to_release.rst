@@ -12,8 +12,8 @@ uploads them to PyPI using the ``PYPI_API_TOKEN`` repository secret.
 Bump the version
 ----------------
 
-Set the version in ``setup.py`` by editing ``MAJOR``, ``MINOR`` and ``MICRO``,
-and set ``ISRELEASED = True``. Commit the change.
+No manual version updates are needed. The version is automatically derived from
+git tags by setuptools-scm. Simply create a git tag with the version number.
 
 Add release notes
 -----------------
@@ -38,5 +38,5 @@ https://pypi.org/project/pyEDFlib/.
 Prepare for continued development
 ---------------------------------
 
-Increment ``MICRO`` in ``setup.py`` and set ``ISRELEASED = False`` again, then
-commit.
+No version updates are needed. Continue development on the main branch.
+The next commit will automatically get a development version number from setuptools-scm.
