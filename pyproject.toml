@@ -32,7 +32,6 @@ ignore = [
     "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
     "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
     "FA100",   # Add `from __future__ import annotations` to simplify `typing`
-    "ISC002",  # Implicitly concatenated string literals over multiple lines
     "PYI041",  #  Use `float` instead of `int | float`
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",
