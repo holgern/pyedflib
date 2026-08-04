@@ -1,13 +1,100 @@
 [build-system]
 requires = [
-    "setuptools",
+    "setuptools>=77.0.3",
     "numpy>=1.9.1",
-    "cython"
+    "cython>=0.29",
 ]
 build-backend = "setuptools.build_meta"
 
+
+[project]
+name = "pyEDFlib"
+maintainers = [
+    { name = "Holger Nahrstaedt", email = "nahrstaedt@gmail.com" },
+    { name = "Simon Kern"},
+    { name = "Dimitri Papadopoulos Orfanos"},
+]
+authors = [
+    { name = "Holger Nahrstaedt", email = "nahrstaedt@gmail.com" },
+]
+description = "library to read/write EDF+/BDF+ files"
+readme = "README.rst"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: C",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = [
+    "EDFlib",
+    "European data format",
+    "EDF",
+    "BDF",
+    "EDF+",
+    "BDF+",
+]
+dynamic = ["version"]
+dependencies = [
+    "numpy>=1.9.1",
+    "typing_extensions; python_version < '3.11'",
+]
+
+[dependency-groups]
+test = [
+    "dateparser",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "tqdm",
+]
+docs = [
+    "numpydoc",
+    "sphinx",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "docs" },
+]
+
+[project.urls]
+Homepage = "https://github.com/holgern/pyedflib"
+
+
+[tool.setuptools]
+platforms = ["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"]
+packages = [
+    "pyedflib",
+    "pyedflib._extensions",
+    "pyedflib.data",
+    "pyedflib.tests",
+    "pyedflib.tests.data",
+]
+
+[tool.setuptools.package-data]
+"pyedflib.data" = ["*.edf", "*.bdf"]
+"pyedflib.tests.data" = ["*.edf", "*.bdf"]
+"pyedflib._extensions" = ["*.pyi"]
+
+[tool.setuptools.exclude-package-data]
+"pyedflib._extensions" = ["*.pyx", "*.pxd", "*.pxi", "*.c", "*.h"]
+
+
 [tool.ruff]
-target-version = "py39"
 line-length = 110
 
 [tool.ruff.lint]
@@ -33,7 +120,7 @@ ignore = [
     "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
     "FA100",   # Add `from __future__ import annotations` to simplify `typing`
     "ISC002",  # Implicitly concatenated string literals over multiple lines
-    "PYI041",  #  Use `float` instead of `int | float`
+    "PYI041",  # Use `float` instead of `int | float`
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "RUF003",
     "RUF005",  # Consider iterable unpacking instead of concatenation
@@ -41,4 +128,3 @@ ignore = [
 
 [tool.ruff.lint.extend-per-file-ignores]
 "**/__init__.py" = ["F401", "F403"]
-"setup.py" = ["SIM115", "SIM117"]

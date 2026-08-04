@@ -1,10 +1,4 @@
-include setup.py
-include README.rst
 include README-edflib.md
-include LICENSE
-include *.txt
-include pyproject.toml
-include MANIFEST.in
 
 # All source files
 recursive-include pyedflib *

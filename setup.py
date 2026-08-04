@@ -184,14 +184,13 @@ make_ext_path = partial(os.path.join, "pyedflib", "_extensions")
 
 if os.name == "nt":
     # Patch edflib.c
-    with open(make_ext_path("c/edflib.c"), "rb") as fin:
-        with open(make_ext_path("c/edflib_utf8.c"), "wb") as fout:
-            for line in fin:
-                line = line.replace(b'#include "edflib.h"', b'#include "edflib.h"\r\n#include "fopen_utf8.h"')
-                line = line.replace(b'file = fopeno(path, "rb");', b'file = fopen_utf8(path, "rb");')
-                line = line.replace(b'file = fopeno(path, "wb");', b'file = fopen_utf8(path, "wb");')
+    with open(make_ext_path("c/edflib.c"), "rb") as fin, open(make_ext_path("c/edflib_utf8.c"), "wb") as fout:
+        for line in fin:
+            line = line.replace(b'#include "edflib.h"', b'#include "edflib.h"\r\n#include "fopen_utf8.h"')
+            line = line.replace(b'file = fopeno(path, "rb");', b'file = fopen_utf8(path, "rb");')
+            line = line.replace(b'file = fopeno(path, "wb");', b'file = fopen_utf8(path, "wb");')
 
-                fout.write(line)
+            fout.write(line)
 
     sources = ["c/edflib_utf8.c", "c/fopen_utf8.c"]
     headers = ["c/edflib.h", "c/fopen_utf8.h"]
@@ -293,50 +292,8 @@ if __name__ == "__main__":
         ext_modules = cythonize(ext_modules, compiler_directives=cythonize_opts)
 
     setup(
-        name="pyEDFlib",
-        maintainer="Holger Nahrstaedt",
-        maintainer_email="nahrstaedt@gmail.com",
-        author="Holger Nahrstaedt",
-        author_email="nahrstaedt@gmail.com",
-        url="https://github.com/holgern/pyedflib",
-        license="BSD",
-        description="library to read/write EDF+/BDF+ files",
-        long_description=open("README.rst").read(),
-        keywords=["EDFlib", "European data format", "EDF", "BDF", "EDF+", "BDF+"],
-        classifiers=[
-            "Development Status :: 5 - Production/Stable",
-            "Intended Audience :: Developers",
-            "Intended Audience :: Education",
-            "Intended Audience :: Science/Research",
-            "License :: OSI Approved :: BSD License",
-            "Operating System :: OS Independent",
-            "Programming Language :: Python :: Implementation :: CPython",
-            "Programming Language :: C",
-            "Programming Language :: Python",
-            "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.9",
-            "Programming Language :: Python :: 3.10",
-            "Programming Language :: Python :: 3.11",
-            "Programming Language :: Python :: 3.12",
-            "Programming Language :: Python :: 3.13",
-            "Programming Language :: Python :: 3.14",
-            "Topic :: Software Development :: Libraries :: Python Modules",
-        ],
-        platforms=["Windows", "Linux", "Solaris", "Mac OS-X", "Unix"],
         version=get_version_info()[0],
-        packages=[
-            "pyedflib",
-            "pyedflib._extensions",
-            "pyedflib.data",
-            "pyedflib.tests",
-            "pyedflib.tests.data",
-        ],
-        package_data={
-            "pyedflib.data": ["*.edf", "*.bdf"],
-            "pyedflib.tests.data": ["*.edf", "*.bdf"],
-        },
         ext_modules=ext_modules,
         libraries=[c_lib],
         cmdclass={"develop": develop_build_clib},
-        install_requires=[REQUIRED_NUMPY],
     )
