@@ -46,10 +46,10 @@ def tqdm(iterable: Iterable, *args: Any, **kwargs: Any) -> Iterable:
     """
     try:
         from tqdm import tqdm as iterator
-
-        return iterator(iterable, *args, **kwargs)
-    except Exception:
+    except ImportError:
         return iterable
+    else:
+        return iterator(iterable, *args, **kwargs)
 
 
 def _parse_date(string: str) -> datetime:
@@ -72,17 +72,17 @@ def _parse_date(string: str) -> datetime:
     for f in formats:
         try:
             return datetime.strptime(string, f)
-        except Exception:
+        except ValueError:
             pass
     try:
         import dateparser
-
-        return dateparser.parse(string)
-    except Exception as e:
+    except ImportError as e:
         print(
             "dateparser is not installed. to convert strings to dates install via `pip install dateparser`."
         )
         raise ValueError("birthdate must be datetime object or of format `%d-%m-%Y`, eg. `24-01-2020`") from e
+    else:
+        return dateparser.parse(string)
 
 
 def dig2phys(
