@@ -107,6 +107,7 @@ extend-select = [
     "FLY",  # flynt
     "I",    # isort
     "PERF", # Perflint
+    "PGH",  # pygrep-hooks
     "UP",   # pyupgrade
     "RUF",  # Ruff-specific rules
 ]

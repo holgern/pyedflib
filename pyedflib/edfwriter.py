@@ -15,7 +15,7 @@ from types import TracebackType
 from typing import Any, Callable, Optional, Union
 
 try:
-    from typing import Self
+    from typing import Self  # type: ignore[attr-defined]
 except ImportError:
     from typing_extensions import Self
 
@@ -95,37 +95,37 @@ def check_signal_header_correct(
     ch = channels[i]
     label = ch["label"]
 
-    if len(ch["label"]) > 16:  # type: ignore
+    if len(ch["label"]) > 16:  # type: ignore[arg-type]
         warnings.warn(
             'Label of channel {} is longer than 16 ASCII chars. The label will be truncated to "{}"'.format(
-                i, ch["label"][:16]
+                i, ch["label"][:16]  # type: ignore[index]
             )
-        )  # type: ignore
-    if len(ch["prefilter"]) > 80:  # type: ignore
+        )
+    if len(ch["prefilter"]) > 80:  # type: ignore[arg-type]
         warnings.warn(
             "prefilter of channel {} is longer than 80 ASCII chars. "
-            'The label will be truncated to "{}"'.format(i, ch["prefilter"][:80])
-        )  # type: ignore
-    if len(ch["transducer"]) > 80:  # type: ignore
+            'The label will be truncated to "{}"'.format(i, ch["prefilter"][:80])  # type: ignore[index]
+        )
+    if len(ch["transducer"]) > 80:  # type: ignore[arg-type]
         warnings.warn(
             "transducer of channel {} is longer than 80 ASCII chars. "
-            'The label will be truncated to "{}"'.format(i, ch["transducer"][:80])
-        )  # type: ignore
-    if len(ch["dimension"]) > 80:  # type: ignore
+            'The label will be truncated to "{}"'.format(i, ch["transducer"][:80])  # type: ignore[index]
+        )
+    if len(ch["dimension"]) > 80:  # type: ignore[arg-type]
         warnings.warn(
             "dimension of channel {} is longer than 8 ASCII chars. "
-            'The label will be truncated to "{}"'.format(i, ch["dimension"][:8])
-        )  # type: ignore
+            'The label will be truncated to "{}"'.format(i, ch["dimension"][:8])  # type: ignore[index]
+        )
 
     # these ones actually raise an exception
     dmin, dmax = (-8388608, 8388607) if file_type in (FILETYPE_BDFPLUS, FILETYPE_BDF) else (-32768, 32767)
-    if ch["digital_min"] < dmin:  # type: ignore
+    if ch["digital_min"] < dmin:  # type: ignore[operator]
         raise ValueError(
             "Digital minimum for channel {} ({}) is {}, but minimum allowed value is {}".format(
                 i, label, ch["digital_min"], dmin
             )
         )
-    if ch["digital_max"] > dmax:  # type: ignore
+    if ch["digital_max"] > dmax:  # type: ignore[operator]
         raise ValueError(
             "Digital maximum for channel {} ({}) is {}, but maximum allowed value is {}".format(
                 i, label, ch["digital_max"], dmax
@@ -134,7 +134,7 @@ def check_signal_header_correct(
 
     # if we truncate the physical min before the dot, we potentitally
     # have all the signals incorrect by an order of magnitude.
-    if len(str(ch["physical_min"])) > 8 and ch["physical_min"] < -99999999:  # type: ignore
+    if len(str(ch["physical_min"])) > 8 and ch["physical_min"] < -99999999:  # type: ignore[operator]
         raise ValueError(
             "Physical minimum for channel {} ({}) is {}, which has {} chars, "
             "however, EDF+ can only save 8 chars, critical precision loss is expected, "
@@ -142,7 +142,7 @@ def check_signal_header_correct(
                 i, label, ch["physical_min"], len(str(ch["physical_min"]))
             )
         )
-    if len(str(ch["physical_max"])) > 8 and ch["physical_max"] > 99999999:  # type: ignore
+    if len(str(ch["physical_max"])) > 8 and ch["physical_max"] > 99999999:  # type: ignore[operator]
         raise ValueError(
             "Physical minimum for channel {} ({}) is {}, which has {} chars, "
             "however, EDF+ can only save 8 chars, critical precision loss is expected, "
@@ -581,16 +581,16 @@ class EdfWriter:
         """
         Sets the file header
         """
-        self.technician = fileHeader["technician"]
-        self.recording_additional = fileHeader["recording_additional"]
-        self.patient_name = fileHeader["patientname"]
-        self.patient_additional = fileHeader["patient_additional"]
-        self.patient_code = fileHeader["patientcode"]
-        self.equipment = fileHeader["equipment"]
-        self.admincode = fileHeader["admincode"]
-        self.sex = fileHeader["sex"]
-        self.recording_start_time = fileHeader["startdate"]
-        self.birthdate = fileHeader["birthdate"]
+        self.technician = fileHeader["technician"]  # type: ignore[assignment]
+        self.recording_additional = fileHeader["recording_additional"]  # type: ignore[assignment]
+        self.patient_name = fileHeader["patientname"]  # type: ignore[assignment]
+        self.patient_additional = fileHeader["patient_additional"]  # type: ignore[assignment]
+        self.patient_code = fileHeader["patientcode"]  # type: ignore[assignment]
+        self.equipment = fileHeader["equipment"]  # type: ignore[assignment]
+        self.admincode = fileHeader["admincode"]  # type: ignore[assignment]
+        self.sex = fileHeader["sex"]  # type: ignore[assignment]
+        self.recording_start_time = fileHeader["startdate"]  # type: ignore[assignment]
+        self.birthdate = fileHeader["birthdate"]  # type: ignore[assignment]
         self.update_header()
 
     def setSignalHeader(self, edfsignal: int, channel_info: dict[str, Union[str, int, float, None]]) -> None:
@@ -1009,7 +1009,7 @@ class EdfWriter:
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
-        self.channels[edfsignal]["transducer"] = transducer
+        self.channels[edfsignal]["transducer"] = transducer  # type: ignore[assignment]
         self.update_header()
 
     def setPrefilter(self, edfsignal: int, prefilter: str) -> None:
@@ -1025,7 +1025,7 @@ class EdfWriter:
         """
         if edfsignal < 0 or edfsignal > self.n_channels:
             raise ChannelDoesNotExist(edfsignal)
-        self.channels[edfsignal]["prefilter"] = prefilter
+        self.channels[edfsignal]["prefilter"] = prefilter  # type: ignore[assignment]
         self.update_header()
 
     def writePhysicalSamples(self, data: np.ndarray) -> int:
@@ -1110,12 +1110,12 @@ class EdfWriter:
         pad_value = self.pad_with
         lim = ("digital_min", "digital_max") if digital else ("physical_min", "physical_max")
         low, high = self.channels[i][lim[0]], self.channels[i][lim[1]]
-        if not low <= pad_value <= high:
+        if not low <= pad_value <= high:  # type: ignore[operator]
             warnings.warn(
                 f"pad_with={pad_value} is outside the range of "
                 f"channel {i} ({low}...{high}) and will be clipped"
             )
-        return pad_value
+        return pad_value  # type: ignore[return-value]
 
     def writeSamples(self, data_list: Union[list[np.ndarray], np.ndarray], digital: bool = False) -> None:
         """
@@ -1304,7 +1304,7 @@ class EdfWriter:
                 np.round(onset_in_seconds * 10000).astype(np.int64),
                 np.round(duration_in_seconds * 10000).astype(int),
                 description.encode("latin1"),
-            )  # type: ignore
+            )
         else:
             # FIX: description must be bytes. string will fail in u function
             res = write_annotation_latin1(
@@ -1312,7 +1312,7 @@ class EdfWriter:
                 np.round(onset_in_seconds * 10000).astype(np.int64),
                 -1,
                 description.encode("latin1"),
-            )  # type: ignore
+            )
         if res >= 0:
             self._n_annotations_written += 1
         return res
@@ -1396,7 +1396,7 @@ class EdfWriter:
         fs = self.channels[ch_idx]["sample_frequency"]
 
         record_duration = self.record_duration
-        smp_per_record = fs * record_duration
+        smp_per_record = fs * record_duration  # type: ignore[operator]
 
         if not np.isclose(np.round(smp_per_record), np.round(smp_per_record, 6)):
             warnings.warn(

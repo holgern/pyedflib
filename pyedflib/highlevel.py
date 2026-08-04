@@ -407,10 +407,10 @@ def read_edf(
         # if there ch_nrs is not given, load all channels
 
         if ch_nrs is None:  # no numbers means we load all
-            ch_nrs = range(n_chrs)
+            ch_nrs = range(n_chrs)  # type: ignore[assignment]
 
         # convert negative numbers into positives
-        ch_nrs = [n_chrs + ch if ch < 0 else ch for ch in ch_nrs]
+        ch_nrs = [n_chrs + ch if ch < 0 else ch for ch in ch_nrs]  # type: ignore[union-attr]
 
         # load headers, signal information and
         header = f.getHeader()
@@ -768,22 +768,23 @@ def drop_channels(
         for i, ch in enumerate(to_keep):
             if isinstance(ch, str):
                 ch_idx = ch_names.index(ch.lower())
-                to_keep[i] = ch_idx
+                to_keep[i] = ch_idx  # type: ignore[call-overload]
         load_channels = list(to_keep)
     elif to_drop is not None:
         for i, ch in enumerate(to_drop):
             if isinstance(ch, str):
                 ch_idx = ch_names.index(ch.lower())
-                to_drop[i] = ch_idx
-        to_drop = [len(ch_nrs) + ch if ch < 0 else ch for ch in to_drop]
+                to_drop[i] = ch_idx  # type: ignore[call-overload]
+        to_drop = [len(ch_nrs) + ch if ch < 0 else ch for ch in to_drop]  # type: ignore[assignment,operator]
 
-        [ch_nrs.remove(ch) for ch in to_drop]
+        for ch in to_drop:
+            ch_nrs.remove(ch)  # type: ignore[arg-type]
         load_channels = list(ch_nrs)
     else:
         raise ValueError
 
     signals, signal_headers, header = read_edf(
-        edf_source, ch_nrs=load_channels, digital=True, verbose=verbose
+        edf_source, ch_nrs=load_channels, digital=True, verbose=verbose  # type: ignore[arg-type]
     )
 
     write_edf(edf_target, signals, signal_headers, header, digital=True)
@@ -793,8 +794,8 @@ def drop_channels(
 def anonymize_edf(
     edf_file: str,
     new_file: Optional[str] = None,
-    to_remove: list[str] = ("patientname", "birthdate"),
-    new_values: list[str] = ("xxx", ""),
+    to_remove: list[str] = ("patientname", "birthdate"),  # type: ignore[assignment]
+    new_values: list[str] = ("xxx", ""),  # type: ignore[assignment]
     verify: bool = False,
     verbose: bool = False,
 ) -> bool:
@@ -909,11 +910,11 @@ def crop_edf(
     if start is None:
         start = current_start
     elif start_format == "seconds":
-        start = current_start + timedelta(seconds=start)
+        start = current_start + timedelta(seconds=start)  # type: ignore[arg-type]
     else:
         pass
-    assert current_start <= start, "start must not be before current start of recording"
-    start_diff_from_start = (start - current_start).total_seconds()
+    assert current_start <= start, "start must not be before current start of recording"  # type: ignore[operator]
+    start_diff_from_start = (start - current_start).total_seconds()  # type: ignore[operator,union-attr]
 
     # Define new stop time
     current_stop = current_start + timedelta(seconds=edf.getFileDuration())
@@ -921,14 +922,13 @@ def crop_edf(
     if stop is None:
         stop = current_stop
     elif stop_format == "seconds":
-        stop = current_start + timedelta(seconds=stop)
+        stop = current_start + timedelta(seconds=stop)  # type: ignore[arg-type]
     else:
         pass
-    assert stop <= current_stop, "new stop value must not be after current end of recording"
-
-    assert start < current_stop, "new start value must not be after current end of recording"
-    assert stop > current_start, "new stop value must not be before current start of recording"
-    stop_diff_from_start = (stop - current_start).total_seconds()
+    assert stop <= current_stop, "new stop value must not be after current end of recording"  # type: ignore[operator]
+    assert start < current_stop, "new start value must not be after current end of recording"  # type: ignore[operator]
+    assert stop > current_start, "new stop value must not be before current start of recording"  # type: ignore[operator]
+    stop_diff_from_start = (stop - current_start).total_seconds()  # type: ignore[operator,union-attr]
 
     # Crop each signal
     signals = []
@@ -942,7 +942,7 @@ def crop_edf(
     edf.close()
 
     # Update header startdate and save file
-    header["startdate"] = start
+    header["startdate"] = start  # type: ignore[assignment]
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
         new_file = f"{file}_cropped{ext}"
@@ -952,8 +952,8 @@ def crop_edf(
     # Get new EDF start, stop and duration
     with pyedflib.EdfReader(new_file) as edf:
         start = edf.getStartdatetime()
-        stop = start + timedelta(seconds=edf.getFileDuration())
-        duration = stop - start
+        stop = start + timedelta(seconds=edf.getFileDuration())  # type: ignore[operator]
+        duration = stop - start  # type: ignore[operator]
         edf.close()
 
     # Verbose
@@ -1010,7 +1010,7 @@ def rename_channels(
         elif verbose:
             print(f"no mapping for {ch}, leave as it is")
         signal_headers.append(signal_header[0])
-        signals.append(signal.squeeze())
+        signals.append(signal.squeeze())  # type: ignore[union-attr]
 
     return write_edf(new_file, signals, signal_headers, header, digital=True)
 
