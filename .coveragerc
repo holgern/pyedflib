@@ -1,8 +1,8 @@
 [run]
 branch = True
-include = 
+include =
     */pyedflib/*
-omit = 
+omit =
     */version.py
     */pyedflib/tests/*
     */pyedflib/data/*

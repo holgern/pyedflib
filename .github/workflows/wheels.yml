@@ -14,7 +14,7 @@ env:
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
- 
+
 jobs:
   make_sdist:
     name: Make SDist
@@ -63,7 +63,7 @@ jobs:
         with:
           name: wheel-${{ matrix.os }}
           path: wheelhouse/*.whl
-          
+
   build_aarch64_wheels:
     name: Build wheels aarch64
     runs-on: ubuntu-latest

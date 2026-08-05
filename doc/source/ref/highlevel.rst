@@ -19,4 +19,3 @@ EDF/BDF ``highlevel`` functions
 .. autofunction:: make_header
 .. autofunction:: phys2dig
 .. autofunction:: dig2phys
-

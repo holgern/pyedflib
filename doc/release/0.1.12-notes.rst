@@ -20,4 +20,3 @@ Issues closed for v0.1.12
 
 Pull requests for v0.1.12
 -------------------------
-
