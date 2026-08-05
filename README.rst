@@ -47,7 +47,7 @@ Documentation is available online at https://pyedflib.readthedocs.io.
 Installation
 ------------
 
-pyEDFlib can be used with `Python`_ >=3.8. It depends on the `Numpy`_ package.
+pyEDFlib can be used with `Python`_ >=3.9. It depends on the `Numpy`_ package.
 To use the newest source code from git, download the source code and, from the
 source directory, install it with::
 
