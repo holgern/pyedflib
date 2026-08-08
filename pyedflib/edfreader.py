@@ -11,7 +11,7 @@ from types import TracebackType
 from typing import Optional, Union
 
 try:
-    from typing import Self
+    from typing import Self  # type: ignore[attr-defined]
 except ImportError:
     from typing_extensions import Self
 
@@ -801,11 +801,11 @@ class EdfReader(CyEdfReader):
             # because the dtype of n is not known. It would be required to
             # upgrade numpy to 1.20.0 to fix this issue, such as this version
             # introduced support for type hinting of numpy arrays.
-            x = np.zeros(n, dtype=dtype)  # type: ignore
+            x = np.zeros(n, dtype=dtype)
             if digital:
-                self.read_digital_signal(chn, start, n, x)  # type: ignore
+                self.read_digital_signal(chn, start, n, x)
             else:
-                self.readsignal(chn, start, n, x)  # type: ignore
+                self.readsignal(chn, start, n, x)
             return x
         else:
             raise IndexError(
