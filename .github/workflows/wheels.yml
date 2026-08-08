@@ -98,7 +98,7 @@ jobs:
     needs: make_sdist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dist
@@ -115,7 +115,7 @@ jobs:
     needs: [build_wheels, build_aarch64_wheels, make_sdist, sdist_install]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: dist
