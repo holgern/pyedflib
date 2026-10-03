@@ -180,6 +180,17 @@ class TestEdfReader(unittest.TestCase):
 
         f.close()
 
+    def test_readSignal_past_end(self):
+        with pyedflib.EdfReader(self.edf_data_file) as f:
+            total = f.getNSamples()[0]
+            for digital in [False, True]:
+                full = f.readSignal(0, digital=digital)
+                x = f.readSignal(0, start=total - 500, n=1000, digital=digital)
+                np.testing.assert_equal(len(x), 500)
+                np.testing.assert_array_equal(x, full[-500:])
+                x = f.readSignal(0, start=total, n=10, digital=digital)
+                np.testing.assert_equal(len(x), 0)
+
     def test_EdfReader_headerInfos(self):
         try:
             f = pyedflib.EdfReader(self.edf_data_file)

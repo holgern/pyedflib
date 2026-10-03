@@ -793,6 +793,8 @@ class EdfReader(CyEdfReader):
                 n = nsamples[chn]
             elif n > nsamples[chn]:
                 return np.array([])
+            # only read the samples that are in the file
+            n = max(0, min(n, nsamples[chn] - start))
             dtype = np.int32 if digital else np.float64
             # FIX: The following type checking fails because n is assigned to
             # nsamples[chn] output. Such as nsamples is an array without
