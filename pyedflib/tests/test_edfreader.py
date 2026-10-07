@@ -7,6 +7,7 @@ import os
 # from numpy.testing import (assert_raises, run_module_suite,
 #                            assert_equal, assert_allclose, assert_almost_equal)
 import unittest
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -185,11 +186,23 @@ class TestEdfReader(unittest.TestCase):
             total = f.getNSamples()[0]
             for digital in [False, True]:
                 full = f.readSignal(0, digital=digital)
-                x = f.readSignal(0, start=total - 500, n=1000, digital=digital)
-                np.testing.assert_equal(len(x), 500)
+                with self.assertWarns(UserWarning):
+                    x = f.readSignal(0, start=total - 500, n=1000, digital=digital)
                 np.testing.assert_array_equal(x, full[-500:])
-                x = f.readSignal(0, start=total, n=10, digital=digital)
-                np.testing.assert_equal(len(x), 0)
+                with self.assertWarns(UserWarning):
+                    x = f.readSignal(0, n=total + 1, digital=digital)
+                np.testing.assert_array_equal(x, full)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("error")
+                    x = f.readSignal(0, start=total - 500, n=500, digital=digital)
+                    np.testing.assert_array_equal(x, full[-500:])
+                    x = f.readSignal(0, start=total - 500, digital=digital)
+                    np.testing.assert_array_equal(x, full[-500:])
+                with self.assertRaises(IndexError):
+                    f.readSignal(0, start=total, n=10, digital=digital)
+                with self.assertRaises(IndexError):
+                    f.readSignal(0, start=total, digital=digital)
+                self.assertEqual(f.readSignal(0, start=-1, digital=digital).dtype, full.dtype)
 
     def test_EdfReader_headerInfos(self):
         try:

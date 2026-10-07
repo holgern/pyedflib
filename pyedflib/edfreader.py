@@ -760,6 +760,10 @@ class EdfReader(CyEdfReader):
         """
         Returns the physical data of signal chn. When start and n is set, a subset is returned
 
+        If start is at or past the end of the channel, an IndexError is raised.
+        If n asks for more samples than are left after start, only the
+        remaining samples are returned and a warning is issued.
+
         Parameters
         ----------
         chn : int
@@ -783,19 +787,27 @@ class EdfReader(CyEdfReader):
         >>> f.close()
 
         """
+        dtype = np.int32 if digital else np.float64
         if start < 0:
-            return np.array([])
+            return np.array([], dtype=dtype)
         if n is not None and n < 0:
-            return np.array([])
+            return np.array([], dtype=dtype)
         nsamples = self.getNSamples()
         if 0 <= chn < len(nsamples):
+            available = nsamples[chn] - start
+            if available <= 0:
+                raise IndexError(
+                    f"Trying to read from sample {start}, but channel {chn} only has {nsamples[chn]} samples"
+                )
             if n is None:
-                n = nsamples[chn]
-            elif n > nsamples[chn]:
-                return np.array([])
-            # only read the samples that are in the file
-            n = max(0, min(n, nsamples[chn] - start))
-            dtype = np.int32 if digital else np.float64
+                n = available
+            elif n > available:
+                warnings.warn(
+                    f"Requested {n} samples from sample {start} of channel {chn}, "
+                    f"but only {available} are available. Returning {available} samples.",
+                    stacklevel=2,
+                )
+                n = available
             # FIX: The following type checking fails because n is assigned to
             # nsamples[chn] output. Such as nsamples is an array without
             # hint of the dtype, the static type checker will not be able to
