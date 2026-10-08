@@ -17,6 +17,7 @@ from pyedflib.edfreader import EdfReader, _debug_parse_header
 from pyedflib.edfwriter import (
     ChannelDoesNotExist,
     EdfWriter,
+    WrongInputSize,
     _calculate_record_duration,
     _set,
 )
@@ -1658,6 +1659,105 @@ class TestEdfWriter(unittest.TestCase):
         with self.assertRaises(ValueError):
             pyedflib.EdfWriter(filename, 1, pad_with="bogus")
         gc.collect()  # triggers __del__ -> close() on the dead object
+
+    def test_write_samples_rejects_different_record_counts(self):
+        """Channels spanning different numbers of data records must raise
+        instead of silently dropping the surplus samples."""
+        filename = os.path.join(self.data_dir, "tmp_ragged.edf")
+        sheads = [
+            dict(self.ch_info_edf, label=f"ch{i}", physical_min=-1, physical_max=2000) for i in range(2)
+        ]
+        # both channels at 100 Hz, but one holds 150 and the other 350 samples
+        sigs = [np.arange(150, dtype=float), np.arange(1000, 1350, dtype=float)]
+
+        f = pyedflib.EdfWriter(filename, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeaders(sheads)
+        with self.assertRaises(WrongInputSize):
+            f.writeSamples(sigs)
+        # the check must fire before anything is committed to the file
+        self.assertEqual(f._n_records_written, 0)
+        f.close()
+
+        # highlevel.write_edf goes through the same code path
+        with self.assertRaises(WrongInputSize):
+            pyedflib.highlevel.write_edf(filename, sigs, sheads)
+
+    def test_write_samples_allows_same_record_count(self):
+        """Channels ending inside the shared last record are still padded."""
+        filename = os.path.join(self.data_dir, "tmp_ragged_pad.edf")
+        sheads = [
+            dict(self.ch_info_edf, label=f"ch{i}", physical_min=-1, physical_max=2000) for i in range(2)
+        ]
+        # 150 and 200 samples at 100 Hz both span two data records
+        sigs = [np.arange(150, dtype=float), np.arange(1000, 1200, dtype=float)]
+
+        f = pyedflib.EdfWriter(filename, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeaders(sheads)
+        f.writeSamples(sigs)
+        f.close()
+
+        with pyedflib.EdfReader(filename) as r:
+            ch0, ch1 = r.readSignal(0), r.readSignal(1)
+        np.testing.assert_allclose(ch0[:150], sigs[0], atol=0.1)
+        np.testing.assert_allclose(ch0[150:], 0, atol=0.1)  # padded tail
+        np.testing.assert_allclose(ch1, sigs[1], atol=0.1)
+
+        # different sample frequencies spanning the same 3 records must work
+        sigs = [np.arange(300, dtype=float), np.arange(600, dtype=float)]
+        sheads = [
+            dict(
+                self.ch_info_edf,
+                label=f"ch{i}",
+                sample_frequency=fs,
+                physical_min=-1,
+                physical_max=1000,
+            )
+            for i, fs in enumerate([100, 200])
+        ]
+        f = pyedflib.EdfWriter(filename, 2, file_type=pyedflib.FILETYPE_EDFPLUS)
+        f.setSignalHeaders(sheads)
+        f.writeSamples(sigs)
+        f.close()
+
+        with pyedflib.EdfReader(filename) as r:
+            np.testing.assert_allclose(r.readSignal(0), sigs[0], atol=0.1)
+            np.testing.assert_allclose(r.readSignal(1), sigs[1], atol=0.1)
+
+    def test_buffered_write_samples_rejects_ragged_on_close(self):
+        """buffered=True accepts ragged chunks, but close() must raise when the
+        leftover cannot fit into the single final record."""
+        filename = os.path.join(self.data_dir, "tmp_ragged_buffered.edf")
+        sheads = [
+            dict(self.ch_info_edf, label=f"ch{i}", physical_min=-1, physical_max=2000) for i in range(2)
+        ]
+        sigs = [np.arange(150, dtype=float), np.arange(1000, 1350, dtype=float)]
+
+        f = pyedflib.EdfWriter(filename, 2, file_type=pyedflib.FILETYPE_EDFPLUS, buffered=True)
+        f.setSignalHeaders(sheads)
+        f.writeSamples(sigs)
+        with self.assertRaises(WrongInputSize):
+            f.close()
+        # nothing was flushed, so supplying the missing samples still works
+        f.writeSamples([np.arange(150, 350, dtype=float), np.array([])])
+        f.close()
+
+        with pyedflib.EdfReader(filename) as r:
+            np.testing.assert_allclose(r.readSignal(0)[:350], np.arange(350, dtype=float), atol=0.1)
+            np.testing.assert_allclose(r.readSignal(1)[:350], sigs[1], atol=0.1)
+
+        # a channel ending on a record boundary is padded, not rejected:
+        # 150 and 100 buffered samples leave remainders of 50 and 0
+        f = pyedflib.EdfWriter(filename, 2, file_type=pyedflib.FILETYPE_EDFPLUS, buffered=True)
+        f.setSignalHeaders(sheads)
+        f.writeSamples([np.arange(150, dtype=float), np.arange(1000, 1100, dtype=float)])
+        f.close()
+
+        with pyedflib.EdfReader(filename) as r:
+            ch0, ch1 = r.readSignal(0), r.readSignal(1)
+        np.testing.assert_allclose(ch0[:150], np.arange(150, dtype=float), atol=0.1)
+        np.testing.assert_allclose(ch0[150:], 0, atol=0.1)
+        np.testing.assert_allclose(ch1[:100], np.arange(1000, 1100, dtype=float), atol=0.1)
+        np.testing.assert_allclose(ch1[100:], 0, atol=0.1)
 
 
 if __name__ == "__main__":
