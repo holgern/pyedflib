@@ -867,6 +867,9 @@ def crop_edf(
     For example, using `crop_edf(..., start=10, start_format="seconds") will
     remove the first 10-seconds of the recording.
 
+    Annotations with an onset within the new start/stop window are kept and
+    shifted to the new start, all other annotations are dropped.
+
     Parameters
     ----------
     edf_file : str
@@ -939,10 +942,19 @@ def crop_edf(
         stop_idx = int(np.round(stop_diff_from_start * sf))
         # We use digital=True in reading and writing to avoid precision loss
         signals.append(edf.readSignal(i, start=start_idx, n=stop_idx - start_idx, digital=True))
+
+    # Keep the annotations whose onset lies within the cropped window,
+    # shifted to be relative to the new start of the recording
+    annotations = [
+        [onset - start_diff_from_start, duration, text]
+        for onset, duration, text in zip(*edf.readAnnotations())
+        if start_diff_from_start <= onset < stop_diff_from_start
+    ]
     edf.close()
 
     # Update header startdate and save file
     header["startdate"] = start  # type: ignore[assignment]
+    header["annotations"] = annotations  # type: ignore[assignment]
     if new_file is None:
         file, ext = os.path.splitext(edf_file)
         new_file = f"{file}_cropped{ext}"
