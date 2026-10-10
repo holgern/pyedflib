@@ -415,6 +415,38 @@ class TestHighLevel(unittest.TestCase):
         highlevel.crop_edf(edf_file, new_file=outfile, stop=new_stop_sec, stop_format="seconds")
         _compare_cropped_edf(edf_file, outfile)
 
+    def test_crop_edf_annotations(self):
+        # annotations within the cropped window must be kept and shifted,
+        # annotations outside of it dropped
+        edf_file = self.tmp_testfile + "_crop_annotations.edf"
+        outfile = self.tmp_testfile + "_crop_annotations_cropped.edf"
+        header = highlevel.make_header()
+        header["annotations"] = [
+            [1.0, 0.5, "before"],
+            [3.0, -1, "start"],
+            [5.25, 1.5, "inside"],
+            [7.0, -1, "stop"],
+            [9.0, 0.5, "after"],
+        ]
+        signals = np.random.rand(2, 1000) * 100
+        signal_headers = highlevel.make_signal_headers(["a", "b"], sample_frequency=100)
+        highlevel.write_edf(edf_file, signals, signal_headers, header)
+
+        highlevel.crop_edf(
+            edf_file,
+            new_file=outfile,
+            start=3,
+            stop=7,
+            start_format="seconds",
+            stop_format="seconds",
+            verbose=False,
+        )
+        _, _, new_header = highlevel.read_edf(outfile)
+        annotations = new_header["annotations"]
+        self.assertEqual([a[2] for a in annotations], ["start", "inside"])
+        np.testing.assert_allclose([a[0] for a in annotations], [0.0, 2.25])
+        np.testing.assert_allclose([a[1] for a in annotations], [-1, 1.5])
+
     def test_drop_channel(self):
         signal_headers = highlevel.make_signal_headers(["ch" + str(i) for i in range(5)])
         signals = np.random.rand(5, 256 * 300) * 200  # 5 minutes of eeg
