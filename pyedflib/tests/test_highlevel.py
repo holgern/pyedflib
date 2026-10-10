@@ -435,6 +435,26 @@ class TestHighLevel(unittest.TestCase):
         with self.assertRaises(AssertionError):
             highlevel.drop_channels(self.drop_from, to_keep=["ch1"], to_drop=["ch3"])
 
+    def test_drop_channel_bdf(self):
+        # the default target must keep the .bdf extension, else the 24 bit
+        # digital range is written to an EDF+ file and rejected
+        bdf_file = self.tmp_testfile + "_drop_from.bdf"
+        signal_headers = highlevel.make_signal_headers(
+            ["ch" + str(i) for i in range(3)], digital_min=-8388608, digital_max=8388607
+        )
+        signals = np.random.randint(-8000000, 8000000, (3, 256 * 10), dtype=np.int32)
+        highlevel.write_edf(bdf_file, signals, signal_headers, digital=True)
+
+        to_drop = ["ch0"]
+        dropped = highlevel.drop_channels(bdf_file, to_drop=to_drop)
+        self.assertEqual(dropped, self.tmp_testfile + "_drop_from_dropped.bdf")
+        # the caller's list is not modified
+        self.assertEqual(to_drop, ["ch0"])
+
+        signals2, signal_headers2, _ = highlevel.read_edf(dropped, digital=True)
+        np.testing.assert_array_equal(signals[1:], signals2)
+        self.assertEqual([s["label"] for s in signal_headers2], ["ch1", "ch2"])
+
     def test_annotation_bytestring(self):
         header = highlevel.make_header(
             technician="tech",
