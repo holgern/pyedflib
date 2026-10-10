@@ -719,7 +719,8 @@ def drop_channels(
     edf_source : str
         The source edf file from which to drop channels.
     edf_target : str, optional
-        Where to save the file.If None, will be edf_source+'dropped.edf'.
+        Where to save the file. If None, the input filename appended with
+        '_dropped' is used, keeping its extension.
         The default is None.
     to_keep : list, optional
          A list of channel names or indices that will be kept.
@@ -744,6 +745,11 @@ def drop_channels(
         to_keep = [to_keep]
     if isinstance(to_drop, (int, str)):
         to_drop = [to_drop]
+    # copy, names are replaced by indices below and the caller's list must not change
+    if to_keep is not None:
+        to_keep = list(to_keep)
+    if to_drop is not None:
+        to_drop = list(to_drop)
 
     # check all parameters are good
     assert to_keep is None or to_drop is None, "Supply only to_keep xor to_drop"
@@ -755,7 +761,9 @@ def drop_channels(
     assert edf_source != edf_target, "For safet, target must not be source file."
 
     if edf_target is None:
-        edf_target = f"{os.path.splitext(edf_source)[0]}_dropped.edf"
+        # keep the extension, write_edf() selects EDF+ or BDF+ by it
+        file, ext = os.path.splitext(edf_source)
+        edf_target = f"{file}_dropped{ext}"
     if os.path.exists(edf_target):
         warnings.warn("Target file will be overwritten")
 
