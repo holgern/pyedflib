@@ -260,6 +260,51 @@ class TestHighLevel(unittest.TestCase):
                 with self.assertRaisesRegex(AssertionError, "physical values"):
                     highlevel.compare_edf(source, target)
 
+    def test_compare_edf_offset_calibration(self):
+        source = self.tmp_testfile + "_offset_source.edf"
+        target = self.tmp_testfile + "_offset_target.edf"
+        signals = np.array([[20000] * 200, [0] * 200], dtype=np.int32)
+        for channel in range(2):
+            for physical_min in (0, 100, -100):
+                with self.subTest(channel=channel, physical_min=physical_min):
+                    headers = highlevel.make_signal_headers(
+                        ["first", "last"], sample_frequency=200, physical_min=-1, physical_max=1
+                    )
+                    headers[channel]["physical_min"] = physical_min
+                    headers[channel]["physical_max"] = physical_min + 100
+                    highlevel.write_edf(source, signals, headers, digital=True)
+                    highlevel.write_edf(target, signals, headers, digital=True)
+                    self.assertTrue(highlevel.compare_edf(source, target))
+                    headers[channel]["physical_min"] *= 1.5
+                    headers[channel]["physical_max"] *= 1.5
+                    highlevel.write_edf(target, signals, headers, digital=True)
+                    with self.assertRaisesRegex(AssertionError, "physical values"):
+                        highlevel.compare_edf(source, target)
+
+    def test_compare_edf_adc_step_tolerance(self):
+        source = self.tmp_testfile + "_step_source.edf"
+        target = self.tmp_testfile + "_step_target.edf"
+        signals = np.full((1, 200), 25, dtype=np.int32)
+        headers = highlevel.make_signal_headers(
+            ["offset"],
+            sample_frequency=200,
+            physical_min=0,
+            physical_max=100,
+            digital_min=-100,
+            digital_max=100,
+        )
+        highlevel.write_edf(source, signals, headers, digital=True)
+        for offset, accepted in ((0.25, True), (2, False)):
+            with self.subTest(offset=offset):
+                headers[0]["physical_min"] = offset
+                headers[0]["physical_max"] = 100 + offset
+                highlevel.write_edf(target, signals, headers, digital=True)
+                if accepted:
+                    self.assertTrue(highlevel.compare_edf(source, target))
+                else:
+                    with self.assertRaisesRegex(AssertionError, "physical values"):
+                        highlevel.compare_edf(source, target)
+
     def test_assertion_dmindmax(self):
 
         # test digital and dmin wrong

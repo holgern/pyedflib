@@ -692,7 +692,7 @@ def compare_edf(
         s2 = np.abs(s2)
         if np.array_equal(s1, s2):
             continue  # early stopping
-        min_dist = np.abs(dig2phys(1, dmin1, dmax1, pmin1, pmax1))
+        min_dist = abs((pmax1 - pmin1) / (dmax1 - dmin1))
         close = np.mean(np.isclose(s1, s2, atol=min_dist))
         assert close > 0.99, (
             "Error, physical values of {} and {} for ch {}: {} are not the same: {:.3f}".format(
