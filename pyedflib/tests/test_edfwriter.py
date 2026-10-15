@@ -191,6 +191,20 @@ class TestEdfWriter(unittest.TestCase):
         assert startdate2 == startdate, f"write {startdate} != read {startdate2}"
         del f
 
+    def test_reset_subsecond_starttime(self):
+        startdate = datetime(2017, 1, 2, 13, 14, 15)
+        for file_type in [pyedflib.FILETYPE_EDFPLUS, pyedflib.FILETYPE_BDFPLUS]:
+            with self.subTest(file_type=file_type):
+                with pyedflib.EdfWriter(self.edfplus_data_file, 1, file_type=file_type) as writer:
+                    writer.setSignalHeader(0, self.ch_info_edf)
+                    writer.setStartdatetime(startdate.replace(microsecond=750000))
+                    writer.setStartdatetime(startdate)
+                    writer.writeSamples([np.zeros(100)])
+                    writer.writeAnnotation(0, 1, "start")
+                with pyedflib.EdfReader(self.edfplus_data_file) as reader:
+                    self.assertEqual(reader.getStartdatetime(), startdate)
+                    np.testing.assert_array_equal(reader.readAnnotations()[0], [0])
+
     def test_annotation_overflow_warning(self):
         # gh-187: annotations exceeding the capacity of
         # n_datarecords * n_annotation_signals are silently dropped by the
