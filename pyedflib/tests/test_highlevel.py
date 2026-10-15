@@ -240,6 +240,26 @@ class TestHighLevel(unittest.TestCase):
         for s1, s2 in zip(signals, signals2):
             np.testing.assert_allclose(s1, s2)
 
+    def test_compare_edf_channel_calibrations(self):
+        source = self.tmp_testfile + "_compare_source.edf"
+        target = self.tmp_testfile + "_compare_target.edf"
+        signals = np.tile(np.arange(-1000, 1000, dtype=np.int32), (2, 1))
+        headers = highlevel.make_signal_headers(["first", "last"], sample_frequency=200)
+        headers[1]["physical_min"] = -400
+        headers[1]["physical_max"] = 400
+        highlevel.write_edf(source, signals, headers, digital=True)
+        highlevel.write_edf(target, signals, headers, digital=True)
+        self.assertTrue(highlevel.compare_edf(source, target))
+
+        for channel in range(2):
+            with self.subTest(channel=channel):
+                changed_headers = [dict(header) for header in headers]
+                changed_headers[channel]["physical_min"] *= 2
+                changed_headers[channel]["physical_max"] *= 2
+                highlevel.write_edf(target, signals, changed_headers, digital=True)
+                with self.assertRaisesRegex(AssertionError, "physical values"):
+                    highlevel.compare_edf(source, target)
+
     def test_assertion_dmindmax(self):
 
         # test digital and dmin wrong

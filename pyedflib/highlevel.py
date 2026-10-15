@@ -674,13 +674,12 @@ def compare_edf(
             )
         )
 
-    dmin1, dmax1 = shead1[i]["digital_min"], shead1[i]["digital_max"]
-    pmin1, pmax1 = shead1[i]["physical_min"], shead1[i]["physical_max"]
-    dmin2, dmax2 = shead2[i]["digital_min"], shead2[i]["digital_max"]
-    pmin2, pmax2 = shead2[i]["physical_min"], shead2[i]["physical_max"]
-
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
+        dmin1, dmax1 = shead1[i]["digital_min"], shead1[i]["digital_max"]
+        pmin1, pmax1 = shead1[i]["physical_min"], shead1[i]["physical_max"]
+        dmin2, dmax2 = shead2[i]["digital_min"], shead2[i]["digital_max"]
+        pmin2, pmax2 = shead2[i]["physical_min"], shead2[i]["physical_max"]
 
         # convert to physical values, no need to load all data again
         s1 = dig2phys(s1, dmin1, dmax1, pmin1, pmax1)
@@ -792,7 +791,10 @@ def drop_channels(
         raise ValueError
 
     signals, signal_headers, header = read_edf(
-        edf_source, ch_nrs=load_channels, digital=True, verbose=verbose  # type: ignore[arg-type]
+        edf_source,
+        ch_nrs=load_channels,
+        digital=True,
+        verbose=verbose,  # type: ignore[arg-type]
     )
 
     write_edf(edf_target, signals, signal_headers, header, digital=True)
