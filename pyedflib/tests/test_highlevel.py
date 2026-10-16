@@ -285,25 +285,26 @@ class TestHighLevel(unittest.TestCase):
         source = self.tmp_testfile + "_step_source.edf"
         target = self.tmp_testfile + "_step_target.edf"
         signals = np.full((1, 200), 25, dtype=np.int32)
-        headers = highlevel.make_signal_headers(
-            ["offset"],
-            sample_frequency=200,
-            physical_min=0,
-            physical_max=100,
-            digital_min=-100,
-            digital_max=100,
-        )
-        highlevel.write_edf(source, signals, headers, digital=True)
-        for offset, accepted in ((0.25, True), (2, False)):
-            with self.subTest(offset=offset):
-                headers[0]["physical_min"] = offset
-                headers[0]["physical_max"] = 100 + offset
-                highlevel.write_edf(target, signals, headers, digital=True)
-                if accepted:
-                    self.assertTrue(highlevel.compare_edf(source, target))
-                else:
-                    with self.assertRaisesRegex(AssertionError, "physical values"):
-                        highlevel.compare_edf(source, target)
+        for baseline in (0, 1000000, -1000000):
+            headers = highlevel.make_signal_headers(
+                ["offset"],
+                sample_frequency=200,
+                physical_min=baseline,
+                physical_max=baseline + 400,
+                digital_min=-100,
+                digital_max=100,
+            )
+            highlevel.write_edf(source, signals, headers, digital=True)
+            for offset, accepted in ((1, True), (4, False)):
+                with self.subTest(baseline=baseline, offset=offset):
+                    headers[0]["physical_min"] = baseline + offset
+                    headers[0]["physical_max"] = baseline + 400 + offset
+                    highlevel.write_edf(target, signals, headers, digital=True)
+                    if accepted:
+                        self.assertTrue(highlevel.compare_edf(source, target))
+                    else:
+                        with self.assertRaisesRegex(AssertionError, "physical values"):
+                            highlevel.compare_edf(source, target)
 
     def test_assertion_dmindmax(self):
 
