@@ -1136,6 +1136,12 @@ class EdfWriter:
         data records are committed to file. The remainder is written (padded
         according to `pad_with`) when close() is called.
 
+        All channels must span the same number of data records. If one
+        channel's data covers more data records than another's, the surplus
+        cannot be written and a WrongInputSize is raised instead of silently
+        dropping it. A channel may still end inside the shared last record:
+        the missing tail is padded as usual.
+
         All parameters must be already written into the bdf/edf-file.
         """
         if (len(data_list)) == 0:
@@ -1218,6 +1224,23 @@ class EdfWriter:
                 notAtEnd = False
             sampleLength += smp_per_record[i]
 
+        if not self.buffered and np.all(smp_per_record >= 1):
+            # all channels must span the same number of data records: the
+            # record loop stops as soon as the shortest channel can no longer
+            # fill a record, and the last-record code afterwards can commit
+            # at most one more record per channel. Any surplus records of a
+            # longer channel would be dropped silently.
+            n_records = np.ceil([np.size(data) / smp for data, smp in zip(data_list, smp_per_record)]).astype(
+                np.int64
+            )
+            if np.any(n_records != n_records[0]):
+                raise WrongInputSize(
+                    "All channels must span the same number of data records, but "
+                    f"the signals span {n_records.tolist()} data records "
+                    f"respectively ({[np.size(d) for d in data_list]} samples at "
+                    f"{smp_per_record.tolist()} samples per record)"
+                )
+
         dataRecord = np.array([], dtype=np.int32 if digital else None)
 
         while notAtEnd:
@@ -1258,7 +1281,7 @@ class EdfWriter:
                     wrote_partial_record = True
                 pad_value = self._get_pad_value(i, digital)
                 lastSamples = np.full(smp_per_record[i], pad_value, dtype=np.int32 if digital else np.float64)
-                lastSamples[:lastSampleInd] = data_list[i][-lastSampleInd:]
+                lastSamples[:lastSampleInd] = data_list[i][int(ind[i]) : int(ind[i] + lastSampleInd)]
                 if digital:
                     success = self.writeDigitalSamples(lastSamples)
                 else:
@@ -1370,6 +1393,17 @@ class EdfWriter:
             return
         digital = bool(self._buffered_digital)
         dtype = np.int32 if digital else np.float64
+        # check all channels before writing any, so that a rejected flush
+        # does not leave a partially written data record behind
+        for i in range(len(self.sample_buffer)):
+            smp_per_record = self.get_smp_per_record(i)
+            if len(self.sample_buffer[i]) > smp_per_record:
+                raise WrongInputSize(
+                    f"Channel {i} still holds {len(self.sample_buffer[i])} buffered "
+                    f"samples, but only {smp_per_record} fit in the final data "
+                    "record. The writeSamples() calls did not supply the same "
+                    "number of data records for every channel"
+                )
         for i in range(len(self.sample_buffer)):
             smp_per_record = self.get_smp_per_record(i)
             buf = self.sample_buffer[i][:smp_per_record]
