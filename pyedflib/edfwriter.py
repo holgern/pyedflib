@@ -98,7 +98,8 @@ def check_signal_header_correct(
     if len(ch["label"]) > 16:  # type: ignore[arg-type]
         warnings.warn(
             'Label of channel {} is longer than 16 ASCII chars. The label will be truncated to "{}"'.format(
-                i, ch["label"][:16]  # type: ignore[index]
+                i,
+                ch["label"][:16],  # type: ignore[index]
             )
         )
     if len(ch["prefilter"]) > 80:  # type: ignore[arg-type]
@@ -548,8 +549,7 @@ class EdfWriter:
             self.recording_start_time.second,
         )
         # subseconds are noted in units of 100 nanoseconds, so we multiply by 10
-        if self.recording_start_time.microsecond > 0:
-            _set(set_starttime_subsecond, self.handle, self.recording_start_time.microsecond * 10)
+        _set(set_starttime_subsecond, self.handle, self.recording_start_time.microsecond * 10)
         if isinstance(self.birthdate, str):
             if self.birthdate != "":
                 birthday = datetime.strptime(self.birthdate, "%d %b %Y").date()
