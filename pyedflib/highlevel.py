@@ -674,13 +674,12 @@ def compare_edf(
             )
         )
 
-    dmin1, dmax1 = shead1[i]["digital_min"], shead1[i]["digital_max"]
-    pmin1, pmax1 = shead1[i]["physical_min"], shead1[i]["physical_max"]
-    dmin2, dmax2 = shead2[i]["digital_min"], shead2[i]["digital_max"]
-    pmin2, pmax2 = shead2[i]["physical_min"], shead2[i]["physical_max"]
-
     for i, sigs in enumerate(zip(signals1, signals2)):
         s1, s2 = sigs
+        dmin1, dmax1 = shead1[i]["digital_min"], shead1[i]["digital_max"]
+        pmin1, pmax1 = shead1[i]["physical_min"], shead1[i]["physical_max"]
+        dmin2, dmax2 = shead2[i]["digital_min"], shead2[i]["digital_max"]
+        pmin2, pmax2 = shead2[i]["physical_min"], shead2[i]["physical_max"]
 
         # convert to physical values, no need to load all data again
         s1 = dig2phys(s1, dmin1, dmax1, pmin1, pmax1)
@@ -693,8 +692,8 @@ def compare_edf(
         s2 = np.abs(s2)
         if np.array_equal(s1, s2):
             continue  # early stopping
-        min_dist = np.abs(dig2phys(1, dmin1, dmax1, pmin1, pmax1))
-        close = np.mean(np.isclose(s1, s2, atol=min_dist))
+        min_dist = abs((pmax1 - pmin1) / (dmax1 - dmin1))
+        close = np.mean(np.isclose(s1, s2, atol=min_dist, rtol=0))
         assert close > 0.99, (
             "Error, physical values of {} and {} for ch {}: {} are not the same: {:.3f}".format(
                 edf_file1, edf_file2, shead1[i]["label"], shead2[i]["label"], close
@@ -792,7 +791,10 @@ def drop_channels(
         raise ValueError
 
     signals, signal_headers, header = read_edf(
-        edf_source, ch_nrs=load_channels, digital=True, verbose=verbose  # type: ignore[arg-type]
+        edf_source,
+        ch_nrs=load_channels,
+        digital=True,
+        verbose=verbose,  # type: ignore[arg-type]
     )
 
     write_edf(edf_target, signals, signal_headers, header, digital=True)
