@@ -515,10 +515,10 @@ def write_edf(
         label = shead["label"]
         if digital:  # exception as it will lead to clipping
             assert dmin <= sig.min(), (
-                f"digital_min is {dmin}, but signal_min is {sig.min()}for channel {label}"
+                f"digital_min is {dmin}, but signal_min is {sig.min()} for channel {label}"
             )
             assert dmax >= sig.max(), (
-                f"digital_min is {dmax}, but signal_min is {sig.max()}for channel {label}"
+                f"digital_max is {dmax}, but signal_max is {sig.max()} for channel {label}"
             )
             assert pmin != pmax, f"physical_min {pmin} should be different from physical_max {pmax}"
         else:  # only warning if difference is larger than the rounding error (which is quite large as edf scales data between phys_min and phys_max using -dig_min and +dig_max)
